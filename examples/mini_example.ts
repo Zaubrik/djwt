@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
-import { makeJwt } from "./creatingJws.ts"
-import { validateJwt } from "./validatingJws.ts"
+import { makeJwt } from "../create.ts"
+import { validateJwt } from "../validate.ts"
 
 const s = serve("0.0.0.0:8000")
 ;(async function main() {

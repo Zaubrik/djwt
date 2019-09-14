@@ -1,17 +1,3 @@
-# djwt
-
-the absolute minimum to make JSON Web Tokens on deno. Based on JWT and JWS
-specifications.
-
-## API
-
-#### makeJwt(headerObject: Jose, claims: Claims, key: string)
-
-#### validateJwt(jwt: string, key: string, throwErrors: boolean = false, criticalHandlers: CritHandlers = {})
-
-## Example
-
-```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
 import { makeJwt } from "../create.ts"
@@ -40,11 +26,3 @@ const s = serve("0.0.0.0:8000")
     }
   }
 })()
-```
-
-## Todo
-
-1. Add more optional features from the [JWT](https://tools.ietf.org/html/rfc7519) and
-   [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications
-2. Improve documentation
-3. Make more tests

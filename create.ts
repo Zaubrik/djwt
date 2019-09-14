@@ -19,7 +19,7 @@ interface Jose {
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
-function makeBase64urlFromBase64(base64: string): string {
+function convertBase64urlFromBase64(base64: string): string {
   return base64
     .replace(/=/g, "")
     .replace(/\+/g, "-")
@@ -31,13 +31,13 @@ function makeB64urlEncodedString(
   inputEncoding: string = "utf8"
 ): string {
   if (typeof input === "object")
-    return makeBase64urlFromBase64(base64.fromUint8Array(input))
+    return convertBase64urlFromBase64(base64.fromUint8Array(input))
   const makeTypedArray =
-    inputEncoding === "hex" ? createHexToTypedArray : createUtf8ToTypedArray
-  return makeBase64urlFromBase64(base64.fromUint8Array(makeTypedArray(input)))
+    inputEncoding === "hex" ? convertHexToTypedArray : convertUtf8ToTypedArray
+  return convertBase64urlFromBase64(base64.fromUint8Array(makeTypedArray(input)))
 }
 
-function createHexToTypedArray(hex: string): Uint8Array {
+function convertHexToTypedArray(hex: string): Uint8Array {
   if (typeof hex !== "string") throw new TypeError("Expected input to be a string")
   if (hex.length % 2 !== 0) throw new RangeError("String is not an even number long")
   var view = new Uint8Array(hex.length / 2)
@@ -47,7 +47,7 @@ function createHexToTypedArray(hex: string): Uint8Array {
   return view
 }
 
-function createUtf8ToTypedArray(utf8: string): Uint8Array {
+function convertUtf8ToTypedArray(utf8: string): Uint8Array {
   return new TextEncoder().encode(utf8)
 }
 

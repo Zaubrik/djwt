@@ -1,5 +1,5 @@
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
-import { makeJwt } from "./creatingJws.ts"
+import { makeJwt } from "./create.ts"
 
 interface Jose {
   alg: string

@@ -1,5 +1,5 @@
-import { makeJwt } from "./creatingJws.ts"
-import { validateJwt } from "./validatingJws.ts"
+import { makeJwt } from "../create.ts"
+import { validateJwt } from "../validate.ts"
 
 const claims = {
   iss: "joe",
