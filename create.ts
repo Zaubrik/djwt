@@ -1,3 +1,6 @@
+import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
+import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
+
 interface Claims {
   iss?: string
   sub?: string
@@ -15,10 +18,6 @@ interface Jose {
   [key: string]: any
 }
 
-// §5.1 (JWS) Compute the encoded payload value BASE64URL(JWS Payload)
-import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
-import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
-
 function convertBase64urlFromBase64(base64: string): string {
   return base64
     .replace(/=/g, "")
@@ -33,17 +32,17 @@ function makeB64urlEncodedString(
   if (typeof input === "object")
     return convertBase64urlFromBase64(base64.fromUint8Array(input))
   const makeTypedArray =
-    inputEncoding === "hex" ? convertHexToTypedArray : convertUtf8ToTypedArray
+    inputEncoding === "hex" ? convertHexToUint8Array : convertUtf8ToTypedArray
   return convertBase64urlFromBase64(base64.fromUint8Array(makeTypedArray(input)))
 }
 
-function convertHexToTypedArray(hex: string): Uint8Array {
+function convertHexToUint8Array(hex: string): Uint8Array {
   if (typeof hex !== "string") throw new TypeError("Expected input to be a string")
-  if (hex.length % 2 !== 0) throw new RangeError("String is not an even number long")
+  if (hex.length % 2 !== 0)
+    throw new RangeError("String length is not an even number")
   var view = new Uint8Array(hex.length / 2)
   for (var i = 0; i < hex.length; i += 2)
     view[i / 2] = parseInt(hex.substring(i, i + 2), 16)
-
   return view
 }
 
@@ -70,7 +69,7 @@ function makeSignature(
 ): string | Uint8Array {
   if (alg === "HS256") return makeHmacSignature("sha256", key, msg)
   if (alg === "HS512") return makeHmacSignature("sha512", key, msg)
-  throw new Error("no matching algorithm")
+  throw new RangeError("no matching algorithm")
 }
 
 function makeJwt(headerObject: Jose, claims: Claims, key: string): string {

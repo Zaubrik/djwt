@@ -8,15 +8,11 @@ const s = serve("0.0.0.0:8000")
   for await (const req of s) {
     if (req.method === "GET")
       req.respond({
-        status: 200,
         body: encode(makeJwt({ typ: "JWT", alg: "HS512" }, { iss: "joe" }, "abc")),
       })
     else
-      validateJwt(decode(await req.body()), "abc")
-        ? req.respond({
-            status: 200,
-            body: encode("Valid JWT\n"),
-          })
+      validateJwt(decode(await req.body()), "abc", false)
+        ? req.respond({ body: encode("Valid JWT\n") })
         : req.respond({ status: 401, body: encode("Invalid JWT\n") })
   }
 })()

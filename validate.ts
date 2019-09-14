@@ -18,8 +18,7 @@ interface CritHandlers {
  */
 function checkAlgHeaderParameter(joseHeader: Jose, algorithms: string[]): string {
   const algorithm = algorithms.find(el => el === joseHeader.alg)
-  if (!algorithm) throw new Error("no or no matching algorithm in the header")
-
+  if (!algorithm) throw new RangeError("no or no matching algorithm in the header")
   return algorithm
 }
 
@@ -51,7 +50,6 @@ function checkCritHeaderParameter(
     .map(str => critHandlers[str])
   if (activatedHandlers.length == 0)
     throw new Error("critical header extensions are not understood or supported")
-
   return Promise.all(activatedHandlers.map(handler => handler(joseHeader)))
 }
 
@@ -60,13 +58,12 @@ function handleJoseHeader(
   algorithms: string[],
   critHandlers: CritHandlers
 ): [string, Promise<any[]>] {
-  if (typeof joseHeader !== "object") throw new Error("the json header is no object")
+  if (typeof joseHeader !== "object") throw new TypeError("the json header is no object")
   const algorithm: string = checkAlgHeaderParameter(joseHeader, algorithms)
   const criticalResults: Promise<any[]> =
     "crit" in joseHeader
       ? checkCritHeaderParameter(joseHeader, critHandlers)
       : Promise.resolve([])
-
   return [algorithm, criticalResults]
 }
 
@@ -77,7 +74,7 @@ function addPaddingCharactersToBase64url(base64url: string): string {
   return base64url
 }
 
-function uint8ArrayToHex(uint8Array: Uint8Array): string {
+function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
   return Array.from(uint8Array)
     .map(x => ("00" + x.toString(16)).slice(-2))
     .join("")
@@ -89,7 +86,7 @@ function parseAndDecodeJwt(jwt: string): any[] {
     .map(str => addPaddingCharactersToBase64url(str))
     .map((str, index) =>
       index === 2
-        ? uint8ArrayToHex(base64.toUint8Array(str))
+        ? convertUint8ArrayToHex(base64.toUint8Array(str))
         : JSON.parse(new TextDecoder().decode(base64.toUint8Array(str)))
     )
 }
@@ -97,7 +94,7 @@ function parseAndDecodeJwt(jwt: string): any[] {
 function validateJwt(
   jwt: string,
   key: string,
-  throwErrors: boolean = false,
+  throwErrors: boolean = true,
   criticalHandlers: CritHandlers = {}
 ) {
   try {
@@ -114,7 +111,6 @@ function validateJwt(
   } catch (err) {
     err.message = `Invalid JWT: ${err.message}`
     if (throwErrors) throw err
-    else console.log(err)
   }
 }
 

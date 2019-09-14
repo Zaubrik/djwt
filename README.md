@@ -17,7 +17,7 @@ import { encode, decode } from "https://deno.land/std/strings/mod.ts"
 import { makeJwt } from "../create.ts"
 import { validateJwt } from "../validate.ts"
 
-const key: string = "abc"
+const key = "abc"
 const claims = {
   iss: "joe",
   exp: 1300819380,
@@ -27,6 +27,7 @@ const headerObject = {
   typ: "JWT",
 }
 const s = serve("0.0.0.0:8000")
+
 ;(async function main() {
   for await (const req of s) {
     if (req.method === "GET") {
@@ -34,7 +35,7 @@ const s = serve("0.0.0.0:8000")
       req.respond({ body: encode(jwt) })
     } else {
       const requestBody = decode(await req.body())
-      validateJwt(requestBody, key)
+      validateJwt(requestBody, key, false)
         ? req.respond({ body: encode("Valid JWT\n") })
         : req.respond({ status: 401, body: encode("Invalid JWT\n") })
     }
