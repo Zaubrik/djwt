@@ -14,10 +14,8 @@ specifications.
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
-import { makeJwt } from "../create.ts"
-import { validateJwt } from "../validate.ts"
+import { createJwt,validateJwt } from 'https://denopkg.com/timonson/djwt/mod.ts'
 
-const key = "abc"
 const claims = {
   iss: "joe",
   exp: 1300819380,
@@ -26,6 +24,7 @@ const headerObject = {
   alg: "HS512",
   typ: "JWT",
 }
+const key = "abc"
 const s = serve("0.0.0.0:8000")
 
 ;(async function main() {
