@@ -14,7 +14,7 @@ specifications.
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
-import { createJwt,validateJwt } from 'https://denopkg.com/timonson/djwt/mod.ts'
+import { makeJwt, validateJwt } from "https://denopkg.com/timonson/djwt/mod.ts"
 
 const claims = {
   iss: "joe",
