@@ -1,5 +1,7 @@
+import { encode } from "https://deno.land/std/strings/mod.ts"
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
+import { convertBase64ToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
 
 interface Claims {
   iss?: string
@@ -18,36 +20,27 @@ interface Jose {
   [key: string]: any
 }
 
-function convertBase64urlFromBase64(base64: string): string {
-  return base64
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-}
-
-function makeB64urlEncodedString(
+function convertToBase64url(
   input: string | Uint8Array,
   inputEncoding: string = "utf8"
 ): string {
-  if (typeof input === "object")
-    return convertBase64urlFromBase64(base64.fromUint8Array(input))
-  const makeTypedArray =
-    inputEncoding === "hex" ? convertHexToUint8Array : convertUtf8ToTypedArray
-  return convertBase64urlFromBase64(base64.fromUint8Array(makeTypedArray(input)))
+  return convertBase64ToBase64url(
+    typeof input === "object"
+      ? base64.fromUint8Array(input)
+      : base64.fromUint8Array(
+          inputEncoding === "hex" ? convertHexToUint8Array(input) : encode(input)
+        )
+  )
 }
 
 function convertHexToUint8Array(hex: string): Uint8Array {
   if (typeof hex !== "string") throw new TypeError("Expected input to be a string")
   if (hex.length % 2 !== 0)
     throw new RangeError("String length is not an even number")
-  var view = new Uint8Array(hex.length / 2)
-  for (var i = 0; i < hex.length; i += 2)
+  const view = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < hex.length; i += 2)
     view[i / 2] = parseInt(hex.substring(i, i + 2), 16)
   return view
-}
-
-function convertUtf8ToTypedArray(utf8: string): Uint8Array {
-  return new TextEncoder().encode(utf8)
 }
 
 function makeJwsSigningInput(encodedHeader: string, encodedPayload: string): string {
@@ -74,12 +67,12 @@ function makeSignature(
 
 function makeJwt(headerObject: Jose, claims: Claims, key: string): string {
   try {
-    const encodedHeader = makeB64urlEncodedString(JSON.stringify(headerObject))
-    const encodedPayload = makeB64urlEncodedString(JSON.stringify(claims))
+    const encodedHeader = convertToBase64url(JSON.stringify(headerObject))
+    const encodedPayload = convertToBase64url(JSON.stringify(claims))
     const signingInput = makeJwsSigningInput(encodedHeader, encodedPayload)
     if (headerObject.alg === "none") return `${signingInput}.`
     const signature = makeSignature(headerObject.alg, key, signingInput)
-    const encodedSignature = makeB64urlEncodedString(signature, "hex")
+    const encodedSignature = convertToBase64url(signature, "hex")
     return `${signingInput}.${encodedSignature}`
   } catch (err) {
     err.message = `Failed to create a JWT: ${err.message}`
@@ -87,4 +80,4 @@ function makeJwt(headerObject: Jose, claims: Claims, key: string): string {
   }
 }
 
-export { makeJwt }
+export default makeJwt

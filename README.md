@@ -7,14 +7,15 @@ specifications.
 
 #### makeJwt(headerObject: Jose, claims: Claims, key: string)
 
-#### validateJwt(jwt: string, key: string, throwErrors: boolean = false, criticalHandlers: CritHandlers = {})
+#### validateJwt(jwt: string, key: string, throwErrors: boolean = true, criticalHandlers: CritHandlers = {})
 
 ## Example
 
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
-import { makeJwt, validateJwt } from "https://denopkg.com/timonson/djwt/mod.ts"
+import makeJwt from "https://denopkg.com/timonson/djwt/create.ts"
+import validateJwt from "https://denopkg.com/timonson/djwt/validate.ts"
 
 const claims = {
   iss: "joe",

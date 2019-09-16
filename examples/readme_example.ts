@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
-import { makeJwt, validateJwt } from "https://denopkg.com/timonson/djwt/mod.ts"
+import  makeJwt from "https://denopkg.com/timonson/djwt/create.ts"
+import  validateJwt from "https://denopkg.com/timonson/djwt/validate.ts"
 
 const key = "abc"
 const claims = {

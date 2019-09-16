@@ -1,4 +1,5 @@
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
+import { addPaddingToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
 import { makeJwt } from "./create.ts"
 
 interface Jose {
@@ -58,7 +59,8 @@ function handleJoseHeader(
   algorithms: string[],
   critHandlers: CritHandlers
 ): [string, Promise<any[]>] {
-  if (typeof joseHeader !== "object") throw new TypeError("the json header is no object")
+  if (typeof joseHeader !== "object")
+    throw new TypeError("the json header is no object")
   const algorithm: string = checkAlgHeaderParameter(joseHeader, algorithms)
   const criticalResults: Promise<any[]> =
     "crit" in joseHeader
@@ -67,28 +69,22 @@ function handleJoseHeader(
   return [algorithm, criticalResults]
 }
 
-function addPaddingCharactersToBase64url(base64url: string): string {
-  if (base64url.length % 4 === 2) return base64url + "=="
-  if (base64url.length % 4 === 3) return base64url + "="
-  if (base64url.length % 4 === 1) throw new TypeError("Illegal base64url string!")
-  return base64url
-}
-
 function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
-  return Array.from(uint8Array)
-    .map(x => ("00" + x.toString(16)).slice(-2))
-    .join("")
+  return uint8Array.reduce((acc, el) => acc + ("0" + el.toString(16)).slice(-2), "")
 }
 
 function parseAndDecodeJwt(jwt: string): any[] {
-  return jwt
-    .split(".")
-    .map(str => addPaddingCharactersToBase64url(str))
-    .map((str, index) =>
-      index === 2
-        ? convertUint8ArrayToHex(base64.toUint8Array(str))
-        : JSON.parse(new TextDecoder().decode(base64.toUint8Array(str)))
-    )
+  return (
+    jwt
+      .split(".")
+      // base64 library doesn't add '=' padding to back base64url decoding
+      .map(str => addPaddingToBase64url(str))
+      .map((str, index) =>
+        index === 2
+          ? convertUint8ArrayToHex(base64.toUint8Array(str))
+          : JSON.parse(new TextDecoder().decode(base64.toUint8Array(str)))
+      )
+  )
 }
 
 function validateJwt(
@@ -114,4 +110,4 @@ function validateJwt(
   }
 }
 
-export { validateJwt }
+export default validateJwt

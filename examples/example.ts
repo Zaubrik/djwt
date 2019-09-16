@@ -1,4 +1,5 @@
-import { makeJwt, validateJwt } from "https://denopkg.com/timonson/djwt/mod.ts"
+import makeJwt from "https://denopkg.com/timonson/djwt/create.ts"
+import validateJwt from "https://denopkg.com/timonson/djwt/validate.ts"
 
 const claims = {
   iss: "joe",
