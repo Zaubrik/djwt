@@ -1,6 +1,6 @@
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
 import { addPaddingToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
-import { makeJwt } from "./create.ts"
+import  { makeJwt } from "https://denopkg.com/timonson/djwt/create.ts"
 
 interface Jose {
   alg: string
@@ -110,4 +110,4 @@ function validateJwt(
   }
 }
 
-export default validateJwt
+export { validateJwt }

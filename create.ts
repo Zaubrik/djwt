@@ -80,4 +80,4 @@ function makeJwt(headerObject: Jose, claims: Claims, key: string): string {
   }
 }
 
-export default makeJwt
+export { makeJwt }
