@@ -1,15 +1,16 @@
-import makeJwt from "https://denopkg.com/timonson/djwt/create.ts"
-import validateJwt from "https://denopkg.com/timonson/djwt/validate.ts"
+import makeJwt from "../create.ts"
+import { setExpiration } from "../create.ts"
+import validateJwt from "../validate.ts"
 
 const claims = {
   iss: "joe",
-  exp: 1300819380,
+  exp: setExpiration(new Date().getTime() + 1000),
 }
 
 const headerObject = {
   alg: "HS256",
   typ: "JWT",
-  crit: ["dummy"],
+  // crit: ["dummy"],
 }
 
 const handlers = {

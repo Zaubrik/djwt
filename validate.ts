@@ -1,6 +1,6 @@
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
 import { addPaddingToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
-import  { makeJwt } from "https://denopkg.com/timonson/djwt/create.ts"
+import makeJwt from "./create.ts"
 
 interface Jose {
   alg: string
@@ -17,9 +17,13 @@ interface CritHandlers {
  * algorithm used to secure the JWS
  * The 'alg' header MUST be present (JWS §4.1.1)
  */
-function checkAlgHeaderParameter(joseHeader: Jose, algorithms: string[]): string {
+function checkAlgHeaderParameter(
+  joseHeader: Jose,
+  algorithms: string[]
+): string {
   const algorithm = algorithms.find(el => el === joseHeader.alg)
-  if (!algorithm) throw new RangeError("no or no matching algorithm in the header")
+  if (!algorithm)
+    throw new RangeError("no or no matching algorithm in the header")
   return algorithm
 }
 
@@ -50,7 +54,9 @@ function checkCritHeaderParameter(
     .filter(str => typeof critHandlers[str] === "function")
     .map(str => critHandlers[str])
   if (activatedHandlers.length == 0)
-    throw new Error("critical header extensions are not understood or supported")
+    throw new Error(
+      "critical header extensions are not understood or supported"
+    )
   return Promise.all(activatedHandlers.map(handler => handler(joseHeader)))
 }
 
@@ -70,10 +76,14 @@ function handleJoseHeader(
 }
 
 function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
-  return uint8Array.reduce((acc, el) => acc + ("0" + el.toString(16)).slice(-2), "")
+  return uint8Array.reduce(
+    (acc, el) => acc + ("0" + el.toString(16)).slice(-2),
+    ""
+  )
 }
 
 function parseAndDecodeJwt(jwt: string): any[] {
+  console.log(jwt)
   return (
     jwt
       .split(".")
@@ -85,6 +95,12 @@ function parseAndDecodeJwt(jwt: string): any[] {
           : JSON.parse(new TextDecoder().decode(base64.toUint8Array(str)))
       )
   )
+}
+
+function checkIfExpired(myExp: number): void {
+  if (new Date(myExp) < new Date()) {
+    throw new RangeError("the jwt is expired")
+  }
 }
 
 function validateJwt(
@@ -101,7 +117,10 @@ function validateJwt(
       algorithms,
       criticalHandlers
     )
-    const validationSignature = parseAndDecodeJwt(makeJwt(header, payload, key))[2]
+    if (payload && payload.exp) checkIfExpired(payload.exp)
+    const validationSignature = parseAndDecodeJwt(
+      makeJwt(header, payload, key)
+    )[2]
     if (signature === validationSignature) return critResults
     throw new Error("signatures don't match")
   } catch (err) {
@@ -110,4 +129,4 @@ function validateJwt(
   }
 }
 
-export { validateJwt }
+export default validateJwt

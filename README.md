@@ -1,13 +1,31 @@
 # djwt
 
-the absolute minimum to make JSON Web Tokens on deno. Based on JWT and JWS
-specifications.
+the absolute minimum to make JSON Web Tokens on deno. Based on
+[JWT](https://tools.ietf.org/html/rfc7519) and
+[JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications.
 
 ## API
 
-#### makeJwt(headerObject: Jose, claims: Claims, key: string)
+The API consists mostly of the two functions `makeJwt` and `validateJwt`.
+
+#### makeJwt(headerObject: Jose, claims: Claims | string = "", key: string)
+
+You can omit the JWT **payload and its claims** if you only need the signing and
+verification feature of the JWS.
 
 #### validateJwt(jwt: string, key: string, throwErrors: boolean = true, criticalHandlers: CritHandlers = {})
+
+Additionally there is the helper function `setExpiration` which simplifies
+setting an expiration date.
+
+#### setExpiration(exp: number | Date): number
+
+```javascript
+// A specific date:
+setExpiration(new Date("2020-07-01"))
+// One hour from now:
+setExpiration(new Date().getTime() + 60 * 60 * 1000)
+```
 
 ## Example
 
@@ -45,7 +63,8 @@ const s = serve("0.0.0.0:8000")
 
 ## Todo
 
-1. Add more optional features from the [JWT](https://tools.ietf.org/html/rfc7519) and
+1. Add more optional features from the
+   [JWT](https://tools.ietf.org/html/rfc7519) and
    [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications
 2. Improve documentation
 3. Make more tests

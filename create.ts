@@ -28,13 +28,16 @@ function convertToBase64url(
     typeof input === "object"
       ? base64.fromUint8Array(input)
       : base64.fromUint8Array(
-          inputEncoding === "hex" ? convertHexToUint8Array(input) : encode(input)
+          inputEncoding === "hex"
+            ? convertHexToUint8Array(input)
+            : encode(input)
         )
   )
 }
 
 function convertHexToUint8Array(hex: string): Uint8Array {
-  if (typeof hex !== "string") throw new TypeError("Expected input to be a string")
+  if (typeof hex !== "string")
+    throw new TypeError("Expected input to be a string")
   if (hex.length % 2 !== 0)
     throw new RangeError("String length is not an even number")
   const view = new Uint8Array(hex.length / 2)
@@ -43,7 +46,10 @@ function convertHexToUint8Array(hex: string): Uint8Array {
   return view
 }
 
-function makeJwsSigningInput(encodedHeader: string, encodedPayload: string): string {
+function makeJwsSigningInput(
+  encodedHeader: string,
+  encodedPayload: string
+): string {
   return `${encodedHeader}.${encodedPayload}`
 }
 
@@ -65,7 +71,18 @@ function makeSignature(
   throw new RangeError("no matching algorithm")
 }
 
-function makeJwt(headerObject: Jose, claims: Claims, key: string): string {
+// helper function:
+// A specific date: setExpiration(new Date('2020-07-01'));
+// One hour from now: setExpiration(new Date().getTime() + (60*60*1000));
+function setExpiration(exp: number | Date): number {
+  return (exp instanceof Date ? exp : new Date(exp)).getTime()
+}
+
+function makeJwt(
+  headerObject: Jose,
+  claims: Claims | string = "",
+  key: string
+): string {
   try {
     const encodedHeader = convertToBase64url(JSON.stringify(headerObject))
     const encodedPayload = convertToBase64url(JSON.stringify(claims))
@@ -80,4 +97,5 @@ function makeJwt(headerObject: Jose, claims: Claims, key: string): string {
   }
 }
 
-export { makeJwt }
+export default makeJwt
+export { setExpiration }
