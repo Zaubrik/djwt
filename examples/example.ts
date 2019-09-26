@@ -1,7 +1,7 @@
 import makeJwt, {
   setExpiration,
-} from "https://denopkg.com/timonson/djwt/create.ts"
-import validateJwt from "https://denopkg.com/timonson/djwt/validate.ts"
+} from "https://cdn.jsdelivr.net/gh/timonson/djwt/master@v0.2.0/create.ts"
+import validateJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt/master@v0.2.0/validate.ts"
 // import makeJwt, { setExpiration } from "../create.ts"
 // import validateJwt from "../validate.ts"
 

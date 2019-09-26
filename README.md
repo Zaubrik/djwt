@@ -6,28 +6,28 @@ the absolute minimum to make JSON Web Tokens on deno. Based on
 
 ## Features
 
-This library uses the **JWS Compact Serialization** where a web token is
-represented as the concatenation of:
+After the **Compact Serialization** process where a web token is represented as
+the concatenation of:
 
-`'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.' || 'BASE64URL(JWS Signature)'`
+`'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.'|| 'BASE64URL(JWS Signature)'`
 
-... what looks in reality like this:
+...the finalized **JWT** looks like this:
 
 ```
-		 eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9
-     .
-     eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ
-     .
-     dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk
+ eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9
+ .
+ eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ
+ .
+ dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk
 ```
 
-#### "crit" (Critical) Header Parameter
+### Critical Header Parameter (crit)
 
 It supports the **Critical Header Parameter** like described in the
 [JWS specification](https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11).
 
-For an example which includes this header parameter look into the
-[examples folder](https://github.com/timonson/djwt/tree/master/examples).
+You can find [here](https://github.com/timonson/djwt/tree/master/examples) an
+example which includes the _crit_ header parameter.
 
 ## API
 

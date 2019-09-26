@@ -14,7 +14,7 @@ interface Claims {
   [key: string]: any
 }
 
-export interface Jose {
+interface Jose {
   alg: string
   crit?: string[]
   [key: string]: any
