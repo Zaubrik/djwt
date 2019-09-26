@@ -5,7 +5,7 @@ import makeJwt, {
 } from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/create.ts"
 import validateJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/validate.ts"
 
-const key = "abc"
+const key = "abc123"
 const claims = {
   iss: "joe",
   exp: setExpiration(new Date().getTime() + 60_000),
@@ -21,7 +21,7 @@ const headerObject = {
       req.respond({ body: encode(jwt + "\n") })
     } else {
       const requestBody = decode(await req.body())
-      validateJwt(requestBody, key, false)
+      validateJwt(requestBody, key, true)
         ? req.respond({ body: encode("Valid JWT\n") })
         : req.respond({ status: 401, body: encode("Invalid JWT\n") })
     }

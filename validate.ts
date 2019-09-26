@@ -95,7 +95,7 @@ function checkIfExpired(exp: number): void {
 }
 
 function validateJwt(
-  jwt: any,
+  jwt: string,
   key: string,
   throwErrors: boolean = true,
   criticalHandlers: CritHandlers = {}
@@ -103,9 +103,8 @@ function validateJwt(
   try {
     if (typeof jwt !== "string" || !jwt.includes("."))
       throw Error("wrong type or format")
-    const jwtString: string = jwt
     const algorithms: string[] = ["HS256", "HS512", "none"]
-    const [header, payload, signature] = parseAndDecodeJwt(jwtString) as [
+    const [header, payload, signature] = parseAndDecodeJwt(jwt) as [
       Jose,
       Claims,
       string

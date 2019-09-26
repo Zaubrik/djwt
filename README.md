@@ -7,11 +7,11 @@ the absolute minimum to make JSON Web Tokens on deno. Based on
 ## Features
 
 After the **Compact Serialization** process where a web token is represented as
-the concatenation of:
+the concatenation of
 
 `'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.'|| 'BASE64URL(JWS Signature)'`
 
-...the finalized **JWT** looks like this:
+...and the finalized **JWT** looks like this:
 
 ```
  eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9
@@ -75,7 +75,7 @@ import makeJwt, {
 } from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/create.ts"
 import validateJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/validate.ts"
 
-const key = "abc"
+const key = "abc123"
 const claims = {
   iss: "joe",
   exp: setExpiration(new Date().getTime() + 60_000),
