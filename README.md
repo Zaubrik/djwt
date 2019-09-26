@@ -54,7 +54,10 @@ setExpiration(new Date().getTime() + 60 * 60 * 1000)
 
 ## Example
 
-Try it out with this simple server example:
+Try it out with this simple server example. The server will respond to a **GET**
+request with a newly created **JWT**. On the other hand, if you send a **JWT**
+as data along with a **PUT** request to the server, it will check the JWT for
+validity.
 
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
