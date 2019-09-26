@@ -3,7 +3,7 @@ import { addPaddingToBase64url } from "https://denopkg.com/timonson/base64url/ba
 import makeJwt, {
   Claims,
   Jose,
-} from "https://cdn.jsdelivr.net/gh/timonson/djwt/master@v0.2.0/create.ts"
+} from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.0/create.ts"
 
 interface CritHandlers {
   [key: string]: (header?: any) => any

@@ -1,9 +1,7 @@
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
-import makeJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt/master@v0.2.0/create.ts"
-import validateJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt/master@v0.2.0/validate.ts"
-// import makeJwt from "../create.ts"
-// import validateJwt from "../validate.ts"
+import makeJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.0/create.ts"
+import validateJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.0/validate.ts"
 ;(async () => {
   for await (const req of serve("0.0.0.0:8000")) {
     if (req.method === "GET")
