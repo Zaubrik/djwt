@@ -21,13 +21,21 @@ the concatenation of:
  dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk
 ```
 
+### Cryptographic Algorithm
+
+Of the signature and MAC algorithms specified in **JSON Web Algorithms**
+[JWA](https://www.rfc-editor.org/rfc/rfc7518.html), only **HMAC SHA-256**
+("HS256"), **HMAC SHA-512** ("HS512") and **none** have been implemented yet.
+But more shall come soon.
+
 ### Critical Header Parameter (crit)
 
-It supports the **Critical Header Parameter** like described in the
-[JWS specification](https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11).
+It supports the **Critical Header Parameter** which is described in the JWS
+specification
+[here](https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11).
 
 You can find [here](https://github.com/timonson/djwt/tree/master/examples) an
-example which includes the _crit_ header parameter.
+example which includes the **crit** header parameter.
 
 ## API
 
