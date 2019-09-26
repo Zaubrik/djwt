@@ -25,8 +25,8 @@ the concatenation of
 
 Of the signature and MAC algorithms specified in **JSON Web Algorithms**
 [JWA](https://www.rfc-editor.org/rfc/rfc7518.html), only **HMAC SHA-256**
-("HS256"), **HMAC SHA-512** ("HS512") and **none** have been implemented yet.
-But more shall come soon.
+("HS256"), **HMAC SHA-512** ("HS512") and **none** have been implemented
+already. But more shall come soon.
 
 ### Critical Header Parameter (crit)
 
@@ -62,10 +62,11 @@ setExpiration(new Date().getTime() + 60 * 60 * 1000)
 
 ## Example
 
-Try it out with this simple server example. The server will respond to a **GET**
-request with a newly created **JWT**. On the other hand, if you send a **JWT**
-as data along with a **PUT** request to the server, it will check the JWT for
-validity.
+Try it out with this simple _server_ example:
+
+The server will respond to a **GET** request with a newly created **JWT**.  
+On the other hand, if you send a **JWT** as data along with a **PUT** request,
+the server will check the JWT for validity.
 
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
