@@ -4,14 +4,39 @@ the absolute minimum to make JSON Web Tokens on deno. Based on
 [JWT](https://tools.ietf.org/html/rfc7519) and
 [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications.
 
+## Features
+
+This library uses the **JWS Compact Serialization** where a web token is
+represented as the concatenation of:
+
+`'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.' || 'BASE64URL(JWS Signature)'`
+
+... what looks in reality like this:
+
+```
+		 eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9
+     .
+     eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ
+     .
+     dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk
+```
+
+#### "crit" (Critical) Header Parameter
+
+It supports the **Critical Header Parameter** like described in the
+[JWS specification](https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11).
+
+For an example which includes this header parameter look into the
+[examples folder](https://github.com/timonson/djwt/tree/master/examples).
+
 ## API
 
 The API consists mostly of the two functions `makeJwt` and `validateJwt`.
 
-#### makeJwt(headerObject: Jose, claims: Claims | string = "", key: string)
-
-You can omit the JWT **payload and its claims** if you only need the signing and
+You can omit the JWT payload and its claims if you only need the signing and
 verification feature of the JWS.
+
+#### makeJwt(headerObject: Jose, claims: Claims | string = "", key: string)
 
 #### validateJwt(jwt: string, key: string, throwErrors: boolean = true, criticalHandlers: CritHandlers = {})
 

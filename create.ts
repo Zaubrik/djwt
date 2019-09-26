@@ -14,7 +14,7 @@ interface Claims {
   [key: string]: any
 }
 
-interface Jose {
+export interface Jose {
   alg: string
   crit?: string[]
   [key: string]: any
@@ -36,14 +36,19 @@ function convertToBase64url(
 }
 
 function convertHexToUint8Array(hex: string): Uint8Array {
-  if (typeof hex !== "string")
-    throw new TypeError("Expected input to be a string")
   if (hex.length % 2 !== 0)
     throw new RangeError("String length is not an even number")
-  const view = new Uint8Array(hex.length / 2)
-  for (let i = 0; i < hex.length; i += 2)
-    view[i / 2] = parseInt(hex.substring(i, i + 2), 16)
-  return view
+  return Uint8Array.from(
+    [...hex].reduce((acc, el, i) => {
+      i % 2 === 0
+        ? (acc[acc.length] = el)
+        : (acc[acc.length - 1] = parseInt(
+            acc[acc.length - 1] + el.toString(),
+            16
+          ))
+      return acc
+    }, [])
+  )
 }
 
 function makeJwsSigningInput(
@@ -68,10 +73,12 @@ function makeSignature(
 ): string | Uint8Array {
   if (alg === "HS256") return makeHmacSignature("sha256", key, msg)
   if (alg === "HS512") return makeHmacSignature("sha512", key, msg)
-  throw new RangeError("no matching algorithm")
+  throw RangeError("no matching algorithm")
 }
 
-// helper function:
+// Helper function: setExpiration()
+// returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
+// Examples:
 // A specific date: setExpiration(new Date('2020-07-01'));
 // One hour from now: setExpiration(new Date().getTime() + (60*60*1000));
 function setExpiration(exp: number | Date): number {
@@ -80,7 +87,7 @@ function setExpiration(exp: number | Date): number {
 
 function makeJwt(
   headerObject: Jose,
-  claims: Claims | string = "",
+  claims: Claims, // | string = "",
   key: string
 ): string {
   try {
@@ -98,4 +105,4 @@ function makeJwt(
 }
 
 export default makeJwt
-export { setExpiration }
+export { setExpiration, Claims, Jose }

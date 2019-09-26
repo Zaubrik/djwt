@@ -1,15 +1,12 @@
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
 import { addPaddingToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
-import makeJwt from "./create.ts"
-
-interface Jose {
-  alg: string
-  crit?: string[]
-  [key: string]: any
-}
+import makeJwt, {
+  Claims,
+  Jose,
+} from "https://denopkg.com/timonson/djwt/create.ts"
 
 interface CritHandlers {
-  [key: string]: (header?: object) => any
+  [key: string]: (header?: any) => any
 }
 
 /**
@@ -22,8 +19,7 @@ function checkAlgHeaderParameter(
   algorithms: string[]
 ): string {
   const algorithm = algorithms.find(el => el === joseHeader.alg)
-  if (!algorithm)
-    throw new RangeError("no or no matching algorithm in the header")
+  if (!algorithm) throw RangeError("no or no matching algorithm in the header")
   return algorithm
 }
 
@@ -45,18 +41,16 @@ function checkCritHeaderParameter(
     !Array.isArray(joseHeader.crit) ||
     joseHeader.crit.some(str => typeof str !== "string" || !str)
   )
-    throw new TypeError(
+    throw TypeError(
       '"crit" header parameter must be an array of non-empty strings'
     )
   if (joseHeader.crit.some(str => reservedNames.has(str)))
-    throw new Error(`the 'crit' list contains a non-extension header parameter`)
+    throw Error(`the 'crit' list contains a non-extension header parameter`)
   const activatedHandlers = joseHeader.crit
     .filter(str => typeof critHandlers[str] === "function")
-    .map(str => critHandlers[str])
-  if (activatedHandlers.length == 0)
-    throw new Error(
-      "critical header extensions are not understood or supported"
-    )
+    .map(str => joseHeader => critHandlers[str](joseHeader[str]))
+  if (activatedHandlers.length !== joseHeader.crit.length)
+    throw Error("critical extension header parameters are not understood")
   return Promise.all(activatedHandlers.map(handler => handler(joseHeader)))
 }
 
@@ -66,7 +60,7 @@ function handleJoseHeader(
   critHandlers: CritHandlers
 ): [string, Promise<any[]>] {
   if (typeof joseHeader !== "object")
-    throw new TypeError("the json header is no object")
+    throw TypeError("the json header is no object")
   const algorithm: string = checkAlgHeaderParameter(joseHeader, algorithms)
   const criticalResults: Promise<any[]> =
     "crit" in joseHeader
@@ -83,7 +77,6 @@ function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
 }
 
 function parseAndDecodeJwt(jwt: string): any[] {
-  console.log(jwt)
   return (
     jwt
       .split(".")
@@ -97,21 +90,26 @@ function parseAndDecodeJwt(jwt: string): any[] {
   )
 }
 
-function checkIfExpired(myExp: number): void {
-  if (new Date(myExp) < new Date()) {
-    throw new RangeError("the jwt is expired")
-  }
+function checkIfExpired(exp: number): void {
+  if (new Date(exp) < new Date()) throw RangeError("the jwt is expired")
 }
 
 function validateJwt(
-  jwt: string,
+  jwt: any,
   key: string,
   throwErrors: boolean = true,
   criticalHandlers: CritHandlers = {}
-) {
+): Promise<any[]> | void {
   try {
+    if (typeof jwt !== "string" || !jwt.includes("."))
+      throw Error("wrong type or format")
+    const jwtString: string = jwt
     const algorithms: string[] = ["HS256", "HS512", "none"]
-    const [header, payload, signature] = parseAndDecodeJwt(jwt)
+    const [header, payload, signature] = parseAndDecodeJwt(jwtString) as [
+      Jose,
+      Claims,
+      string
+    ]
     const [algorithm, critResults] = handleJoseHeader(
       header,
       algorithms,
@@ -122,7 +120,7 @@ function validateJwt(
       makeJwt(header, payload, key)
     )[2]
     if (signature === validationSignature) return critResults
-    throw new Error("signatures don't match")
+    throw Error("signatures don't match")
   } catch (err) {
     err.message = `Invalid JWT: ${err.message}`
     if (throwErrors) throw err
