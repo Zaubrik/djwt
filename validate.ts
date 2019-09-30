@@ -1,9 +1,6 @@
 import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
 import { addPaddingToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
-import makeJwt, {
-  Claims,
-  Jose,
-} from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/create.ts"
+import makeJwt, { Claims, Jose } from "./create.ts"
 
 interface CritHandlers {
   [key: string]: (header?: any) => any

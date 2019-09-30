@@ -65,7 +65,7 @@ setExpiration(new Date().getTime() + 60 * 60 * 1000)
 Try it out with this simple _server_ example:
 
 The server will respond to a **GET** request with a newly created **JWT**.  
-On the other hand, if you send a **JWT** as data along with a **PUT** request,
+On the other hand, if you send a **JWT** as data along with a **POST** request,
 the server will check the JWT for validity.
 
 ```javascript
