@@ -1,4 +1,4 @@
-import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
+import { toUint8Array as base64ToUint8Array } from "https://denopkg.com/chiefbiiko/base64/mod.ts"
 import { addPaddingToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
 import makeJwt, { Claims, Jose } from "./create.ts"
 
@@ -6,7 +6,7 @@ interface CritHandlers {
   [key: string]: (header?: any) => any
 }
 
-/**
+/*
  * The "alg" (algorithm) Header Parameter identifies the cryptographic
  * algorithm used to secure the JWS
  * The 'alg' header MUST be present (JWS §4.1.1)
@@ -20,7 +20,7 @@ function checkAlgHeaderParameter(
   return algorithm
 }
 
-/**
+/*
  * A present 'crit' header parameter indicates that the JWS signature validator must
  * understand and process additional claims (JWS §4.1.11)
  */
@@ -77,12 +77,12 @@ function parseAndDecodeJwt(jwt: string): any[] {
   return (
     jwt
       .split(".")
-      // base64 library doesn't add '=' padding to back base64url decoding
+      // base64 library doesn't add '=' padding back to base64url decoding
       .map(str => addPaddingToBase64url(str))
       .map((str, index) =>
         index === 2
-          ? convertUint8ArrayToHex(base64.toUint8Array(str))
-          : JSON.parse(new TextDecoder().decode(base64.toUint8Array(str)))
+          ? convertUint8ArrayToHex(base64ToUint8Array(str))
+          : JSON.parse(new TextDecoder().decode(base64ToUint8Array(str)))
       )
   )
 }

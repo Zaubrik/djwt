@@ -1,9 +1,7 @@
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
-import makeJwt, {
-  setExpiration,
-} from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/create.ts"
-import validateJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/validate.ts"
+import makeJwt, { setExpiration } from "https://deno.land/x/djwt/create.ts"
+import validateJwt from "https://deno.land/x/djwt/validate.ts"
 
 const key = "abc123"
 const claims = {
@@ -21,7 +19,7 @@ const headerObject = {
       req.respond({ body: encode(jwt + "\n") })
     } else {
       const requestBody = decode(await req.body())
-      validateJwt(requestBody, key, true)
+      validateJwt(requestBody, key, false)
         ? req.respond({ body: encode("Valid JWT\n") })
         : req.respond({ status: 401, body: encode("Invalid JWT\n") })
     }

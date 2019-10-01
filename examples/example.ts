@@ -1,7 +1,5 @@
-import makeJwt, {
-  setExpiration,
-} from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/create.ts"
-import validateJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/validate.ts"
+import makeJwt, { setExpiration } from "https://deno.land/x/djwt/create.ts"
+import validateJwt from "https://deno.land/x/djwt/validate.ts"
 
 const claims = {
   iss: "joe",

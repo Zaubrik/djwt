@@ -11,7 +11,7 @@ the concatenation of
 
 `'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.'|| 'BASE64URL(JWS Signature)'`
 
-...and the finalized **JWT** looks like this:
+...the finalized **JWT** looks like this:
 
 ```
  eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9
@@ -34,8 +34,8 @@ It supports the **Critical Header Parameter** which is described in the JWS
 specification
 [here](https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11).
 
-You can find [here](https://github.com/timonson/djwt/tree/master/examples) an
-example which includes the **crit** header parameter.
+You can find an example which includes the **crit** header parameter
+[here](https://github.com/timonson/djwt/tree/master/examples).
 
 ## API
 
@@ -62,7 +62,7 @@ setExpiration(new Date().getTime() + 60 * 60 * 1000)
 
 ## Example
 
-Try it out with this simple _server_ example:
+Try djwt out with this simple _server_ example:
 
 The server will respond to a **GET** request with a newly created **JWT**.  
 On the other hand, if you send a **JWT** as data along with a **POST** request,
@@ -71,10 +71,8 @@ the server will check the JWT for validity.
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
-import makeJwt, {
-  setExpiration,
-} from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/create.ts"
-import validateJwt from "https://cdn.jsdelivr.net/gh/timonson/djwt@0.2.1/validate.ts"
+import makeJwt, { setExpiration } from "https://deno.land/x/djwt/create.ts"
+import validateJwt from "https://deno.land/x/djwt/validate.ts"
 
 const key = "abc123"
 const claims = {

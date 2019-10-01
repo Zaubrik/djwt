@@ -1,7 +1,7 @@
 import { encode } from "https://deno.land/std/strings/mod.ts"
-import * as base64 from "https://denopkg.com/chiefbiiko/base64/mod.ts"
-import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
+import { fromUint8Array as convertUint8ArrayToBase64 } from "https://denopkg.com/chiefbiiko/base64/mod.ts"
 import { convertBase64ToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
+import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
 interface Claims {
   iss?: string
@@ -26,8 +26,8 @@ function convertToBase64url(
 ): string {
   return convertBase64ToBase64url(
     typeof input === "object"
-      ? base64.fromUint8Array(input)
-      : base64.fromUint8Array(
+      ? convertUint8ArrayToBase64(input)
+      : convertUint8ArrayToBase64(
           inputEncoding === "hex"
             ? convertHexToUint8Array(input)
             : encode(input)
@@ -76,11 +76,13 @@ function makeSignature(
   throw RangeError("no matching algorithm")
 }
 
-// Helper function: setExpiration()
-// returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
-// Examples:
-// A specific date: setExpiration(new Date('2020-07-01'));
-// One hour from now: setExpiration(new Date().getTime() + (60*60*1000));
+/*
+ * Helper function: setExpiration()
+ * returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
+ * Examples:
+ * A specific date: setExpiration(new Date('2020-07-01'));
+ * One hour from now: setExpiration(new Date().getTime() + (60*60*1000));
+ */
 function setExpiration(exp: number | Date): number {
   return (exp instanceof Date ? exp : new Date(exp)).getTime()
 }
