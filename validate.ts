@@ -1,4 +1,4 @@
-import { toUint8Array as base64ToUint8Array } from "https://denopkg.com/chiefbiiko/base64/mod.ts"
+import { toUint8Array as convertBase64ToUint8Array } from "https://denopkg.com/chiefbiiko/base64/mod.ts"
 import { addPaddingToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
 import makeJwt, { Claims, Jose } from "./create.ts"
 
@@ -81,8 +81,8 @@ function parseAndDecodeJwt(jwt: string): any[] {
       .map(str => addPaddingToBase64url(str))
       .map((str, index) =>
         index === 2
-          ? convertUint8ArrayToHex(base64ToUint8Array(str))
-          : JSON.parse(new TextDecoder().decode(base64ToUint8Array(str)))
+          ? convertUint8ArrayToHex(convertBase64ToUint8Array(str))
+          : JSON.parse(new TextDecoder().decode(convertBase64ToUint8Array(str)))
       )
   )
 }
