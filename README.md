@@ -1,8 +1,11 @@
 # djwt
 
-the absolute minimum to make JSON Web Tokens on deno. Based on
+The absolute minimum to make JSON Web Tokens on deno. Based on
 [JWT](https://tools.ietf.org/html/rfc7519) and
 [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications.
+
+This library is a registered **Deno Module** and accessible through the
+**https://deno.land/x/ [service](https://github.com/denoland/registry)**.
 
 ## Features
 
