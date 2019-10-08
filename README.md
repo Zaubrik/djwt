@@ -4,8 +4,8 @@ The absolute minimum to make JSON Web Tokens on deno. Based on
 [JWT](https://tools.ietf.org/html/rfc7519) and
 [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications.
 
-This library is a registered **Deno Module** and accessible through the
-**https://deno.land/x/ [service](https://github.com/denoland/registry)**.
+This library is a [registered Deno Module](https://github.com/denoland/registry)
+and accessible through the https://deno.land/x/ service.
 
 ## Features
 
@@ -26,10 +26,10 @@ the concatenation of
 
 ### Cryptographic Algorithm
 
-Of the signature and MAC algorithms specified in **JSON Web Algorithms**
-[JWA](https://www.rfc-editor.org/rfc/rfc7518.html), only **HMAC SHA-256**
-("HS256"), **HMAC SHA-512** ("HS512") and **none** have been implemented
-already. But more shall come soon.
+Of the signature and MAC algorithms defined in the JSON Web Algorithms (JWA)
+[specification](https://www.rfc-editor.org/rfc/rfc7518.html), only **HMAC
+SHA-256** ("HS256"), **HMAC SHA-512** ("HS512") and **none** have been
+implemented already. But more shall come soon.
 
 ### Critical Header Parameter (crit)
 
@@ -47,7 +47,7 @@ The API consists mostly of the two functions `makeJwt` and `validateJwt`.
 You can omit the JWT payload and its claims if you only need the signing and
 verification feature of the JWS.
 
-#### makeJwt(headerObject: Jose, claims: Claims | string = "", key: string)
+#### makeJwt(header: Jose, claims: Claims | string = "", key: string)
 
 #### validateJwt(jwt: string, key: string, throwErrors: boolean = true, criticalHandlers: CritHandlers = {})
 
@@ -82,14 +82,14 @@ const claims = {
   iss: "joe",
   exp: setExpiration(new Date().getTime() + 60_000),
 }
-const headerObject = {
+const header = {
   alg: "HS512",
   typ: "JWT",
 }
 ;(async () => {
   for await (const req of serve("0.0.0.0:8000")) {
     if (req.method === "GET") {
-      const jwt = makeJwt(headerObject, claims, key)
+      const jwt = makeJwt(header, claims, key)
       req.respond({ body: encode(jwt + "\n") })
     } else {
       const requestBody = decode(await req.body())

@@ -8,13 +8,13 @@ const claims = {
   iss: "joe",
   exp: setExpiration(new Date().getTime() + 60_000),
 }
-const headerObject = {
+const header = {
   alg: "HS512",
   typ: "JWT",
 }
 
 try {
-  const jwt = makeJwt(headerObject, claims, key)
+  const jwt = makeJwt(header, claims, key)
   console.log("New JWT:\n", jwt)
   validateJwt(jwt, key)
   console.log("----------\nValid JWT")

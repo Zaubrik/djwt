@@ -8,14 +8,14 @@ const claims = {
   iss: "joe",
   exp: setExpiration(new Date().getTime() + 60_000),
 }
-const headerObject = {
+const header = {
   alg: "HS512",
   typ: "JWT",
 }
 ;(async () => {
   for await (const req of serve("0.0.0.0:8000")) {
     if (req.method === "GET") {
-      const jwt = makeJwt(headerObject, claims, key)
+      const jwt = makeJwt(header, claims, key)
       req.respond({ body: encode(jwt + "\n") })
     } else {
       const requestBody = decode(await req.body())
