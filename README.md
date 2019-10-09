@@ -37,8 +37,8 @@ It supports the **Critical Header Parameter** which is described in the JWS
 specification
 [here](https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11).
 
-You can find an example which includes the **crit** header parameter
-[here](https://github.com/timonson/djwt/tree/master/examples).
+You can see the usage of the **crit** header parameter in this
+[example](https://github.com/timonson/djwt/blob/master/examples/example.ts).
 
 ## API
 
@@ -80,7 +80,7 @@ import validateJwt from "https://deno.land/x/djwt/validate.ts"
 const key = "abc123"
 const claims = {
   iss: "joe",
-  exp: setExpiration(new Date().getTime() + 60_000),
+  exp: setExpiration(new Date().getTime() + 60000),
 }
 const header = {
   alg: "HS512",
