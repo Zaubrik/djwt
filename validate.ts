@@ -47,7 +47,7 @@ function checkCritHeaderParameter(
   return Promise.all(activatedHandlers.map(handler => handler(header)))
 }
 
-function handleJoseHeader(
+function handleHeader(
   header: Jose,
   algorithms: string[],
   critHandlers: CritHandlers
@@ -55,11 +55,11 @@ function handleJoseHeader(
   if (typeof header !== "object")
     throw TypeError("the json header is no object")
   const algorithm: string = checkAlgHeaderParameter(header, algorithms)
-  const criticalResults: Promise<any[]> =
+  const critResults: Promise<any[]> =
     "crit" in header
       ? checkCritHeaderParameter(header, critHandlers)
       : Promise.resolve([])
-  return [algorithm, criticalResults]
+  return [algorithm, critResults]
 }
 
 function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
@@ -69,7 +69,7 @@ function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
   )
 }
 
-function parseAndDecodeJwt(jwt: string): any[] {
+function parseDecode(jwt: string): any[] {
   return (
     jwt
       .split(".")
@@ -91,25 +91,17 @@ function validateJwt(
   jwt: string,
   key: string,
   throwErrors: boolean = true,
-  criticalHandlers: CritHandlers = {}
+  critHandlers: CritHandlers = {}
 ): Promise<any[]> | void {
   const algorithms: string[] = ["HS256", "HS512", "none"]
   try {
     if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/.test(jwt))
       throw Error("wrong type or format")
-    const [header, payload, signature] = parseAndDecodeJwt(jwt) as [
-      Jose,
-      Claims,
-      string
-    ]
-    const [algorithm, critResults] = handleJoseHeader(
-      header,
-      algorithms,
-      criticalHandlers
-    )
+    const [header, payload, oldSig] = parseDecode(jwt) as [Jose, Claims, string]
+    const [alg, critResults] = handleHeader(header, algorithms, critHandlers)
     if (payload && payload.exp) checkIfExpired(payload.exp)
-    const validationSig = parseAndDecodeJwt(makeJwt(header, payload, key))[2]
-    if (signature === validationSig) return critResults
+    const newSig = parseDecode(makeJwt(header, payload, key))[2]
+    if (oldSig === newSig) return critResults
     else throw Error("signatures don't match")
   } catch (err) {
     err.message = `Invalid JWT: ${err.message}`
