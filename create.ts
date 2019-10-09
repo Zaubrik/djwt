@@ -36,44 +36,34 @@ function convertToBase64url(
 }
 
 function convertHexToUint8Array(hex: string): Uint8Array {
-  if (hex.length % 2 !== 0)
-    throw new RangeError("String length is not an even number")
+  if (hex.length % 2 || !/^[0-9a-fA-F]+$/.test(hex))
+    throw new TypeError("Invalid hex string")
   return Uint8Array.from(
     [...hex].reduce((acc, el, i) => {
       i % 2 === 0
         ? (acc[acc.length] = el)
-        : (acc[acc.length - 1] = parseInt(
-            acc[acc.length - 1] + el.toString(),
-            16
-          ))
+        : (acc[acc.length - 1] = parseInt(acc[acc.length - 1] + el, 16))
       return acc
     }, [])
   )
 }
 
-function makeJwsSigningInput(
-  encodedHeader: string,
-  encodedPayload: string
-): string {
-  return `${encodedHeader}.${encodedPayload}`
-}
-
-function makeHmacSignature(
-  hash: string,
-  key: string | Uint8Array,
-  msg: string | Uint8Array
-): string | Uint8Array {
-  return hmac(hash, key, msg, "utf8", "hex")
+function makeJwsSigningInput(header: Jose, claims: Claims): string {
+  return `${convertToBase64url(JSON.stringify(header))}.${convertToBase64url(
+    JSON.stringify(claims)
+  )}`
 }
 
 function makeSignature(
   alg: string,
   key: string | Uint8Array,
   msg: string | Uint8Array
-): string | Uint8Array {
-  if (alg === "HS256") return makeHmacSignature("sha256", key, msg)
-  if (alg === "HS512") return makeHmacSignature("sha512", key, msg)
-  throw RangeError("no matching algorithm")
+): string {
+  if (alg === "HS256")
+    return convertToBase64url(hmac("sha256", key, msg, "utf8", "hex"), "hex")
+  else if (alg === "HS512")
+    return convertToBase64url(hmac("sha512", key, msg, "utf8", "hex"), "hex")
+  else throw RangeError("no matching algorithm")
 }
 
 /*
@@ -88,18 +78,15 @@ function setExpiration(exp: number | Date): number {
 }
 
 function makeJwt(
-  headerObject: Jose,
+  header: Jose,
   claims: Claims, // | string = "",
   key: string
 ): string {
   try {
-    const encodedHeader = convertToBase64url(JSON.stringify(headerObject))
-    const encodedPayload = convertToBase64url(JSON.stringify(claims))
-    const signingInput = makeJwsSigningInput(encodedHeader, encodedPayload)
-    if (headerObject.alg === "none") return `${signingInput}.`
-    const signature = makeSignature(headerObject.alg, key, signingInput)
-    const encodedSignature = convertToBase64url(signature, "hex")
-    return `${signingInput}.${encodedSignature}`
+    const signingInput: string = makeJwsSigningInput(header, claims)
+    if (header.alg === "none") return `${signingInput}.`
+    else
+      return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
   } catch (err) {
     err.message = `Failed to create a JWT: ${err.message}`
     throw err

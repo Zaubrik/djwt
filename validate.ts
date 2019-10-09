@@ -7,25 +7,21 @@ interface CritHandlers {
 }
 
 /*
- * The "alg" (algorithm) Header Parameter identifies the cryptographic
- * algorithm used to secure the JWS
+ * The "alg" (algorithm) Header Parameter identifies the cryptographic algorithm
  * The 'alg' header MUST be present (JWS §4.1.1)
  */
-function checkAlgHeaderParameter(
-  joseHeader: Jose,
-  algorithms: string[]
-): string {
-  const algorithm = algorithms.find(el => el === joseHeader.alg)
+function checkAlgHeaderParameter(header: Jose, algorithms: string[]): string {
+  const algorithm = algorithms.find(el => el === header.alg)
   if (!algorithm) throw RangeError("no or no matching algorithm in the header")
   return algorithm
 }
 
 /*
- * A present 'crit' header parameter indicates that the JWS signature validator must
- * understand and process additional claims (JWS §4.1.11)
+ * A present 'crit' header parameter indicates that the JWS signature validator
+ * must understand and process additional claims (JWS §4.1.11)
  */
 function checkCritHeaderParameter(
-  joseHeader: Jose,
+  header: Jose,
   critHandlers: CritHandlers
 ): Promise<any[]> {
   // prettier-ignore
@@ -35,40 +31,40 @@ function checkCritHeaderParameter(
   ])
 
   if (
-    !Array.isArray(joseHeader.crit) ||
-    joseHeader.crit.some(str => typeof str !== "string" || !str)
+    !Array.isArray(header.crit) ||
+    header.crit.some(str => typeof str !== "string" || !str)
   )
     throw TypeError(
       '"crit" header parameter must be an array of non-empty strings'
     )
-  if (joseHeader.crit.some(str => reservedNames.has(str)))
+  if (header.crit.some(str => reservedNames.has(str)))
     throw Error(`the 'crit' list contains a non-extension header parameter`)
-  const activatedHandlers = joseHeader.crit
+  const activatedHandlers = header.crit
     .filter(str => typeof critHandlers[str] === "function")
-    .map(str => joseHeader => critHandlers[str](joseHeader[str]))
-  if (activatedHandlers.length !== joseHeader.crit.length)
+    .map(str => header => critHandlers[str](header[str]))
+  if (activatedHandlers.length !== header.crit.length)
     throw Error("critical extension header parameters are not understood")
-  return Promise.all(activatedHandlers.map(handler => handler(joseHeader)))
+  return Promise.all(activatedHandlers.map(handler => handler(header)))
 }
 
 function handleJoseHeader(
-  joseHeader: Jose,
+  header: Jose,
   algorithms: string[],
   critHandlers: CritHandlers
 ): [string, Promise<any[]>] {
-  if (typeof joseHeader !== "object")
+  if (typeof header !== "object")
     throw TypeError("the json header is no object")
-  const algorithm: string = checkAlgHeaderParameter(joseHeader, algorithms)
+  const algorithm: string = checkAlgHeaderParameter(header, algorithms)
   const criticalResults: Promise<any[]> =
-    "crit" in joseHeader
-      ? checkCritHeaderParameter(joseHeader, critHandlers)
+    "crit" in header
+      ? checkCritHeaderParameter(header, critHandlers)
       : Promise.resolve([])
   return [algorithm, criticalResults]
 }
 
 function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
   return uint8Array.reduce(
-    (acc, el) => acc + ("0" + el.toString(16)).slice(-2),
+    (acc, el) => acc + el.toString(16).padStart(2, "0"),
     ""
   )
 }
@@ -97,10 +93,10 @@ function validateJwt(
   throwErrors: boolean = true,
   criticalHandlers: CritHandlers = {}
 ): Promise<any[]> | void {
+  const algorithms: string[] = ["HS256", "HS512", "none"]
   try {
-    if (typeof jwt !== "string" || !jwt.includes("."))
+    if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/.test(jwt))
       throw Error("wrong type or format")
-    const algorithms: string[] = ["HS256", "HS512", "none"]
     const [header, payload, signature] = parseAndDecodeJwt(jwt) as [
       Jose,
       Claims,
@@ -112,11 +108,9 @@ function validateJwt(
       criticalHandlers
     )
     if (payload && payload.exp) checkIfExpired(payload.exp)
-    const validationSignature = parseAndDecodeJwt(
-      makeJwt(header, payload, key)
-    )[2]
-    if (signature === validationSignature) return critResults
-    throw Error("signatures don't match")
+    const validationSig = parseAndDecodeJwt(makeJwt(header, payload, key))[2]
+    if (signature === validationSig) return critResults
+    else throw Error("signatures don't match")
   } catch (err) {
     err.message = `Invalid JWT: ${err.message}`
     if (throwErrors) throw err
