@@ -66,22 +66,7 @@ function makeSignature(
   else throw RangeError("no matching algorithm")
 }
 
-/*
- * Helper function: setExpiration()
- * returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
- * Examples:
- * A specific date: setExpiration(new Date('2020-07-01'));
- * One hour from now: setExpiration(new Date().getTime() + (60*60*1000));
- */
-function setExpiration(exp: number | Date): number {
-  return (exp instanceof Date ? exp : new Date(exp)).getTime()
-}
-
-function makeJwt(
-  header: Jose,
-  claims: Claims, // | string = "",
-  key: string
-): string {
+function makeJwt(header: Jose, claims: Claims, key: string): string {
   try {
     const signingInput: string = makeJwsSigningInput(header, claims)
     if (header.alg === "none") return `${signingInput}.`
@@ -91,6 +76,14 @@ function makeJwt(
     err.message = `Failed to create a JWT: ${err.message}`
     throw err
   }
+}
+
+/*
+ * Helper function: setExpiration()
+ * returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
+ */
+function setExpiration(exp: number | Date): number {
+  return (exp instanceof Date ? exp : new Date(exp)).getTime()
 }
 
 export default makeJwt
