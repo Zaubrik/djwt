@@ -33,16 +33,17 @@ implemented already. But more shall come soon.
 
 ### Critical Header Parameter (crit)
 
-It supports the **Critical Header Parameter** which is described in the JWS
+It supports the Critical Header Parameter which is described in the JWS
 specification
 [here](https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11).
 
-You can see the usage of the **crit** header parameter in this
+You can see one usage example of the **crit** header parameter in this
 [example](https://github.com/timonson/djwt/blob/master/examples/example.ts).
 
 ## API
 
-The API consists mostly of the two functions `makeJwt` and `validateJwt`.
+The API consists mostly of the two functions `makeJwt` and `validateJwt`,
+generating and validating a JWT, respectively.
 
 You can omit the JWT payload and its claims if you only need the signing and
 verification feature of the JWS.
@@ -68,8 +69,8 @@ setExpiration(new Date().getTime() + 60 * 60 * 1000)
 Try djwt out with this simple _server_ example:
 
 The server will respond to a **GET** request with a newly created JWT.  
-On the other hand, if you send a JWT as data along with a **POST** request,
-the server will check the JWT for validity.
+On the other hand, if you send a JWT as data along with a **POST** request, the
+server will check the JWT for validity.
 
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
@@ -100,6 +101,10 @@ const header = {
   }
 })()
 ```
+
+## Contribution
+
+Every kind of contribution to this project is highly welcome.
 
 ## Todo
 
