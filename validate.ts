@@ -69,7 +69,7 @@ function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
   )
 }
 
-function parseDecode(jwt: string): any[] {
+function parseDecode(jwt: string): [Jose, Claims, string] {
   return (
     jwt
       .split(".")
@@ -79,7 +79,7 @@ function parseDecode(jwt: string): any[] {
         index === 2
           ? convertUint8ArrayToHex(convertBase64ToUint8Array(str))
           : JSON.parse(new TextDecoder().decode(convertBase64ToUint8Array(str)))
-      )
+      ) as [Jose, Claims, string]
   )
 }
 
@@ -97,7 +97,7 @@ function validateJwt(
   try {
     if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/.test(jwt))
       throw Error("wrong type or format")
-    const [header, payload, oldSig] = parseDecode(jwt) as [Jose, Claims, string]
+    const [header, payload, oldSig] = parseDecode(jwt)
     const [alg, critResults] = handleHeader(header, algorithms, critHandlers)
     if (payload && payload.exp) checkIfExpired(payload.exp)
     const newSig = parseDecode(makeJwt(header, payload, key))[2]
