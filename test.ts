@@ -6,7 +6,7 @@ const key = "abc123"
 const claims = {
   iss: "joe",
   jti: "123456789abc",
-  exp: setExpiration(new Date().getTime() - 100000),
+  exp: setExpiration(new Date().getTime() + 1),
 }
 
 const headerObject = {
@@ -23,8 +23,9 @@ const critHandlers = {
 }
 
 const jwt = makeJwt(headerObject, claims, key)
+if (!jwt) throw Error("something went wrong")
 console.log("New JWT:\n", jwt)
 
 const validatedJwt = await validateJwt(jwt, key, true, critHandlers)
-if (!validatedJwt) throw Error("something went wrong")
+if (!validatedJwt || !validatedJwt.header) throw Error("something went wrong")
 console.log("----------\nValid JWT\n", validatedJwt)
