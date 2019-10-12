@@ -34,7 +34,11 @@ function checkHeaderCrit(header: Jose, critHandlers: Handlers): Promise<any[]> {
     throw Error("header parameter 'crit' must be an array of non-empty strings")
   if (header.crit.some(str => reservedNames.has(str)))
     throw Error("the 'crit' list contains a non-extension header parameter")
-  if (header.crit.some(str => typeof critHandlers[str] !== "function"))
+  if (
+    header.crit.some(
+      str => !header[str] || typeof critHandlers[str] !== "function"
+    )
+  )
     throw Error("critical extension header parameters are not understood")
   return Promise.all(header.crit.map(str => critHandlers[str](header[str])))
 }
@@ -43,13 +47,11 @@ function handleHeader(
   header: Jose,
   algorithms: string[],
   critHandlers: Handlers
-): [string, Promise<any[]>] {
+): Promise<any> {
   const algorithm: string = checkHeaderAlg(header, algorithms)
-  const critResults: Promise<any[]> =
-    "crit" in header
-      ? checkHeaderCrit(header, critHandlers)
-      : Promise.resolve([])
-  return [algorithm, critResults]
+  return "crit" in header
+    ? checkHeaderCrit(header, critHandlers)
+    : Promise.resolve()
 }
 
 function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
@@ -73,25 +75,28 @@ function parseDecode(jwt: string): [Jose, Claims, string] {
   )
 }
 
+/*
+ * Implementers MAY provide for some small leeway to account for clock skew (JWT §4.1.4)
+ */
 function checkIfExpired(exp: number): void {
-  if (new Date(exp) < new Date()) throw RangeError("the jwt is expired")
+  if (new Date(exp + 10000) < new Date()) throw RangeError("the jwt is expired")
 }
 
-function validateJwt(
+async function validateJwt(
   jwt: string,
   key: string,
   throwErrors: boolean = true,
   critHandlers: Handlers = {}
-): Promise<any[]> | void {
+): Promise<{ header: Jose; payload: Claims; signature: string } | void> {
   const algorithms: string[] = ["HS256", "HS512", "none"]
   try {
     if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/.test(jwt))
       throw Error("wrong type or format")
-    const [header, payload, oldSig] = parseDecode(jwt)
+    const [header, payload, oldSignature] = parseDecode(jwt)
     if (payload && payload.exp) checkIfExpired(payload.exp)
-    const [alg, critResults] = handleHeader(header, algorithms, critHandlers)
-    const newSig = parseDecode(makeJwt(header, payload, key))[2]
-    if (oldSig === newSig) return critResults
+    const critResults = await handleHeader(header, algorithms, critHandlers)
+    const signature = parseDecode(makeJwt(header, payload, key))[2]
+    if (oldSignature === signature) return { header, payload, signature }
     else throw Error("signatures don't match")
   } catch (err) {
     err.message = `Invalid JWT: ${err.message}`
