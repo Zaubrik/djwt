@@ -31,10 +31,16 @@ Of the signature and MAC algorithms defined in the JSON Web Algorithms (JWA)
 SHA-256** ("HS256"), **HMAC SHA-512** ("HS512") and **none** have been
 implemented already. But more shall come soon.
 
-### Critical Header Parameter (crit)
+### Expiration Time
 
-It supports the Critical Header Parameter which is described in the JWS
-specification
+The optional **exp** claim identifies the expiration time on or after which the
+JWT must not be accepted for processing. This library checks if the current
+date/time is before the expiration date/time listed in the **exp** claim.
+
+### Critical Header
+
+This library supports the Critical Header Parameter **crit** which is described
+in the JWS specification
 [here](https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11).
 
 Look up
@@ -47,11 +53,15 @@ The API consists mostly of the two functions `makeJwt` and `validateJwt`,
 generating and validating a JWT, respectively.
 
 You can omit the JWT payload and its claims if you only need the signing and
-verification feature of the JWS.
+verification feature of the JWS. The function `makeJwt` returns the url-safe
+encoded JWT:
 
-#### makeJwt(header: Jose, claims: Claims | string = "", key: string)
+#### makeJwt(header: Jose, claims: Claims, key: string): string
 
-#### validateJwt(jwt: string, key: string, throwErrors: boolean = true, criticalHandlers: CritHandlers = {})
+The function `validateJwt` returns a promise which - if the JWT is valid -
+resolves to the JWT as JavaScript object: `{header, payload, signature}`.
+
+#### validateJwt(jwt: string, key: string, throwErrors: boolean = true, critHandlers: Handlers = {}): Promise<any>
 
 Additionally there is the helper function `setExpiration` which simplifies
 setting an expiration date.
@@ -71,7 +81,7 @@ Try djwt out with this simple _server_ example:
 
 The server will respond to a **GET** request with a newly created JWT.  
 On the other hand, if you send a JWT as data along with a **POST** request, the
-server will check the JWT for validity.
+server will check the validity of the JWT.
 
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
@@ -82,7 +92,7 @@ import validateJwt from "https://deno.land/x/djwt/validate.ts"
 const key = "abc123"
 const claims = {
   iss: "joe",
-  exp: setExpiration(new Date().getTime() + 60000),
+  exp: setExpiration(new Date().getTime() + 60_000),
 }
 const header = {
   alg: "HS512",
@@ -95,7 +105,7 @@ const header = {
       req.respond({ body: encode(jwt + "\n") })
     } else {
       const requestBody = decode(await req.body())
-      validateJwt(requestBody, key, false)
+      ;(await validateJwt(requestBody, key, false))
         ? req.respond({ body: encode("Valid JWT\n") })
         : req.respond({ status: 401, body: encode("Invalid JWT\n") })
     }

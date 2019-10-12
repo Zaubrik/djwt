@@ -1,23 +1,30 @@
-import { serve } from "https://deno.land/std/http/server.ts"
-import { encode, decode } from "https://deno.land/std/strings/mod.ts"
 import makeJwt, { setExpiration } from "https://deno.land/x/djwt/create.ts"
 import validateJwt from "https://deno.land/x/djwt/validate.ts"
 
 const key = "abc123"
+
 const claims = {
   iss: "joe",
-  exp: setExpiration(new Date().getTime() + 60_000),
-}
-const header = {
-  alg: "HS512",
-  typ: "JWT",
+  jti: "123456789abc",
+  exp: setExpiration(new Date().getTime() + 1000),
 }
 
-try {
-  const jwt = makeJwt(header, claims, key)
-  console.log("New JWT:\n", jwt)
-  validateJwt(jwt, key)
-  console.log("----------\nValid JWT")
-} catch (err) {
-  console.log(err.message, err)
+const headerObject = {
+  alg: "HS512",
+  crit: ["dummy"],
+  dummy: 100,
 }
+
+const critHandlers = {
+  dummy(value: any) {
+    console.log(`dummy works: ${value}`)
+    return value * 2
+  },
+}
+
+const jwt = makeJwt(headerObject, claims, key)
+console.log("New JWT:\n", jwt)
+
+const validatedJwt = await validateJwt(jwt, key, true, critHandlers)
+if (!validatedJwt) throw Error("something went wrong")
+console.log("----------\nValid JWT\n", validatedJwt)
