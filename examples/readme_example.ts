@@ -19,7 +19,7 @@ const header = {
       req.respond({ body: encode(jwt + "\n") })
     } else {
       const requestBody = decode(await req.body())
-      validateJwt(requestBody, key, false)
+      ;(await validateJwt(requestBody, key, false))
         ? req.respond({ body: encode("Valid JWT\n") })
         : req.respond({ status: 401, body: encode("Invalid JWT\n") })
     }

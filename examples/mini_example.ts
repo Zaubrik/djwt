@@ -11,7 +11,7 @@ import validateJwt from "https://deno.land/x/djwt/validate.ts"
         ),
       })
     else
-      validateJwt(decode(await req.body()), "abc123", false)
+      (await validateJwt(decode(await req.body()), "abc123", false))
         ? req.respond({ body: encode("Valid JWT\n") })
         : req.respond({ status: 401, body: encode("Invalid JWT\n") })
   }

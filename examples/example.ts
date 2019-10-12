@@ -5,7 +5,7 @@ const claims = {
   iss: "joe",
   jti: "123456789abc",
   exp: setExpiration(new Date().getTime() + 1000),
-  // exp: setExpiration(new Date().getTime() - 1000), // Invalid JWT: the jwt is expired
+  // exp: setExpiration(new Date().getTime() - 10000), // Invalid JWT: the jwt is expired
 }
 
 const headerObject = {
@@ -25,8 +25,8 @@ const key = "abc123"
 try {
   const jwt = makeJwt(headerObject, claims, key)
   console.log("JWT:", jwt)
-  const validatedJwt = validateJwt(jwt, key, true, critHandlers)
-  console.log("JWT is valid!")
+  const validatedJwt = await validateJwt(jwt, key, true, critHandlers)
+  console.log("JWT is valid!\n", validatedJwt)
 } catch (err) {
   console.log(err)
 }
