@@ -6,7 +6,7 @@ const key = "abc123"
 const claims = {
   iss: "joe",
   jti: "123456789abc",
-  exp: setExpiration(new Date().getTime() + 1000),
+  exp: setExpiration(new Date().getTime() - 100000),
 }
 
 const headerObject = {

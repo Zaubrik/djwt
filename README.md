@@ -92,7 +92,7 @@ import validateJwt from "https://deno.land/x/djwt/validate.ts"
 const key = "abc123"
 const claims = {
   iss: "joe",
-  exp: setExpiration(new Date().getTime() + 60_000),
+  exp: setExpiration(new Date().getTime() + 60000),
 }
 const header = {
   alg: "HS512",
