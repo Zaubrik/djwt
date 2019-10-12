@@ -37,8 +37,9 @@ It supports the Critical Header Parameter which is described in the JWS
 specification
 [here](https://www.rfc-editor.org/rfc/rfc7515.html#section-4.1.11).
 
-You can see one usage example of the **crit** header parameter in this
-[example](https://github.com/timonson/djwt/blob/master/examples/example.ts).
+Look up
+[this example](https://github.com/timonson/djwt/blob/master/examples/example.ts)
+to see how the **crit** header parameter works.
 
 ## API
 
@@ -104,7 +105,7 @@ const header = {
 
 ## Contribution
 
-Every kind of contribution to this project is highly welcome.
+Every kind of contribution to this project is highly appreciated.
 
 ## Todo
 

@@ -21,11 +21,11 @@ const critHandlers = {
   },
 }
 
-const key = "abcdef"
+const key = "abc123"
 try {
   const jwt = makeJwt(headerObject, claims, key)
-  const validatedJwt = validateJwt(jwt, key, true, critHandlers)
   console.log("JWT:", jwt)
+  const validatedJwt = validateJwt(jwt, key, true, critHandlers)
   console.log("JWT is valid!")
 } catch (err) {
   console.log(err)
