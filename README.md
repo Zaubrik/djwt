@@ -9,12 +9,12 @@ and accessible through the https://deno.land/x/ service.
 
 ## Features
 
-After the **Compact Serialization** process where a web token is represented as
-the concatenation of
+We use the mandatory **Compact Serialization** process where a web token is
+represented as the concatenation of
 
 `'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.'|| 'BASE64URL(JWS Signature)'`
 
-...the finalized **JWT** looks like this:
+...to generate **JWTs** which look in their finalized form like this:
 
 ```
  eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9

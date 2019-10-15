@@ -59,7 +59,8 @@ function makeSignature(
   key: string | Uint8Array,
   msg: string | Uint8Array
 ): string {
-  if (alg === "HS256")
+  if (alg === "none") return ""
+  else if (alg === "HS256")
     return convertToBase64url(hmac("sha256", key, msg, "utf8", "hex"), "hex")
   else if (alg === "HS512")
     return convertToBase64url(hmac("sha512", key, msg, "utf8", "hex"), "hex")
@@ -68,10 +69,8 @@ function makeSignature(
 
 function makeJwt(header: Jose, claims: Claims, key: string): string {
   try {
-    const signingInput: string = makeJwsSigningInput(header, claims)
-    if (header.alg === "none") return `${signingInput}.`
-    else
-      return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
+    const signingInput = makeJwsSigningInput(header, claims)
+    return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
   } catch (err) {
     err.message = `Failed to create a JWT: ${err.message}`
     throw err
