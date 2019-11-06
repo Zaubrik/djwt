@@ -11,7 +11,7 @@ for await (const req of serve("0.0.0.0:8000")) {
       ),
     })
   else
-    (await validateJwt(decode(await req.body()), "abc123", false))
+    await validateJwt(decode(await req.body()), "abc123", false)
       ? req.respond({ body: encode("Valid JWT\n") })
       : req.respond({ status: 401, body: encode("Invalid JWT\n") })
 }
