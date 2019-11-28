@@ -29,18 +29,20 @@ function checkHeaderCrit(header: Jose, critHandlers: Handlers): Promise<any[]> {
   ])
   if (
     !Array.isArray(header.crit) ||
-    header.crit.some(str => typeof str !== "string" || !str)
+    header.crit.some((str: string) => typeof str !== "string" || !str)
   )
     throw Error("header parameter 'crit' must be an array of non-empty strings")
-  if (header.crit.some(str => reservedNames.has(str)))
+  if (header.crit.some((str: string) => reservedNames.has(str)))
     throw Error("the 'crit' list contains a non-extension header parameter")
   if (
     header.crit.some(
-      str => !header[str] || typeof critHandlers[str] !== "function"
+      (str: string) => !header[str] || typeof critHandlers[str] !== "function"
     )
   )
     throw Error("critical extension header parameters are not understood")
-  return Promise.all(header.crit.map(str => critHandlers[str](header[str])))
+  return Promise.all(
+    header.crit.map((str: string) => critHandlers[str](header[str]))
+  )
 }
 
 function handleHeader(

@@ -59,7 +59,7 @@ The function `makeJwt` returns the url-safe encoded JWT:
 #### makeJwt(header: Jose, payload: Claims | string, key: string = ""): string
 
 In cases where you only need the signing and verification feature of the JWS,
-you can enter the _empty string_ `""` as a _claim_ argument.
+you can enter the _empty string_ `""` as _payload_.
 
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to the JWT as JavaScript object: `{header, payload, signature}`.

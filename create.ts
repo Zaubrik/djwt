@@ -36,9 +36,11 @@ function convertToBase64url(
 }
 
 function convertHexToUint8Array(hex: string): Uint8Array {
-  if (hex.length % 2 || !/^[0-9a-fA-F]+$/.test(hex))
-    throw new TypeError("Invalid hex string.")
-  return Uint8Array.from(hex.match(/.{2}/g).map(el => parseInt(el, 16)))
+  if (hex.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(hex)) {
+    const match = hex.match(/.{2}/g)
+    if (match) return Uint8Array.from(match.map(el => parseInt(el, 16)))
+  }
+  throw new TypeError("Invalid hex string.")
 }
 
 function makeJwsSigningInput(header: Jose, payload: Claims | string): string {
