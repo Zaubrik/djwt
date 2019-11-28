@@ -61,7 +61,7 @@ function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
   )
 }
 
-function parseDecode(jwt: string): [Jose, Claims, string] {
+function parseDecode(jwt: string): [Jose, Claims | string, string] {
   return (
     jwt
       .split(".")
@@ -71,7 +71,7 @@ function parseDecode(jwt: string): [Jose, Claims, string] {
         index === 2
           ? convertUint8ArrayToHex(convertBase64ToUint8Array(str))
           : JSON.parse(new TextDecoder().decode(convertBase64ToUint8Array(str)))
-      ) as [Jose, Claims, string]
+      ) as [Jose, Claims | string, string]
   )
 }
 
@@ -84,16 +84,20 @@ function checkIfExpired(exp: number): void {
 
 async function validateJwt(
   jwt: string,
-  key: string,
+  key: string = "",
   throwErrors: boolean = true,
   critHandlers: Handlers = {}
-): Promise<{ header: Jose; payload: Claims; signature: string } | void> {
+): Promise<{
+  header: Jose
+  payload: Claims | string
+  signature: string
+} | void> {
   const algorithms: string[] = ["HS256", "HS512", "none"]
   try {
     if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/.test(jwt))
       throw Error("wrong type or format")
     const [header, payload, oldSignature] = parseDecode(jwt)
-    if (payload && payload.exp) checkIfExpired(payload.exp)
+    if (typeof payload === "object" && payload.exp) checkIfExpired(payload.exp)
     const critResults = await handleHeader(header, algorithms, critHandlers)
     const signature = parseDecode(makeJwt(header, payload, key))[2]
     if (oldSignature === signature) return { header, payload, signature }

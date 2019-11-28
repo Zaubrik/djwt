@@ -41,9 +41,9 @@ function convertHexToUint8Array(hex: string): Uint8Array {
   return Uint8Array.from(hex.match(/.{2}/g).map(el => parseInt(el, 16)))
 }
 
-function makeJwsSigningInput(header: Jose, claims: Claims): string {
+function makeJwsSigningInput(header: Jose, payload: Claims | string): string {
   return `${convertToBase64url(JSON.stringify(header))}.${convertToBase64url(
-    JSON.stringify(claims)
+    JSON.stringify(payload)
   )}`
 }
 
@@ -60,9 +60,13 @@ function makeSignature(
   else throw RangeError("no matching algorithm")
 }
 
-function makeJwt(header: Jose, claims: Claims, key: string): string {
+function makeJwt(
+  header: Jose,
+  payload: Claims | string,
+  key: string = ""
+): string {
   try {
-    const signingInput = makeJwsSigningInput(header, claims)
+    const signingInput = makeJwsSigningInput(header, payload)
     return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
   } catch (err) {
     err.message = `Failed to create a JWT: ${err.message}`

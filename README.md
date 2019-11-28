@@ -14,7 +14,8 @@ represented as the concatenation of
 
 `'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.'|| 'BASE64URL(JWS Signature)'`
 
-...to generate **JWTs** which look in their finalized form like this:
+...to generate **JWTs** which look in their finalized form like this (with line
+breaks for display purposes only):
 
 ```
  eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9
@@ -28,7 +29,8 @@ represented as the concatenation of
 
 Of the signature and MAC algorithms defined in the JSON Web Algorithms (JWA)
 [specification](https://www.rfc-editor.org/rfc/rfc7518.html), only **HMAC
-SHA-256** ("HS256"), **HMAC SHA-512** ("HS512") and **none** have been
+SHA-256** ("HS256"), **HMAC SHA-512** ("HS512") and **none**
+([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)) have been
 implemented already. But more shall come soon.
 
 ### Expiration Time
@@ -52,16 +54,17 @@ to see how the **crit** header parameter works.
 The API consists mostly of the two functions `makeJwt` and `validateJwt`,
 generating and validating a JWT, respectively.
 
-You can omit the JWT payload and its claims if you only need the signing and
-verification feature of the JWS. The function `makeJwt` returns the url-safe
-encoded JWT:
+The function `makeJwt` returns the url-safe encoded JWT:
 
-#### makeJwt(header: Jose, claims: Claims, key: string): string
+#### makeJwt(header: Jose, payload: Claims | string, key: string = ""): string
 
-The function `validateJwt` returns a promise which - if the JWT is valid -
+In cases where you only need the signing and verification feature of the JWS,
+you can enter the _empty string_ `""` as a _claim_ argument.
+
+The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to the JWT as JavaScript object: `{header, payload, signature}`.
 
-#### validateJwt(jwt: string, key: string, throwErrors: boolean = true, critHandlers: Handlers = {}): Promise<any>
+#### validateJwt(jwt: string, key: string = "", throwErrors: boolean = true, critHandlers: Handlers = {}): Promise<any>
 
 Additionally there is the helper function `setExpiration` which simplifies
 setting an expiration date.
