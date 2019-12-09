@@ -62,7 +62,8 @@ In cases where you only need the signing and verification feature of the JWS,
 you can enter the _empty string_ `""` as _payload_.
 
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
-resolves to the JWT as JavaScript object: `{header, payload, signature}`.
+resolves to a JWT representation as JavaScript object:
+`{header, payload, signature}`:
 
 #### validateJwt(jwt: string, key: string = "", throwErrors: boolean = true, critHandlers: Handlers = {}): Promise<any>
 

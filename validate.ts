@@ -50,8 +50,7 @@ function handleHeader(
   algorithms: string[],
   critHandlers: Handlers
 ): Promise<any> {
-  const algorithm: string = checkHeaderAlg(header, algorithms)
-  return "crit" in header
+  return checkHeaderAlg(header, algorithms) && "crit" in header
     ? checkHeaderCrit(header, critHandlers)
     : Promise.resolve()
 }
@@ -100,7 +99,7 @@ async function validateJwt(
       throw Error("wrong type or format")
     const [header, payload, oldSignature] = parseDecode(jwt)
     if (typeof payload === "object" && payload.exp) checkIfExpired(payload.exp)
-    const critResults = await handleHeader(header, algorithms, critHandlers)
+    await handleHeader(header, algorithms, critHandlers)
     const signature = parseDecode(makeJwt(header, payload, key))[2]
     if (oldSignature === signature) return { header, payload, signature }
     else throw Error("signatures don't match")
