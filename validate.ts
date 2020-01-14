@@ -85,8 +85,8 @@ function checkIfExpired(exp: number): void {
 
 async function validateJwt(
   jwt: string,
-  key: string = "",
-  throwErrors: boolean = true,
+  key = "",
+  throwErrors = true,
   critHandlers: Handlers = {}
 ): Promise<{
   header: Jose

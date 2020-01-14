@@ -22,15 +22,13 @@ interface Jose {
 
 function convertToBase64url(
   input: string | Uint8Array,
-  inputEncoding: string = "utf8"
+  encoding = "utf8"
 ): string {
   return convertBase64ToBase64url(
     typeof input === "object"
       ? convertUint8ArrayToBase64(input)
       : convertUint8ArrayToBase64(
-          inputEncoding === "hex"
-            ? convertHexToUint8Array(input)
-            : encode(input)
+          encoding === "hex" ? convertHexToUint8Array(input) : encode(input)
         )
   )
 }
@@ -62,11 +60,7 @@ function makeSignature(
   else throw RangeError("no matching algorithm")
 }
 
-function makeJwt(
-  header: Jose,
-  payload: Claims | string,
-  key: string = ""
-): string {
+function makeJwt(header: Jose, payload: Claims | string, key = ""): string {
   try {
     const signingInput = makeJwsSigningInput(header, payload)
     return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
