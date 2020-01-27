@@ -9,13 +9,8 @@ and accessible through the https://deno.land/x/ service.
 
 ## Features
 
-We use the mandatory **Compact Serialization** process where a web token is
-represented as the concatenation of
-
-`'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.'|| 'BASE64URL(JWS Signature)'`
-
-...to generate **JWTs** which look in their finalized form like this (with line
-breaks for display purposes only):
+To generate **JWTs** which look in their finalized form like this (with line
+breaks for display purposes only)
 
 ```
  eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9
@@ -25,12 +20,18 @@ breaks for display purposes only):
  dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk
 ```
 
+... we use the mandatory
+[**Compact Serialization**](https://www.rfc-editor.org/rfc/rfc7515.html#section-3.1)
+process where a web token is represented as the concatenation of
+
+`'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.'|| 'BASE64URL(JWS Signature)'`
+
 ### Cryptographic Algorithm
 
-Of the signature and MAC algorithms defined in the JSON Web Algorithms (JWA)
-[specification](https://www.rfc-editor.org/rfc/rfc7518.html), only **HMAC
-SHA-256** ("HS256"), **HMAC SHA-512** ("HS512") and **none**
-([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)) have been
+**HMAC SHA-256** ("HS256"), **HMAC SHA-512** ("HS512") and **none**
+([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)) of the
+signature and MAC algorithms defined in the JSON Web Algorithms (JWA)
+[specification](https://www.rfc-editor.org/rfc/rfc7518.html) have been
 implemented already. But more shall come soon.
 
 ### Expiration Time
@@ -54,23 +55,23 @@ to see how the **crit** header parameter works.
 The API consists mostly of the two functions `makeJwt` and `validateJwt`,
 generating and validating a JWT, respectively.
 
-The function `makeJwt` returns the url-safe encoded JWT:
-
 #### makeJwt(header: Jose, payload: Claims | string, key: string = ""): string
+
+The function `makeJwt` returns the url-safe encoded JWT.
 
 In cases where you only need the signing and verification feature of the JWS,
 you can enter the _empty string_ `""` as _payload_.
 
+#### validateJwt(jwt: string, key: string = "", throwErrors: boolean = true, critHandlers: Handlers = {}): Promise<any>
+
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to a JWT representation as JavaScript object:
-`{header, payload, signature}`:
+`{header, payload, signature}`.
 
-#### validateJwt(jwt: string, key: string = "", throwErrors: boolean = true, critHandlers: Handlers = {}): Promise<any>
+#### setExpiration(exp: number | Date): number
 
 Additionally there is the helper function `setExpiration` which simplifies
 setting an expiration date.
-
-#### setExpiration(exp: number | Date): number
 
 ```javascript
 // A specific date:
@@ -109,7 +110,7 @@ for await (const req of serve("0.0.0.0:8000")) {
     req.respond({ body: encode(jwt + "\n") })
   } else {
     const requestBody = decode(await Deno.readAll(req.body))
-    await validateJwt(requestBody, key, false)
+    ;(await validateJwt(requestBody, key, false))
       ? req.respond({ body: encode("Valid JWT\n") })
       : req.respond({ status: 401, body: encode("Invalid JWT\n") })
   }
@@ -125,5 +126,4 @@ Every kind of contribution to this project is highly appreciated.
 1. Add more optional features from the
    [JWT](https://tools.ietf.org/html/rfc7519) and
    [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications
-2. Improve documentation
-3. Make more tests
+2. Make more tests
