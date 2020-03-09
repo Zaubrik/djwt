@@ -1,6 +1,6 @@
 import { encode } from "https://deno.land/std/strings/mod.ts"
+import { convertBase64ToBase64url } from "./base64url/base64url.ts"
 import { fromUint8Array as convertUint8ArrayToBase64 } from "https://denopkg.com/chiefbiiko/base64/mod.ts"
-import { convertBase64ToBase64url } from "https://denopkg.com/timonson/base64url/base64url.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
 interface Claims {

@@ -4,8 +4,7 @@ The absolute minimum to make JSON Web Tokens on deno. Based on
 [JWT](https://tools.ietf.org/html/rfc7519) and
 [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications.
 
-This library is a [registered Deno Module](https://github.com/denoland/registry)
-and accessible through the https://deno.land/x/ service.
+This library is accessible through the https://deno.land/x/ service.
 
 ## Features
 
@@ -104,6 +103,7 @@ const header = {
   typ: "JWT",
 }
 
+console.log("server is listening at 0.0.0.0:8000")
 for await (const req of serve("0.0.0.0:8000")) {
   if (req.method === "GET") {
     const jwt = makeJwt(header, claims, key)
