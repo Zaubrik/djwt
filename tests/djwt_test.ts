@@ -2,10 +2,10 @@ import makeJwt, { setExpiration } from "https://deno.land/x/djwt/create.ts"
 import validateJwt from "https://deno.land/x/djwt/validate.ts"
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
 
-const key1 = "4%5 67_8$9"
+const key = "4%5 67_8$9"
 
 Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
-  const claims1 = {
+  const claims = {
     iss: "joe",
     jti: "123456789abc",
     exp: setExpiration(new Date().getTime() + 1),
@@ -21,21 +21,21 @@ Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
       return value * 2
     },
   }
-  const jwt1 = makeJwt(headerObject1, claims1, key1)
-  if (!jwt1) throw Error("something went wrong")
-  // console.log("New JWT:\n", jwt1)
-  const validatedJwt1 = await validateJwt(jwt1, key1, true, critHandlers1)
-  if (typeof validatedJwt1 !== "object") throw Error("something went wrong")
-  // console.log("Valid JWT\n", validatedJwt1)
+  const jwt = makeJwt(headerObject1, claims, key)
+  if (!jwt) throw Error("something went wrong")
+  const validatedjwt = await validateJwt(jwt, key, true, critHandlers1)
+  if (typeof validatedjwt !== "object") throw Error("something went wrong")
+  assertEquals(validatedjwt.payload, claims)
 })
 
 Deno.test(async function createJwtWithEmptyStringAsClaims(): Promise<void> {
-  const claims2 = ""
+  const claims = ""
   const headerObject2 = { typ: "JWT", alg: "none" }
-  const jwt2 = makeJwt(headerObject2, claims2)
-  if (!jwt2) throw Error("something went wrong")
-  // console.log("New JWT:\n", jwt2)
-  const validatedJwt2 = await validateJwt(jwt2)
-  if (typeof validatedJwt2 !== "object") throw Error("something went wrong")
-  // console.log("Valid JWT\n", validatedJwt2)
+  const jwt = makeJwt(headerObject2, claims)
+  if (!jwt) throw Error("something went wrong")
+  const validatedjwt = await validateJwt(jwt)
+  if (typeof validatedjwt !== "object") throw Error("something went wrong")
+  assertEquals(validatedjwt.payload, claims)
 })
+
+// await Deno.runTests()
