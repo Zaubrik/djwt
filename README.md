@@ -23,7 +23,7 @@ for display purposes only)
 [**compact serialization**](https://www.rfc-editor.org/rfc/rfc7515.html#section-3.1)
 process where a web token is represented as the concatenation of
 
-`'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.'|| 'BASE64URL(JWS Signature)'`
+`'BASE64URL(UTF8(JWS Protected Header))' || '.' || 'BASE64URL(JWS Payload)' ||'.'|| 'BASE64URL(JWS Signature)'`.
 
 ### Cryptographic Algorithm
 
