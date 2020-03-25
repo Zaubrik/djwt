@@ -1,8 +1,22 @@
-# base64url
+# How it works
+
+## base64
+
+#### convertBase64ToUint8Array(data: string): Uint8Array
+
+#### convertUint8ArrayToBase64(data: Uint8Array): string
+
+#### convertStringToBase64(str: string): string
+
+- ucs-2 string to base64 encoded ascii
+
+#### convertBase64ToString(str: string): string
+
+- base64 encoded ascii to ucs-2 string
+
+## base64url
 
 base64url conversion from/to base64 - no dependencies - es module
-
-## How it works
 
 #### convertBase64ToBase64url(base64: string): string
 

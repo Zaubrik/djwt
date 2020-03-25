@@ -9,7 +9,6 @@ const oneBase64 = "c3ViamVjdHM/X2Q9MQ=="
 const oneBase64url = "c3ViamVjdHM_X2Q9MQ"
 const twoBase64 = "SGVsbG8gV29ybGQ="
 const twoBase64url = "SGVsbG8gV29ybGQ"
-convertBase64ToBase64url(oneBase64)
 
 Deno.test(function convertBase64ToBase64urlTest(): void {
   assertEquals(convertBase64ToBase64url(oneBase64), oneBase64url)

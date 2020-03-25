@@ -1,6 +1,5 @@
-import { encode } from "https://deno.land/std/strings/mod.ts"
-import { convertBase64ToBase64url } from "./base64url/base64url.ts"
-import { fromUint8Array as convertUint8ArrayToBase64 } from "https://denopkg.com/chiefbiiko/base64/mod.ts"
+import { convertBase64ToBase64url } from "./base64/base64url.ts"
+import { convertUint8ArrayToBase64 } from "./base64/base64.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
 interface Claims {
@@ -28,7 +27,9 @@ function convertToBase64url(
     typeof input === "object"
       ? convertUint8ArrayToBase64(input)
       : convertUint8ArrayToBase64(
-          encoding === "hex" ? convertHexToUint8Array(input) : encode(input)
+          encoding === "hex"
+            ? convertHexToUint8Array(input)
+            : new TextEncoder().encode(input)
         )
   )
 }

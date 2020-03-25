@@ -1,5 +1,5 @@
-import makeJwt, { setExpiration } from "https://deno.land/x/djwt/create.ts"
-import validateJwt from "https://deno.land/x/djwt/validate.ts"
+import makeJwt, { setExpiration } from "../create.ts"
+import validateJwt from "../validate.ts"
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
 
 const key = "4%5 67_8$9"
@@ -17,7 +17,6 @@ Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
   }
   const critHandlers1 = {
     dummy(value: any) {
-      console.log(`dummy works: ${value}`)
       return value * 2
     },
   }

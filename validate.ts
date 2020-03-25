@@ -1,6 +1,6 @@
 import makeJwt, { Claims, Jose } from "./create.ts"
-import { addPaddingToBase64url } from "./base64url/base64url.ts"
-import { toUint8Array as convertBase64ToUint8Array } from "https://denopkg.com/chiefbiiko/base64/mod.ts"
+import { convertBase64ToUint8Array } from "./base64/base64.ts"
+import { convertBase64urlToBase64 } from "./base64/base64url.ts"
 
 interface Handlers {
   [key: string]: (header?: any) => any
@@ -63,17 +63,14 @@ function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
 }
 
 function parseDecode(jwt: string): [Jose, Claims | string, string] {
-  return (
-    jwt
-      .split(".")
-      // base64 library doesn't add '=' padding back to base64url decoding
-      .map(str => addPaddingToBase64url(str))
-      .map((str, index) =>
-        index === 2
-          ? convertUint8ArrayToHex(convertBase64ToUint8Array(str))
-          : JSON.parse(new TextDecoder().decode(convertBase64ToUint8Array(str)))
-      ) as [Jose, Claims | string, string]
-  )
+  return jwt
+    .split(".")
+    .map(convertBase64urlToBase64)
+    .map((str, index) =>
+      index === 2
+        ? convertUint8ArrayToHex(convertBase64ToUint8Array(str))
+        : JSON.parse(new TextDecoder().decode(convertBase64ToUint8Array(str)))
+    ) as [Jose, Claims | string, string]
 }
 
 /*
