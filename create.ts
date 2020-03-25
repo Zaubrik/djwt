@@ -2,6 +2,11 @@ import { convertBase64ToBase64url } from "./base64/base64url.ts"
 import { convertUint8ArrayToBase64 } from "./base64/base64.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
+type JsonPrimitive = string | number | boolean | null
+type JsonValue = JsonPrimitive | JsonObject | JsonArray
+type JsonObject = { [member: string]: JsonValue }
+type JsonArray = JsonValue[]
+
 interface Claims {
   iss?: string
   sub?: string
@@ -10,13 +15,13 @@ interface Claims {
   nbf?: number
   iat?: number
   jti?: string
-  [key: string]: any
+  [key: string]: JsonValue | undefined
 }
 
 interface Jose {
   alg: string
   crit?: string[]
-  [key: string]: any
+  [key: string]: JsonValue | undefined
 }
 
 function convertToBase64url(

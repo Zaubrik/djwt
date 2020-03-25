@@ -3,7 +3,7 @@ import { convertBase64ToUint8Array } from "./base64/base64.ts"
 import { convertBase64urlToBase64 } from "./base64/base64url.ts"
 
 interface Handlers {
-  [key: string]: (header?: any) => any
+  [key: string]: (header?: Jose[string]) => any
 }
 
 /*
