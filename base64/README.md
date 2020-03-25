@@ -4,19 +4,30 @@
 
 #### convertBase64ToUint8Array(data: string): Uint8Array
 
+Converts a base64 encoded ascii string to a Uint8Array.
+
 #### convertUint8ArrayToBase64(data: Uint8Array): string
+
+Converts a Uint8Array to a base64 encoded ascii string.
 
 #### convertStringToBase64(str: string): string
 
-- ucs-2 string to base64 encoded ascii
+Takes a ucs-2 string and returns a base64 encoded ascii string.
 
 #### convertBase64ToString(str: string): string
 
-- base64 encoded ascii to ucs-2 string
+Takes a base64 encoded ascii string and returns a ucs-2 string.
+
+### Example
+
+```typescript
+const str = "Hello ☸☹☺☻☼☾☿ World ✓"
+const uint8Array = new TextEncoder().encode(str)
+uint8Array === convertBase64ToUint8Array(convertUint8ArrayToBase64(uint8Array))
+str === convertBase64ToString(convertStringToBase64(str))
+```
 
 ## base64url
-
-base64url conversion from/to base64 - no dependencies - es module
 
 #### convertBase64ToBase64url(base64: string): string
 
@@ -33,7 +44,7 @@ The `addPaddingToBase64url` function makes the string length a _multiple of 4_
 by adding the padding `=` character.  
 More about this [here](https://en.wikipedia.org/wiki/Base64#URL_applications).
 
-## Example
+### Example
 
 ```typescript
 const base64 = "c3ViamVjdHM/X2Q9MQ=="
