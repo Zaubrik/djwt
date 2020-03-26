@@ -7,6 +7,8 @@ type JsonValue = JsonPrimitive | JsonObject | JsonArray
 type JsonObject = { [member: string]: JsonValue }
 type JsonArray = JsonValue[]
 
+type JwtObject = { header: Jose; payload: Claims | ""; signature: string }
+
 interface Claims {
   iss?: string
   sub?: string
@@ -24,18 +26,15 @@ interface Jose {
   [key: string]: JsonValue | undefined
 }
 
-function convertToBase64url(
-  input: string | Uint8Array,
-  encoding = "utf8"
-): string {
+function convertHexToBase64url(input: string): string {
   return convertBase64ToBase64url(
-    typeof input === "object"
-      ? convertUint8ArrayToBase64(input)
-      : convertUint8ArrayToBase64(
-          encoding === "hex"
-            ? convertHexToUint8Array(input)
-            : new TextEncoder().encode(input)
-        )
+    convertUint8ArrayToBase64(convertHexToUint8Array(input))
+  )
+}
+
+function convertStringToBase64url(input: string): string {
+  return convertBase64ToBase64url(
+    convertUint8ArrayToBase64(new TextEncoder().encode(input))
   )
 }
 
@@ -48,28 +47,40 @@ function convertHexToUint8Array(hex: string): Uint8Array {
 }
 
 function makeJwsSigningInput(header: Jose, payload: Claims | string): string {
-  return `${convertToBase64url(JSON.stringify(header))}.${convertToBase64url(
-    JSON.stringify(payload)
-  )}`
+  return `${convertStringToBase64url(
+    JSON.stringify(header)
+  )}.${convertStringToBase64url(JSON.stringify(payload))}`
 }
 
 function makeSignature(
   alg: string,
   key: string | Uint8Array,
   msg: string | Uint8Array
-): string {
-  if (alg === "none") return ""
-  else if (alg === "HS256")
-    return convertToBase64url(hmac("sha256", key, msg, "utf8", "hex"), "hex")
-  else if (alg === "HS512")
-    return convertToBase64url(hmac("sha512", key, msg, "utf8", "hex"), "hex")
-  else throw RangeError("no matching algorithm")
+): string | null {
+  switch (alg) {
+    case "none":
+      return null
+    case "HS256":
+      return hmac("sha256", key, msg, "utf8", "hex") as string
+    case "HS512":
+      return hmac("sha512", key, msg, "utf8", "hex") as string
+    default:
+      throw RangeError("no matching algorithm")
+  }
 }
 
-function makeJwt(header: Jose, payload: Claims | string, key = ""): string {
+function makeJwt(
+  header: JwtObject["header"],
+  payload: JwtObject["payload"],
+  key = ""
+): string {
   try {
     const signingInput = makeJwsSigningInput(header, payload)
-    return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
+    const encryption = makeSignature(header.alg, key, signingInput)
+    const signature: JwtObject["signature"] = encryption
+      ? convertHexToBase64url(encryption)
+      : ""
+    return `${signingInput}.${signature}`
   } catch (err) {
     err.message = `Failed to create a JWT: ${err.message}`
     throw err
@@ -85,4 +96,4 @@ function setExpiration(exp: number | Date): number {
 }
 
 export default makeJwt
-export { setExpiration, Claims, Jose }
+export { setExpiration, Claims, Jose, JwtObject, JsonValue }

@@ -2,7 +2,7 @@ import makeJwt, { setExpiration } from "../create.ts"
 import validateJwt from "../validate.ts"
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
 
-const key = "4%5 67_8$9"
+const key = "your-secret"
 
 Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
   const claims = {
@@ -11,7 +11,7 @@ Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
     exp: setExpiration(new Date().getTime() + 1),
   }
   const headerObject1 = {
-    alg: "HS512",
+    alg: "HS256",
     crit: ["dummy"],
     dummy: 100,
   }
@@ -20,6 +20,7 @@ Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
       return value * 2
     },
   }
+
   const jwt = makeJwt(headerObject1, claims, key)
   if (!jwt) throw Error("something went wrong")
   const validatedjwt = await validateJwt(jwt, key, true, critHandlers1)
@@ -27,7 +28,7 @@ Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
   assertEquals(validatedjwt.payload, claims)
 })
 
-Deno.test(async function createJwtWithEmptyStringAsClaims(): Promise<void> {
+Deno.test(async function createJwtWithEmptyStringInClaims(): Promise<void> {
   const claims = ""
   const headerObject2 = { typ: "JWT", alg: "none" }
   const jwt = makeJwt(headerObject2, claims)
