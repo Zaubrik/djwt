@@ -1,4 +1,4 @@
-import makeJwt, { Claims, Jose } from "./create.ts"
+import makeJwt, { Claims, Jose, JwtObject, JsonValue } from "./create.ts"
 import { convertBase64ToUint8Array } from "./base64/base64.ts"
 import { convertBase64urlToBase64 } from "./base64/base64url.ts"
 
@@ -45,11 +45,22 @@ function checkHeaderCrit(header: Jose, critHandlers: Handlers): Promise<any[]> {
   )
 }
 
-function handleHeader(
+/*
+ * Implementers MAY provide for some small leeway to account for clock skew (JWT §4.1.4)
+ */
+function isExpired(exp: number): boolean {
+  return new Date(exp + 10000) < new Date()
+}
+
+function validateAndHandleHeaders(
   header: Jose,
   algorithms: string[],
   critHandlers: Handlers
 ): Promise<any> {
+  if ("exp" in header) {
+    if (typeof header.exp !== "number" || !isExpired(header.exp))
+      throw RangeError("the jwt is expired")
+  }
   return checkHeaderAlg(header, algorithms) && "crit" in header
     ? checkHeaderCrit(header, critHandlers)
     : Promise.resolve()
@@ -62,22 +73,22 @@ function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
   )
 }
 
-function parseDecode(jwt: string): [Jose, Claims | string, string] {
-  return jwt
+function parseAndDecode(jwt: string): JwtObject {
+  if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/.test(jwt))
+    throw Error("wrong type or format")
+  const parsedArray = jwt
     .split(".")
     .map(convertBase64urlToBase64)
-    .map((str, index) =>
-      index === 2
+    .map((str, index) => {
+      return index === 2
         ? convertUint8ArrayToHex(convertBase64ToUint8Array(str))
         : JSON.parse(new TextDecoder().decode(convertBase64ToUint8Array(str)))
-    ) as [Jose, Claims | string, string]
-}
-
-/*
- * Implementers MAY provide for some small leeway to account for clock skew (JWT §4.1.4)
- */
-function checkIfExpired(exp: number): void {
-  if (new Date(exp + 10000) < new Date()) throw RangeError("the jwt is expired")
+    })
+  return {
+    header: parsedArray[0],
+    payload: parsedArray[1],
+    signature: parsedArray[2],
+  } as JwtObject
 }
 
 async function validateJwt(
@@ -85,20 +96,15 @@ async function validateJwt(
   key = "",
   throwErrors = true,
   critHandlers: Handlers = {}
-): Promise<{
-  header: Jose
-  payload: Claims | string
-  signature: string
-} | void> {
+): Promise<JwtObject | undefined> {
   const algorithms: string[] = ["HS256", "HS512", "none"]
   try {
-    if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/.test(jwt))
-      throw Error("wrong type or format")
-    const [header, payload, oldSignature] = parseDecode(jwt)
-    if (typeof payload === "object" && payload.exp) checkIfExpired(payload.exp)
-    await handleHeader(header, algorithms, critHandlers)
-    const signature = parseDecode(makeJwt(header, payload, key))[2]
-    if (oldSignature === signature) return { header, payload, signature }
+    const oldJwt = parseAndDecode(jwt)
+    await validateAndHandleHeaders(oldJwt.header, algorithms, critHandlers)
+    const signature = parseAndDecode(
+      makeJwt(oldJwt.header, oldJwt.payload, key)
+    ).signature
+    if (oldJwt.signature === signature) return oldJwt
     else throw Error("signatures don't match")
   } catch (err) {
     err.message = `Invalid JWT: ${err.message}`
