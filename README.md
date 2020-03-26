@@ -1,6 +1,6 @@
 # djwt
 
-The absolute minimum to make JSON Web Tokens on deno. Based on
+The absolute minimum to make JSON Web Tokens in deno. Based on
 [JWT](https://tools.ietf.org/html/rfc7519) and
 [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications.
 
@@ -93,13 +93,13 @@ import { encode, decode } from "https://deno.land/std/strings/mod.ts"
 import makeJwt, { setExpiration } from "https://deno.land/x/djwt/create.ts"
 import validateJwt from "https://deno.land/x/djwt/validate.ts"
 
-const key = "abc123"
+const key = "your-secret"
 const claims = {
   iss: "joe",
   exp: setExpiration(new Date().getTime() + 60000),
 }
 const header = {
-  alg: "HS512",
+  alg: "HS256",
   typ: "JWT",
 }
 
