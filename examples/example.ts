@@ -9,7 +9,7 @@ const claims = {
 }
 
 const headerObject = {
-  alg: "HS512",
+  alg: "HS256",
   crit: ["dummy"],
   dummy: 100,
 }

@@ -7,7 +7,7 @@ for await (const req of serve("0.0.0.0:8000")) {
   if (req.method === "GET")
     req.respond({
       body: encode(
-        makeJwt({ typ: "JWT", alg: "HS512" }, { iss: "joe" }, "abc123") + "\n"
+        makeJwt({ typ: "JWT", alg: "HS256" }, { iss: "joe" }, "abc123") + "\n"
       ),
     })
   else

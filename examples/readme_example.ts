@@ -9,7 +9,7 @@ const claims = {
   exp: setExpiration(new Date().getTime() + 60000),
 }
 const header = {
-  alg: "HS512",
+  alg: "HS256",
   typ: "JWT",
 }
 
