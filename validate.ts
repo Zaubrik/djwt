@@ -1,27 +1,9 @@
-import makeJwt, {
-  Payload,
-  Jose,
-  JwtObject,
-  JsonValue,
-  Algorithm,
-  ALGORITHMS,
-} from "./create.ts"
+import makeJwt, { Payload, Jose, JwtObject, JsonValue } from "./create.ts"
 import { convertBase64ToUint8Array } from "./base64/base64.ts"
 import { convertBase64urlToBase64 } from "./base64/base64url.ts"
 
 interface Handlers {
   [key: string]: (header?: Jose[string]) => any
-}
-
-/*
- * The "alg" header parameter identifies the cryptographic algorithm and MUST
- * be present (JWS §4.1.1)
- */
-function checkHeaderAlg(header: Jose, algorithms:ALGORITHMS): Algorithm {
-  if (!header.alg) throw ReferenceError("header parameter 'alg' is empty")
-  const algorithm = algorithms[header.alg as Algorithm]
-  if (!algorithm) throw RangeError("no matching crypto algorithm in the header")
-  return algorithm
 }
 
 /*
@@ -55,20 +37,19 @@ function checkHeaderCrit(header: Jose, critHandlers: Handlers): Promise<any[]> {
 /*
  * Implementers MAY provide for some small leeway to account for clock skew (JWT §4.1.4)
  */
-function isExpired(exp: number): boolean {
-  return new Date(exp + 10000) < new Date()
+function isExpired(exp: Payload["exp"]): boolean {
+  if (typeof exp !== "number" || new Date(exp + 10000) < new Date()) return true
+  else return false
 }
 
 function validateAndHandleHeaders(
-  header: Jose,
-  algorithms: ALGORITHMS,
+  { header, payload }: JwtObject,
   critHandlers: Handlers
 ): Promise<any> {
-  if ("exp" in header) {
-    if (typeof header.exp !== "number" || !isExpired(header.exp))
-      throw RangeError("the jwt is expired")
-  }
-  return checkHeaderAlg(header, algorithms) && "crit" in header
+  if (!header.alg) throw ReferenceError("header parameter 'alg' is empty")
+  if (typeof payload === "object" && "exp" in payload && isExpired(payload.exp))
+    throw RangeError("the jwt is expired")
+  return "crit" in header
     ? checkHeaderCrit(header, critHandlers)
     : Promise.resolve()
 }
@@ -106,7 +87,7 @@ async function validateJwt(
 ): Promise<JwtObject | undefined> {
   try {
     const oldJwt = parseAndDecode(jwt)
-    await validateAndHandleHeaders(oldJwt.header, ALGORITHMS, critHandlers)
+    await validateAndHandleHeaders(oldJwt, critHandlers)
     const signature = parseAndDecode(
       makeJwt(oldJwt.header, oldJwt.payload, key)
     ).signature
@@ -119,4 +100,4 @@ async function validateJwt(
 }
 
 export default validateJwt
-export { convertUint8ArrayToHex,Jose,Payload }
+export { convertUint8ArrayToHex, Jose, Payload }

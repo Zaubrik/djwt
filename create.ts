@@ -8,7 +8,6 @@ const ALGORITHMS = {
   HS512: "HS512",
 } as const
 
-type ALGORITHMS = typeof ALGORITHMS
 type Algorithm = typeof ALGORITHMS[keyof typeof ALGORITHMS]
 type JsonPrimitive = string | number | boolean | null
 type JsonValue = JsonPrimitive | JsonObject | JsonArray
@@ -28,7 +27,7 @@ interface Payload {
 }
 
 interface Jose {
-  alg: string
+  alg: Algorithm
   crit?: string[]
   [key: string]: JsonValue | undefined
 }
@@ -60,10 +59,13 @@ function makeJwsSigningInput(header: Jose, payload: Payload | string): string {
 }
 
 function makeSignature(
-  alg: string,
+  alg: Algorithm,
   key: string | Uint8Array,
   msg: string | Uint8Array
 ): string | null {
+  function assertNever(alg: never): never {
+    throw new RangeError("no matching crypto algorithm in the header: " + alg)
+  }
   switch (alg) {
     case ALGORITHMS.none:
       return null
@@ -72,7 +74,7 @@ function makeSignature(
     case ALGORITHMS.HS512:
       return hmac("sha512", key, msg, "utf8", "hex") as string
     default:
-      throw RangeError("no matching crypto algorithm")
+      assertNever(alg)
   }
 }
 
@@ -113,6 +115,5 @@ export {
   Jose,
   JwtObject,
   JsonValue,
-  Algorithm,
   ALGORITHMS,
 }
