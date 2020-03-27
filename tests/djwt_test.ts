@@ -15,7 +15,7 @@ import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
 
 const key = "your-secret"
 
-Deno.test(function makeSimpleCreationAndValidationTest(): void {
+Deno.test(function makeConversionTest(): void {
   const hex1 =
     "a4a99a8e21149ccbc5c5aabd310e5d5208b12db90dff749171d5014b688ce808"
   const hex2 = convertUint8ArrayToHex(
