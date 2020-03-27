@@ -38,6 +38,29 @@ Deno.test(function makeConversionTest(): void {
   assertEquals(hex1, hex2)
 })
 
+Deno.test(async function makeSimpleValidationTest(): Promise<void> {
+  const headerObject = {
+    alg: "HS384",
+    typ: "JWT",
+  }
+  const claims = {
+    sub: "1234567890",
+    name: "John Doe",
+    admin: true,
+    iat: 1516239022,
+  }
+  const jwt =
+    "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.bQTnz6AuMJvmXXQsVPrxeQNvzDkimo7VNXxHeSBfClLufmCVZRUuyTwJF311JHuh"
+  try {
+    const validatedJwt = await validateJwt(jwt)
+  } catch (err) {
+    assertEquals(
+      err.message,
+      "Invalid JWT: no matching crypto algorithm in the header"
+    )
+  }
+})
+
 Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
   const claims = {
     iss: "joe",
