@@ -58,8 +58,9 @@ generating and validating a JWT, respectively.
 
 The function `makeJwt` returns the url-safe encoded JWT.
 
-In cases where you only need the signing and verification feature of the JWS,
-you can enter the _empty string_ `""` as _payload_.
+In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
+only need the signing and verification feature of the JWS, you can enter the
+_empty string_ `""` as _payload_.
 
 #### validateJwt(jwt: string, key: string = "", throwErrors: boolean = true, critHandlers: Handlers = {}): Promise<any>
 
@@ -110,7 +111,7 @@ for await (const req of serve("0.0.0.0:8000")) {
     req.respond({ body: encode(jwt + "\n") })
   } else {
     const requestBody = decode(await Deno.readAll(req.body))
-    await validateJwt(requestBody, key, false)
+    ;(await validateJwt(requestBody, key, false))
       ? req.respond({ body: encode("Valid JWT\n") })
       : req.respond({ status: 401, body: encode("Invalid JWT\n") })
   }
