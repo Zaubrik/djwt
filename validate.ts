@@ -84,7 +84,7 @@ async function validateJwt(
   key = "",
   hasErrorsEnabled = true,
   critHandlers: Handlers = {}
-): Promise<JwtObject | undefined> {
+): Promise<JwtObject | null> {
   try {
     const oldJwt = parseAndDecode(jwt)
     await validateAndHandleHeaders(oldJwt, critHandlers)
@@ -96,6 +96,7 @@ async function validateJwt(
   } catch (err) {
     err.message = `Invalid JWT: ${err.message}`
     if (hasErrorsEnabled) throw err
+    else return null
   }
 }
 

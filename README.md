@@ -62,7 +62,7 @@ In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
 only need the signing and verification feature of the JWS, you can enter the
 _empty string_ `""` as _payload_.
 
-#### validateJwt(jwt: string, key: string = "", hasErrorsEnabled: boolean = true, critHandlers: Handlers = {}): Promise<JwtObject | undefined>
+#### validateJwt(jwt: string, key: string = "", hasErrorsEnabled: boolean = true, critHandlers: Handlers = {}): Promise<JwtObj | null>
 
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to a JWT representation as JavaScript object:
