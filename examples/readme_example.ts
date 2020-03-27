@@ -1,14 +1,14 @@
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
-import makeJwt, { setExpiration } from "../create.ts"
 import validateJwt from "../validate.ts"
+import makeJwt, { setExpiration, Jose, Payload } from "../create.ts"
 
-const key = "abc123"
-const claims = {
+const key = "your-secret"
+const claims: Payload = {
   iss: "joe",
   exp: setExpiration(new Date().getTime() + 60000),
 }
-const header = {
+const header: Jose = {
   alg: "HS256",
   typ: "JWT",
 }
@@ -20,7 +20,7 @@ for await (const req of serve("0.0.0.0:8000")) {
     req.respond({ body: encode(jwt + "\n") })
   } else {
     const requestBody = decode(await Deno.readAll(req.body))
-    ;(await validateJwt(requestBody, key, false))
+    await validateJwt(requestBody, key, false)
       ? req.respond({ body: encode("Valid JWT\n") })
       : req.respond({ status: 401, body: encode("Invalid JWT\n") })
   }
