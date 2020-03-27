@@ -113,3 +113,4 @@ async function validateJwt(
 }
 
 export default validateJwt
+export { convertUint8ArrayToHex }

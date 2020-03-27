@@ -6,7 +6,6 @@ type JsonPrimitive = string | number | boolean | null
 type JsonValue = JsonPrimitive | JsonObject | JsonArray
 type JsonObject = { [member: string]: JsonValue }
 type JsonArray = JsonValue[]
-
 type JwtObject = { header: Jose; payload: Claims | ""; signature: string }
 
 interface Claims {
@@ -96,4 +95,14 @@ function setExpiration(exp: number | Date): number {
 }
 
 export default makeJwt
-export { setExpiration, Claims, Jose, JwtObject, JsonValue }
+export {
+  setExpiration,
+  convertHexToBase64url,
+  convertBase64ToBase64url,
+  convertStringToBase64url,
+  convertHexToUint8Array,
+  Claims,
+  Jose,
+  JwtObject,
+  JsonValue,
+}
