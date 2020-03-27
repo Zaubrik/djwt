@@ -2,6 +2,7 @@ import { convertBase64ToBase64url } from "./base64/base64url.ts"
 import { convertUint8ArrayToBase64 } from "./base64/base64.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
+type Algorithms = "none" | "HS256" | "HS512"
 type JsonPrimitive = string | number | boolean | null
 type JsonValue = JsonPrimitive | JsonObject | JsonArray
 type JsonObject = { [member: string]: JsonValue }
@@ -20,7 +21,7 @@ interface Claims {
 }
 
 interface Jose {
-  alg: string
+  alg: Algorithms
   crit?: string[]
   [key: string]: JsonValue | undefined
 }
@@ -52,10 +53,14 @@ function makeJwsSigningInput(header: Jose, payload: Claims | string): string {
 }
 
 function makeSignature(
-  alg: string,
+  alg: Algorithms,
   key: string | Uint8Array,
   msg: string | Uint8Array
 ): string | null {
+  // Exhaustiveness check function:
+  function assertNever(x: never): never {
+    throw new Error("Unexpected Algorithm: " + x)
+  }
   switch (alg) {
     case "none":
       return null
@@ -64,7 +69,7 @@ function makeSignature(
     case "HS512":
       return hmac("sha512", key, msg, "utf8", "hex") as string
     default:
-      throw RangeError("no matching algorithm")
+      assertNever(alg)
   }
 }
 
@@ -105,4 +110,5 @@ export {
   Jose,
   JwtObject,
   JsonValue,
+  Algorithms,
 }

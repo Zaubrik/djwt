@@ -1,4 +1,10 @@
-import makeJwt, { Claims, Jose, JwtObject, JsonValue } from "./create.ts"
+import makeJwt, {
+  Claims,
+  Jose,
+  JwtObject,
+  JsonValue,
+  Algorithms,
+} from "./create.ts"
 import { convertBase64ToUint8Array } from "./base64/base64.ts"
 import { convertBase64urlToBase64 } from "./base64/base64url.ts"
 
@@ -10,7 +16,7 @@ interface Handlers {
  * The "alg" header parameter identifies the cryptographic algorithm and MUST
  * be present (JWS §4.1.1)
  */
-function checkHeaderAlg(header: Jose, algorithms: string[]): string {
+function checkHeaderAlg(header: Jose, algorithms: Algorithms[]): Algorithms {
   if (!header.alg) throw ReferenceError("header parameter 'alg' is empty")
   const algorithm = algorithms.find(el => el === header.alg)
   if (!algorithm) throw RangeError("no matching crypto algorithm in the header")
@@ -54,7 +60,7 @@ function isExpired(exp: number): boolean {
 
 function validateAndHandleHeaders(
   header: Jose,
-  algorithms: string[],
+  algorithms: Algorithms[],
   critHandlers: Handlers
 ): Promise<any> {
   if ("exp" in header) {
@@ -97,7 +103,7 @@ async function validateJwt(
   throwErrors = true,
   critHandlers: Handlers = {}
 ): Promise<JwtObject | undefined> {
-  const algorithms: string[] = ["HS256", "HS512", "none"]
+  const algorithms: Algorithms[] = ["HS256", "HS512", "none"]
   try {
     const oldJwt = parseAndDecode(jwt)
     await validateAndHandleHeaders(oldJwt.header, algorithms, critHandlers)
