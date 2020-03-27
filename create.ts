@@ -2,14 +2,21 @@ import { convertBase64ToBase64url } from "./base64/base64url.ts"
 import { convertUint8ArrayToBase64 } from "./base64/base64.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
-type Algorithms = "none" | "HS256" | "HS512"
+const ALGORITHMS = {
+  none: "none",
+  HS256: "HS256",
+  HS512: "HS512",
+} as const
+
+type ALGORITHMS = typeof ALGORITHMS
+type Algorithm = typeof ALGORITHMS[keyof typeof ALGORITHMS]
 type JsonPrimitive = string | number | boolean | null
 type JsonValue = JsonPrimitive | JsonObject | JsonArray
 type JsonObject = { [member: string]: JsonValue }
 type JsonArray = JsonValue[]
-type JwtObject = { header: Jose; payload: Claims | ""; signature: string }
+type JwtObject = { header: Jose; payload: Payload | ""; signature: string }
 
-interface Claims {
+interface Payload {
   iss?: string
   sub?: string
   aud?: string[] | string
@@ -21,7 +28,7 @@ interface Claims {
 }
 
 interface Jose {
-  alg: Algorithms
+  alg: string
   crit?: string[]
   [key: string]: JsonValue | undefined
 }
@@ -46,30 +53,26 @@ function convertHexToUint8Array(hex: string): Uint8Array {
   throw new TypeError("Invalid hex string.")
 }
 
-function makeJwsSigningInput(header: Jose, payload: Claims | string): string {
+function makeJwsSigningInput(header: Jose, payload: Payload | string): string {
   return `${convertStringToBase64url(
     JSON.stringify(header)
   )}.${convertStringToBase64url(JSON.stringify(payload))}`
 }
 
 function makeSignature(
-  alg: Algorithms,
+  alg: string,
   key: string | Uint8Array,
   msg: string | Uint8Array
 ): string | null {
-  // Exhaustiveness check function:
-  function assertNever(x: never): never {
-    throw new Error("Unexpected Algorithm: " + x)
-  }
   switch (alg) {
-    case "none":
+    case ALGORITHMS.none:
       return null
-    case "HS256":
+    case ALGORITHMS.HS256:
       return hmac("sha256", key, msg, "utf8", "hex") as string
-    case "HS512":
+    case ALGORITHMS.HS512:
       return hmac("sha512", key, msg, "utf8", "hex") as string
     default:
-      assertNever(alg)
+      throw RangeError("no matching crypto algorithm")
   }
 }
 
@@ -106,9 +109,10 @@ export {
   convertBase64ToBase64url,
   convertStringToBase64url,
   convertHexToUint8Array,
-  Claims,
+  Payload,
   Jose,
   JwtObject,
   JsonValue,
-  Algorithms,
+  Algorithm,
+  ALGORITHMS,
 }
