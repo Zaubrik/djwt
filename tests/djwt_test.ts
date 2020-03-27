@@ -56,8 +56,26 @@ Deno.test(async function makeSimpleValidationTest(): Promise<void> {
   } catch (err) {
     assertEquals(
       err.message,
-      "Invalid JWT: no matching crypto algorithm in the header"
+      "Invalid JWT: Failed to create a JWT: no matching crypto algorithm in the header: HS384"
     )
+  }
+})
+
+Deno.test(async function testExpiredJwt(): Promise<void> {
+  const claims = {
+    iss: "joe",
+    jti: "123456789abc",
+    exp: setExpiration(new Date().getTime() - 20000),
+  }
+  const headerObject = {
+    alg: "HS256" as const,
+    dummy: 100,
+  }
+  const jwt = makeJwt(headerObject, claims, key)
+  try {
+    const validatedJwt = await validateJwt(jwt, key)
+  } catch (err) {
+    assertEquals(err.message, "Invalid JWT: the jwt is expired")
   }
 })
 
@@ -68,7 +86,7 @@ Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
     exp: setExpiration(new Date().getTime() + 1),
   }
   const headerObject = {
-    alg: "HS256",
+    alg: "HS256" as const,
     crit: ["dummy"],
     dummy: 100,
   }
@@ -93,10 +111,9 @@ Deno.test(async function makeUnsecuredJwtTest(): Promise<void> {
   const claims = {
     iss: "joe",
     jti: "123456789abc",
-    exp: setExpiration(new Date().getTime() + 1),
   }
   const headerObject = {
-    alg: "none",
+    alg: "none" as const,
     dummy: 100,
   }
   const jwt = makeJwt(headerObject, claims)
@@ -109,7 +126,7 @@ Deno.test(async function makeUnsecuredJwtTest(): Promise<void> {
 // https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F
 Deno.test(async function createJwtWithEmptyPayload(): Promise<void> {
   const claims = ""
-  const headerObject = { typ: "JWT", alg: "HS256" }
+  const headerObject = { typ: "JWT", alg: "HS256" as const }
   const jwt = makeJwt(headerObject, claims, key)
   const validatedJwt = await validateJwt(jwt, key)
   assertEquals(validatedJwt!.payload, claims)
