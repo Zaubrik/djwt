@@ -54,7 +54,7 @@ to see how the **crit** header parameter works.
 The API consists mostly of the two functions `makeJwt` and `validateJwt`,
 generating and validating a JWT, respectively.
 
-#### makeJwt({ header: Jose, payload?: Payload }, key: string = ""): string
+#### makeJwt({ header: Jose, payload?: Payload }, key: string): string
 
 The function `makeJwt` returns the url-safe encoded JWT.
 
@@ -62,7 +62,7 @@ In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
 only need the signing and verification feature of the JWS, you can omit the
 _payload_.
 
-#### validateJwt(jwt: string, key: string = "", hasErrorsEnabled: boolean = true, critHandlers: Handlers = {}): Promise<JwtObject | null>
+#### validateJwt(jwt: string, key: string, hasErrorsEnabled: boolean = true, critHandlers?: Handlers): Promise<JwtObject | null>
 
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to a JWT representation as JavaScript object:
@@ -117,7 +117,7 @@ for await (const req of serve("0.0.0.0:8000")) {
     const requestBody = decode(await Deno.readAll(req.body))
     ;(await validateJwt(requestBody, key, false))
       ? req.respond({ body: encode("Valid JWT\n") })
-      : req.respond({ status: 401, body: encode("Invalid JWT\n") })
+      : req.respond({ body: encode("Invalid JWT\n"), status: 401 })
   }
 }
 ```
