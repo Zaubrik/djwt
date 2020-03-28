@@ -59,21 +59,33 @@ Deno.test(async function makeSignatureTests(): Promise<void> {
   )
 })
 
-Deno.test(async function makeSimpleValidationTest(): Promise<void> {
+Deno.test(async function makeCreationAndValidationTest(): Promise<void> {
   const header = {
-    alg: "HS384",
+    alg: "HS256" as const,
     typ: "JWT",
   }
   const payload = {
     sub: "1234567890",
     name: "John Doe",
-    admin: true,
     iat: 1516239022,
   }
-  const jwt =
+  const jwt = makeJwt({ header, payload }, key)
+  const validatedJwt = await validateJwt(jwt, key)
+  assertEquals(
+    jwt,
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SARsBE5x_ua2ye823r2zKpQNaew3Daq8riKz5A4h3o4"
+  )
+  assertEquals(validatedJwt!.payload, payload)
+  assertEquals(validatedJwt!.header, header)
+  assertEquals(
+    jwt.slice(jwt.lastIndexOf(".") + 1),
+    convertHexToBase64url(validatedJwt!.signature)
+  )
+
+  const invalidJwt = // jwt with not supported crypto algorithm in alg header:
     "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.bQTnz6AuMJvmXXQsVPrxeQNvzDkimo7VNXxHeSBfClLufmCVZRUuyTwJF311JHuh"
   try {
-    const validatedJwt = await validateJwt(jwt)
+    const validatedJwt = await validateJwt(invalidJwt, "")
   } catch (err) {
     assertEquals(
       err.message,
@@ -100,7 +112,7 @@ Deno.test(async function testExpiredJwt(): Promise<void> {
   }
 })
 
-Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
+Deno.test(async function makeHeaderCritTest(): Promise<void> {
   const payload = {
     iss: "joe",
     jti: "123456789abc",
@@ -125,6 +137,14 @@ Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
     jwt.slice(jwt.lastIndexOf(".") + 1),
     convertHexToBase64url(validatedJwt!.signature)
   )
+  try {
+    const failing = await validateJwt(jwt, key, true)
+  } catch (err) {
+    assertEquals(
+      err.message,
+      "Invalid JWT: critical extension header parameters are not understood"
+    )
+  }
 })
 
 // https://tools.ietf.org/html/rfc7519#section-6
@@ -137,15 +157,15 @@ Deno.test(async function makeUnsecuredJwtTest(): Promise<void> {
     alg: "none" as const,
     dummy: 100,
   }
-  const jwt = makeJwt({ header, payload })
-  const validatedJwt = await validateJwt(jwt)
+  const jwt = makeJwt({ header, payload }, "")
+  const validatedJwt = await validateJwt(jwt, "")
   assertEquals(validatedJwt!.payload, payload)
   assertEquals(validatedJwt!.header, header)
   assertEquals(validatedJwt!.signature, "")
 })
 
 // https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F
-Deno.test(async function createJwtWithEmptyPayload(): Promise<void> {
+Deno.test(async function createJwtWithEmptyPayloadTest(): Promise<void> {
   const header = { typ: "JWT", alg: "HS256" as const }
   const jwt = makeJwt({ header }, key)
   const validatedJwt = await validateJwt(jwt, key)
