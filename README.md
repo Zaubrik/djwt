@@ -54,13 +54,13 @@ to see how the **crit** header parameter works.
 The API consists mostly of the two functions `makeJwt` and `validateJwt`,
 generating and validating a JWT, respectively.
 
-#### makeJwt(header: Jose, payload: Claims | string, key: string = ""): string
+#### makeJwt({ header: Jose, payload?: Payload }, key: string = ""): string
 
 The function `makeJwt` returns the url-safe encoded JWT.
 
 In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
-only need the signing and verification feature of the JWS, you can enter the
-_empty string_ `""` as _payload_.
+only need the signing and verification feature of the JWS, you can omit the
+_payload_.
 
 #### validateJwt(jwt: string, key: string = "", hasErrorsEnabled: boolean = true, critHandlers: Handlers = {}): Promise<JwtObject | null>
 
@@ -92,10 +92,14 @@ server will check the validity of the JWT.
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/strings/mod.ts"
 import validateJwt from "https://deno.land/x/djwt/validate.ts"
-import makeJwt, { setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts"
+import makeJwt, {
+  setExpiration,
+  Jose,
+  Payload,
+} from "https://deno.land/x/djwt/create.ts"
 
 const key = "your-secret"
-const claims: Payload = {
+const payload: Payload = {
   iss: "joe",
   exp: setExpiration(new Date().getTime() + 60000),
 }
@@ -107,11 +111,11 @@ const header: Jose = {
 console.log("server is listening at 0.0.0.0:8000")
 for await (const req of serve("0.0.0.0:8000")) {
   if (req.method === "GET") {
-    const jwt = makeJwt(header, claims, key)
+    const jwt = makeJwt({ header, payload }, key)
     req.respond({ body: encode(jwt + "\n") })
   } else {
     const requestBody = decode(await Deno.readAll(req.body))
-    await validateJwt(requestBody, key, false)
+    ;(await validateJwt(requestBody, key, false))
       ? req.respond({ body: encode("Valid JWT\n") })
       : req.respond({ status: 401, body: encode("Invalid JWT\n") })
   }

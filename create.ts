@@ -3,11 +3,10 @@ import { convertUint8ArrayToBase64 } from "./base64/base64.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
 type Algorithm = "none" | "HS256" | "HS512"
-type JwtObject = { header: Jose; payload: Payload | ""; signature: string }
 type JsonPrimitive = string | number | boolean | null
-type JsonValue = JsonPrimitive | JsonObject | JsonArray
 type JsonObject = { [member: string]: JsonValue }
 type JsonArray = JsonValue[]
+type JsonValue = JsonPrimitive | JsonObject | JsonArray
 
 interface Payload {
   iss?: string
@@ -46,17 +45,13 @@ function convertHexToUint8Array(hex: string): Uint8Array {
   throw new TypeError("Invalid hex string.")
 }
 
-function makeJwsSigningInput(header: Jose, payload: Payload | string): string {
+function makeSigningInput(header: Jose, payload?: Payload): string {
   return `${convertStringToBase64url(
     JSON.stringify(header)
-  )}.${convertStringToBase64url(JSON.stringify(payload))}`
+  )}.${convertStringToBase64url(JSON.stringify(payload || ""))}`
 }
 
-function makeSignature(
-  alg: Algorithm,
-  key: string | Uint8Array,
-  msg: string | Uint8Array
-): string | null {
+function encrypt(alg: Algorithm, key: string, msg: string): string | null {
   function assertNever(alg: never): never {
     throw new RangeError("no matching crypto algorithm in the header: " + alg)
   }
@@ -72,18 +67,18 @@ function makeSignature(
   }
 }
 
+function makeSignature(alg: Algorithm, key: string, input: string): string {
+  const encryptionInHex = encrypt(alg, key, input)
+  return encryptionInHex ? convertHexToBase64url(encryptionInHex) : ""
+}
+
 function makeJwt(
-  header: JwtObject["header"],
-  payload: JwtObject["payload"],
+  { header, payload }: { header: Jose; payload?: Payload },
   key = ""
 ): string {
+  const signingInput = makeSigningInput(header, payload)
   try {
-    const signingInput = makeJwsSigningInput(header, payload)
-    const encryption = makeSignature(header.alg, key, signingInput)
-    const signature: JwtObject["signature"] = encryption
-      ? convertHexToBase64url(encryption)
-      : ""
-    return `${signingInput}.${signature}`
+    return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
   } catch (err) {
     err.message = `Failed to create a JWT: ${err.message}`
     throw err
@@ -101,12 +96,11 @@ function setExpiration(exp: number | Date): number {
 export default makeJwt
 export {
   setExpiration,
+  makeSignature,
   convertHexToBase64url,
   convertBase64ToBase64url,
   convertStringToBase64url,
   convertHexToUint8Array,
   Payload,
   Jose,
-  JwtObject,
-  JsonValue,
 }

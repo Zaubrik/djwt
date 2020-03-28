@@ -39,11 +39,11 @@ Deno.test(function makeConversionTest(): void {
 })
 
 Deno.test(async function makeSimpleValidationTest(): Promise<void> {
-  const headerObject = {
+  const header = {
     alg: "HS384",
     typ: "JWT",
   }
-  const claims = {
+  const payload = {
     sub: "1234567890",
     name: "John Doe",
     admin: true,
@@ -62,16 +62,16 @@ Deno.test(async function makeSimpleValidationTest(): Promise<void> {
 })
 
 Deno.test(async function testExpiredJwt(): Promise<void> {
-  const claims = {
+  const payload = {
     iss: "joe",
     jti: "123456789abc",
     exp: setExpiration(new Date().getTime() - 20000),
   }
-  const headerObject = {
+  const header = {
     alg: "HS256" as const,
     dummy: 100,
   }
-  const jwt = makeJwt(headerObject, claims, key)
+  const jwt = makeJwt({ header, payload }, key)
   try {
     const validatedJwt = await validateJwt(jwt, key)
   } catch (err) {
@@ -80,12 +80,12 @@ Deno.test(async function testExpiredJwt(): Promise<void> {
 })
 
 Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
-  const claims = {
+  const payload = {
     iss: "joe",
     jti: "123456789abc",
     exp: setExpiration(new Date().getTime() + 1),
   }
-  const headerObject = {
+  const header = {
     alg: "HS256" as const,
     crit: ["dummy"],
     dummy: 100,
@@ -96,10 +96,10 @@ Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
     },
   }
 
-  const jwt = makeJwt(headerObject, claims, key)
+  const jwt = makeJwt({ header, payload }, key)
   const validatedJwt = await validateJwt(jwt, key, true, critHandlers)
-  assertEquals(validatedJwt!.payload, claims)
-  assertEquals(validatedJwt!.header, headerObject)
+  assertEquals(validatedJwt!.payload, payload)
+  assertEquals(validatedJwt!.header, header)
   assertEquals(
     jwt.slice(jwt.lastIndexOf(".") + 1),
     convertHexToBase64url(validatedJwt!.signature)
@@ -108,29 +108,28 @@ Deno.test(async function makeSimpleCreationAndValidationTest(): Promise<void> {
 
 // https://tools.ietf.org/html/rfc7519#section-6
 Deno.test(async function makeUnsecuredJwtTest(): Promise<void> {
-  const claims = {
+  const payload = {
     iss: "joe",
     jti: "123456789abc",
   }
-  const headerObject = {
+  const header = {
     alg: "none" as const,
     dummy: 100,
   }
-  const jwt = makeJwt(headerObject, claims)
+  const jwt = makeJwt({ header, payload })
   const validatedJwt = await validateJwt(jwt)
-  assertEquals(validatedJwt!.payload, claims)
-  assertEquals(validatedJwt!.header, headerObject)
+  assertEquals(validatedJwt!.payload, payload)
+  assertEquals(validatedJwt!.header, header)
   assertEquals(validatedJwt!.signature, "")
 })
 
 // https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F
 Deno.test(async function createJwtWithEmptyPayload(): Promise<void> {
-  const claims = ""
-  const headerObject = { typ: "JWT", alg: "HS256" as const }
-  const jwt = makeJwt(headerObject, claims, key)
+  const header = { typ: "JWT", alg: "HS256" as const }
+  const jwt = makeJwt({ header }, key)
   const validatedJwt = await validateJwt(jwt, key)
-  assertEquals(validatedJwt!.payload, claims)
-  assertEquals(validatedJwt!.header, headerObject)
+  assertEquals(validatedJwt!.payload, undefined)
+  assertEquals(validatedJwt!.header, header)
 })
 
 // await Deno.runTests()

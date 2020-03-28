@@ -1,8 +1,9 @@
-import makeJwt, { Payload, Jose, JwtObject, JsonValue } from "./create.ts"
+import makeJwt, { Payload, Jose } from "./create.ts"
 import { convertBase64ToUint8Array } from "./base64/base64.ts"
 import { convertBase64urlToBase64 } from "./base64/base64url.ts"
 
-interface Handlers {
+type JwtObject = { header: Jose; payload?: Payload; signature: string }
+type Handlers = {
   [key: string]: (header?: Jose[string]) => any
 }
 
@@ -63,7 +64,7 @@ function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
 
 function parseAndDecode(jwt: string): JwtObject {
   if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/.test(jwt))
-    throw Error("wrong type or format")
+    throw Error("no valid JWT serialization")
   const parsedArray = jwt
     .split(".")
     .map(convertBase64urlToBase64)
@@ -74,7 +75,7 @@ function parseAndDecode(jwt: string): JwtObject {
     })
   return {
     header: parsedArray[0],
-    payload: parsedArray[1],
+    payload: parsedArray[1] === "" ? undefined : parsedArray[1],
     signature: parsedArray[2],
   } as JwtObject
 }
@@ -86,12 +87,10 @@ async function validateJwt(
   critHandlers: Handlers = {}
 ): Promise<JwtObject | null> {
   try {
-    const oldJwt = parseAndDecode(jwt)
-    await validateAndHandleHeaders(oldJwt, critHandlers)
-    const signature = parseAndDecode(
-      makeJwt(oldJwt.header, oldJwt.payload, key)
-    ).signature
-    if (oldJwt.signature === signature) return oldJwt
+    const oldJwtObject = parseAndDecode(jwt)
+    await validateAndHandleHeaders(oldJwtObject, critHandlers)
+    const signature = parseAndDecode(makeJwt(oldJwtObject, key)).signature
+    if (oldJwtObject.signature === signature) return oldJwtObject
     else throw Error("signatures don't match")
   } catch (err) {
     err.message = `Invalid JWT: ${err.message}`

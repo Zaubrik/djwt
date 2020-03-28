@@ -1,14 +1,14 @@
 import makeJwt, { setExpiration } from "../create.ts"
 import validateJwt from "../validate.ts"
 
-const claims = {
+const payload = {
   iss: "joe",
   jti: "123456789abc",
   exp: setExpiration(new Date().getTime() + 1000),
   // exp: setExpiration(new Date().getTime() - 10000), // Invalid JWT: the jwt is expired
 }
 
-const headerObject = {
+const header = {
   alg: "HS256" as const,
   crit: ["dummy"],
   dummy: 100,
@@ -23,7 +23,7 @@ const critHandlers = {
 
 const key = "abc123"
 try {
-  const jwt = makeJwt(headerObject, claims, key)
+  const jwt = makeJwt({ header, payload }, key)
   console.log("JWT:", jwt)
   const validatedJwt = await validateJwt(jwt, key, true, critHandlers)
   console.log("JWT is valid!\n", validatedJwt)

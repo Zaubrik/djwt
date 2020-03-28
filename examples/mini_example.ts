@@ -3,12 +3,15 @@ import { encode, decode } from "https://deno.land/std/strings/mod.ts"
 import makeJwt from "../create.ts"
 import validateJwt from "../validate.ts"
 
+const jwtInput = {
+  header: { typ: "JWT", alg: "HS256" as const },
+  payload: { iss: "joe" },
+}
+
 for await (const req of serve("0.0.0.0:8000")) {
   if (req.method === "GET")
     req.respond({
-      body: encode(
-        makeJwt({ typ: "JWT", alg: "HS256" }, { iss: "joe" }, "abc123") + "\n"
-      ),
+      body: encode(makeJwt(jwtInput, "abc123") + "\n"),
     })
   else
     (await validateJwt(decode(await Deno.readAll(req.body)), "abc123", false))
