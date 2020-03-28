@@ -74,7 +74,7 @@ function makeSignature(alg: Algorithm, key: string, input: string): string {
 
 function makeJwt(
   { header, payload }: { header: Jose; payload?: Payload },
-  key = ""
+  key: string
 ): string {
   const signingInput = makeSigningInput(header, payload)
   try {

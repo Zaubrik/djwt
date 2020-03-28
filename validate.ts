@@ -11,7 +11,7 @@ type Handlers = {
  * A present 'crit' header parameter indicates that the JWS signature validator
  * must understand and process additional claims (JWS §4.1.11)
  */
-function checkHeaderCrit(header: Jose, critHandlers: Handlers): Promise<any[]> {
+function checkHeaderCrit(header: Jose, handlers?: Handlers): Promise<any[]> {
   // prettier-ignore
   const reservedNames = new Set([ 
     "alg", "jku", "jwk", "kid", "x5u", "x5c", "x5t", "x5t#S256", "typ", "cty",
@@ -25,13 +25,14 @@ function checkHeaderCrit(header: Jose, critHandlers: Handlers): Promise<any[]> {
   if (header.crit.some((str: string) => reservedNames.has(str)))
     throw Error("the 'crit' list contains a non-extension header parameter")
   if (
+    !handlers ||
     header.crit.some(
-      (str: string) => !header[str] || typeof critHandlers[str] !== "function"
+      (str: string) => !header[str] || typeof handlers[str] !== "function"
     )
   )
     throw Error("critical extension header parameters are not understood")
   return Promise.all(
-    header.crit.map((str: string) => critHandlers[str](header[str]))
+    header.crit.map((str: string) => handlers[str](header[str]))
   )
 }
 
@@ -45,7 +46,7 @@ function isExpired(exp: Payload["exp"]): boolean {
 
 function validateAndHandleHeaders(
   { header, payload }: JwtObject,
-  critHandlers: Handlers
+  critHandlers?: Handlers
 ): Promise<any> {
   if (!header.alg) throw ReferenceError("header parameter 'alg' is empty")
   if (typeof payload === "object" && "exp" in payload && isExpired(payload.exp))
@@ -82,9 +83,9 @@ function parseAndDecode(jwt: string): JwtObject {
 
 async function validateJwt(
   jwt: string,
-  key = "",
+  key: string,
   hasErrorsEnabled = true,
-  critHandlers: Handlers = {}
+  critHandlers?: Handlers
 ): Promise<JwtObject | null> {
   try {
     const oldJwtObject = parseAndDecode(jwt)

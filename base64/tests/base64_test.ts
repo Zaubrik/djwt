@@ -22,7 +22,7 @@ Deno.test(function convertBase64ToStringAndBackTest(): void {
   assertEquals(str1, convertBase64ToString(convertStringToBase64(str1)))
 })
 
-Deno.test(function makeAMultiByteCharacterTest(): void {
+Deno.test(function convertMultiByteCharactersTest(): void {
   assertEquals(
     convertBase64ToString(
       convertUint8ArrayToBase64(
