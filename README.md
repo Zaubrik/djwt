@@ -62,11 +62,12 @@ In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
 only need the signing and verification feature of the JWS, you can omit the
 _payload_.
 
-#### validateJwt(jwt: string, key: string, hasErrorsEnabled: boolean = true, critHandlers?: Handlers): Promise<JwtObject | null>
+#### validateJwt(jwt: string, key: string, isThrowing: boolean = true, critHandlers?: Handlers): Promise<JwtObject | null>
 
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to a JWT representation as JavaScript object:
-`{header, payload, signature}`.
+`{ header, payload, signature }`. If the Jwt is invalid the promise resolves to
+`null` or an `Error` is thrown - depending how you set the boolean `isThrowing`.
 
 #### setExpiration(exp: number | Date): number
 
@@ -115,7 +116,7 @@ for await (const req of serve("0.0.0.0:8000")) {
     req.respond({ body: encode(jwt + "\n") })
   } else {
     const requestBody = decode(await Deno.readAll(req.body))
-    ;(await validateJwt(requestBody, key, false))
+    await validateJwt(requestBody, key, false)
       ? req.respond({ body: encode("Valid JWT\n") })
       : req.respond({ body: encode("Invalid JWT\n"), status: 401 })
   }

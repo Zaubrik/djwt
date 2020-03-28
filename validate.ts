@@ -84,7 +84,7 @@ function parseAndDecode(jwt: string): JwtObject {
 async function validateJwt(
   jwt: string,
   key: string,
-  hasErrorsEnabled = true,
+  isThrowing = true,
   critHandlers?: Handlers
 ): Promise<JwtObject | null> {
   try {
@@ -95,7 +95,7 @@ async function validateJwt(
     else throw Error("signatures don't match")
   } catch (err) {
     err.message = `Invalid JWT: ${err.message}`
-    if (hasErrorsEnabled) throw err
+    if (isThrowing) throw err
     else return null
   }
 }
