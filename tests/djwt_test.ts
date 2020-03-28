@@ -1,5 +1,6 @@
 import makeJwt, {
   setExpiration,
+  makeSignature,
   convertHexToBase64url,
   convertBase64ToBase64url,
   convertHexToUint8Array,
@@ -36,6 +37,26 @@ Deno.test(function makeConversionTest(): void {
     )
   )
   assertEquals(hex1, hex2)
+})
+
+Deno.test(async function makeSignatureTests(): Promise<void> {
+  // https://www.freeformatter.com/hmac-generator.html
+  const computedHmacInHex =
+    "2b9e6619fa7f2c8d8b3565c88365376b75b1b0e5d87e41218066fd1986f2c056"
+  const anotherVerifiedSignatureInBase64Url =
+    "p2KneqJhji8T0PDlVxcG4DROyzTgWXbDhz_mcTVojXo"
+  assertEquals(
+    makeSignature("HS256", "m$y-key", "thisTextWillBeEncrypted"),
+    convertHexToBase64url(computedHmacInHex)
+  )
+  assertEquals(
+    makeSignature(
+      "HS256",
+      "m$y-key",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
+    ),
+    anotherVerifiedSignatureInBase64Url
+  )
 })
 
 Deno.test(async function makeSimpleValidationTest(): Promise<void> {
