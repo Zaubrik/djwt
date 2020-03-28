@@ -2,18 +2,12 @@ import { convertBase64ToBase64url } from "./base64/base64url.ts"
 import { convertUint8ArrayToBase64 } from "./base64/base64.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
-const ALGORITHMS = {
-  none: "none",
-  HS256: "HS256",
-  HS512: "HS512",
-} as const
-
-type Algorithm = typeof ALGORITHMS[keyof typeof ALGORITHMS]
+type Algorithm = "none" | "HS256" | "HS512"
+type JwtObject = { header: Jose; payload: Payload | ""; signature: string }
 type JsonPrimitive = string | number | boolean | null
 type JsonValue = JsonPrimitive | JsonObject | JsonArray
 type JsonObject = { [member: string]: JsonValue }
 type JsonArray = JsonValue[]
-type JwtObject = { header: Jose; payload: Payload | ""; signature: string }
 
 interface Payload {
   iss?: string
@@ -67,11 +61,11 @@ function makeSignature(
     throw new RangeError("no matching crypto algorithm in the header: " + alg)
   }
   switch (alg) {
-    case ALGORITHMS.none:
+    case "none":
       return null
-    case ALGORITHMS.HS256:
+    case "HS256":
       return hmac("sha256", key, msg, "utf8", "hex") as string
-    case ALGORITHMS.HS512:
+    case "HS512":
       return hmac("sha512", key, msg, "utf8", "hex") as string
     default:
       assertNever(alg)
@@ -115,5 +109,4 @@ export {
   Jose,
   JwtObject,
   JsonValue,
-  ALGORITHMS,
 }
