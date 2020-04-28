@@ -158,7 +158,7 @@ Deno.test(async function makeUnsecuredJwtTest(): Promise<void> {
     dummy: 100,
   }
   const jwt = makeJwt({ header, payload }, "")
-  const validatedJwt = await validateJwt(jwt, "")
+  const validatedJwt = await validateJwt(jwt, "keyIsIgnored")
   assertEquals(validatedJwt!.payload, payload)
   assertEquals(validatedJwt!.header, header)
   assertEquals(validatedJwt!.signature, "")

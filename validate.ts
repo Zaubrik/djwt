@@ -1,6 +1,7 @@
 import makeJwt, { Payload, Jose } from "./create.ts"
 import { convertBase64ToUint8Array } from "./base64/base64.ts"
 import { convertBase64urlToBase64 } from "./base64/base64url.ts"
+import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std/encoding/hex.ts"
 
 type JwtObject = { header: Jose; payload?: Payload; signature: string }
 type Handlers = {
@@ -54,13 +55,6 @@ function validateAndHandleHeaders(
   return "crit" in header
     ? checkHeaderCrit(header, critHandlers)
     : Promise.resolve()
-}
-
-function convertUint8ArrayToHex(uint8Array: Uint8Array): string {
-  return uint8Array.reduce(
-    (acc, el) => acc + el.toString(16).padStart(2, "0"),
-    ""
-  )
 }
 
 function parseAndDecode(jwt: string): JwtObject {

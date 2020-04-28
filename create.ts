@@ -1,5 +1,6 @@
 import { convertBase64ToBase64url } from "./base64/base64url.ts"
 import { convertUint8ArrayToBase64 } from "./base64/base64.ts"
+import { decodeString as convertHexToUint8Array } from "https://deno.land/std/encoding/hex.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
 type Algorithm = "none" | "HS256" | "HS512"
@@ -35,14 +36,6 @@ function convertStringToBase64url(input: string): string {
   return convertBase64ToBase64url(
     convertUint8ArrayToBase64(new TextEncoder().encode(input))
   )
-}
-
-function convertHexToUint8Array(hex: string): Uint8Array {
-  if (hex.length % 2 === 0 && /^[0-9a-fA-F]+$/.test(hex)) {
-    const match = hex.match(/.{2}/g)
-    if (match) return Uint8Array.from(match.map(el => parseInt(el, 16)))
-  }
-  throw new TypeError("Invalid hex string.")
 }
 
 function makeSigningInput(header: Jose, payload?: Payload): string {
