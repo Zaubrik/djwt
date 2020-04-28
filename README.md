@@ -54,7 +54,7 @@ to see how the **crit** header parameter works.
 The API consists mostly of the two functions `makeJwt` and `validateJwt`,
 generating and validating a JWT, respectively.
 
-#### makeJwt({ header: Jose, payload?: Payload }, key: string): string
+#### makeJwt({ key: string, header: Jose, payload?: Payload }): string
 
 The function `makeJwt` returns the url-safe encoded JWT.
 
@@ -91,7 +91,7 @@ server will check the validity of the JWT.
 
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
-import { encode, decode } from "https://deno.land/std/strings/mod.ts"
+import { encode, decode } from "https://deno.land/std/encoding/utf8.ts"
 import validateJwt from "https://deno.land/x/djwt/validate.ts"
 import makeJwt, {
   setExpiration,
@@ -112,7 +112,7 @@ const header: Jose = {
 console.log("server is listening at 0.0.0.0:8000")
 for await (const req of serve("0.0.0.0:8000")) {
   if (req.method === "GET") {
-    const jwt = makeJwt({ header, payload }, key)
+    const jwt = makeJwt({ header, payload, key})
     req.respond({ body: encode(jwt + "\n") })
   } else {
     const requestBody = decode(await Deno.readAll(req.body))

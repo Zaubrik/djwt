@@ -12,6 +12,7 @@ import {
   convertBase64ToUint8Array,
   convertUint8ArrayToBase64,
 } from "../base64/base64.ts"
+import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std/encoding/hex.ts"
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
 
 const key = "your-secret"
@@ -69,7 +70,7 @@ Deno.test(async function makeCreationAndValidationTest(): Promise<void> {
     name: "John Doe",
     iat: 1516239022,
   }
-  const jwt = makeJwt({ header, payload }, key)
+  const jwt = makeJwt({ header, payload, key })
   const validatedJwt = await validateJwt(jwt, key)
   assertEquals(
     jwt,
@@ -104,7 +105,7 @@ Deno.test(async function testExpiredJwt(): Promise<void> {
     alg: "HS256" as const,
     dummy: 100,
   }
-  const jwt = makeJwt({ header, payload }, key)
+  const jwt = makeJwt({ header, payload, key })
   try {
     const validatedJwt = await validateJwt(jwt, key)
   } catch (err) {
@@ -129,7 +130,7 @@ Deno.test(async function makeHeaderCritTest(): Promise<void> {
     },
   }
 
-  const jwt = makeJwt({ header, payload }, key)
+  const jwt = makeJwt({ header, payload, key })
   const validatedJwt = await validateJwt(jwt, key, true, critHandlers)
   assertEquals(validatedJwt!.payload, payload)
   assertEquals(validatedJwt!.header, header)
@@ -157,7 +158,7 @@ Deno.test(async function makeUnsecuredJwtTest(): Promise<void> {
     alg: "none" as const,
     dummy: 100,
   }
-  const jwt = makeJwt({ header, payload }, "")
+  const jwt = makeJwt({ header, payload, key })
   const validatedJwt = await validateJwt(jwt, "keyIsIgnored")
   assertEquals(validatedJwt!.payload, payload)
   assertEquals(validatedJwt!.header, header)
@@ -167,7 +168,7 @@ Deno.test(async function makeUnsecuredJwtTest(): Promise<void> {
 // https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F
 Deno.test(async function createJwtWithEmptyPayloadTest(): Promise<void> {
   const header = { typ: "JWT", alg: "HS256" as const }
-  const jwt = makeJwt({ header }, key)
+  const jwt = makeJwt({ header, key })
   const validatedJwt = await validateJwt(jwt, key)
   assertEquals(validatedJwt!.payload, undefined)
   assertEquals(validatedJwt!.header, header)

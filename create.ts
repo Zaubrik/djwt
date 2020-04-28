@@ -9,6 +9,12 @@ type JsonObject = { [member: string]: JsonValue }
 type JsonArray = JsonValue[]
 type JsonValue = JsonPrimitive | JsonObject | JsonArray
 
+interface JwtInput {
+  key: string
+  header: Jose
+  payload?: Payload
+}
+
 interface Payload {
   iss?: string
   sub?: string
@@ -65,10 +71,7 @@ function makeSignature(alg: Algorithm, key: string, input: string): string {
   return encryptionInHex ? convertHexToBase64url(encryptionInHex) : ""
 }
 
-function makeJwt(
-  { header, payload }: { header: Jose; payload?: Payload },
-  key: string
-): string {
+function makeJwt({ key, header, payload }: JwtInput): string {
   const signingInput = makeSigningInput(header, payload)
   try {
     return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
@@ -96,4 +99,6 @@ export {
   convertHexToUint8Array,
   Payload,
   Jose,
+  JwtInput,
+  JsonValue,
 }
