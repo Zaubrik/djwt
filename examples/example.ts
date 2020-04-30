@@ -23,7 +23,7 @@ const critHandlers = {
 
 const key = "abc123"
 try {
-  const jwt = makeJwt({ header, payload }, key)
+  const jwt = makeJwt({ header, payload, key })
   console.log("JWT:", jwt)
   const validatedJwt = await validateJwt(jwt, key, true, critHandlers)
   console.log("JWT is valid!\n", validatedJwt)

@@ -112,7 +112,7 @@ const header: Jose = {
 console.log("server is listening at 0.0.0.0:8000")
 for await (const req of serve("0.0.0.0:8000")) {
   if (req.method === "GET") {
-    const jwt = makeJwt({ header, payload, key})
+    const jwt = makeJwt({ header, payload, key })
     req.respond({ body: encode(jwt + "\n") })
   } else {
     const requestBody = decode(await Deno.readAll(req.body))
