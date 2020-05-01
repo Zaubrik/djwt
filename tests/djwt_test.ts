@@ -6,7 +6,6 @@ import makeJwt, {
   convertHexToUint8Array,
 } from "../create.ts"
 import validateJwt from "../validate.ts"
-import { convertUint8ArrayToHex } from "../validate.ts"
 import { convertBase64urlToBase64 } from "../base64/base64url.ts"
 import {
   convertBase64ToUint8Array,
@@ -17,7 +16,7 @@ import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
 
 const key = "your-secret"
 
-Deno.test(function makeConversionTest(): void {
+Deno.test("makeConversionTest", function (): void {
   const hex1 =
     "a4a99a8e21149ccbc5c5aabd310e5d5208b12db90dff749171d5014b688ce808"
   const hex2 = convertUint8ArrayToHex(
@@ -40,7 +39,7 @@ Deno.test(function makeConversionTest(): void {
   assertEquals(hex1, hex2)
 })
 
-Deno.test(async function makeSignatureTests(): Promise<void> {
+Deno.test("makeSignatureTests", async function (): Promise<void> {
   // https://www.freeformatter.com/hmac-generator.html
   const computedHmacInHex =
     "2b9e6619fa7f2c8d8b3565c88365376b75b1b0e5d87e41218066fd1986f2c056"
@@ -60,7 +59,7 @@ Deno.test(async function makeSignatureTests(): Promise<void> {
   )
 })
 
-Deno.test(async function makeCreationAndValidationTest(): Promise<void> {
+Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
   const header = {
     alg: "HS256" as const,
     typ: "JWT",
@@ -95,7 +94,7 @@ Deno.test(async function makeCreationAndValidationTest(): Promise<void> {
   }
 })
 
-Deno.test(async function testExpiredJwt(): Promise<void> {
+Deno.test("testExpiredJwt", async function (): Promise<void> {
   const payload = {
     iss: "joe",
     jti: "123456789abc",
@@ -113,7 +112,7 @@ Deno.test(async function testExpiredJwt(): Promise<void> {
   }
 })
 
-Deno.test(async function makeHeaderCritTest(): Promise<void> {
+Deno.test("makeHeaderCritTest", async function (): Promise<void> {
   const payload = {
     iss: "joe",
     jti: "123456789abc",
@@ -149,7 +148,7 @@ Deno.test(async function makeHeaderCritTest(): Promise<void> {
 })
 
 // https://tools.ietf.org/html/rfc7519#section-6
-Deno.test(async function makeUnsecuredJwtTest(): Promise<void> {
+Deno.test("makeUnsecuredJwtTest", async function (): Promise<void> {
   const payload = {
     iss: "joe",
     jti: "123456789abc",
@@ -166,7 +165,7 @@ Deno.test(async function makeUnsecuredJwtTest(): Promise<void> {
 })
 
 // https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F
-Deno.test(async function createJwtWithEmptyPayloadTest(): Promise<void> {
+Deno.test("createJwtWithEmptyPayloadTest", async function (): Promise<void> {
   const header = { typ: "JWT", alg: "HS256" as const }
   const jwt = makeJwt({ header, key })
   const validatedJwt = await validateJwt(jwt, key)
