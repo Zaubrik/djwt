@@ -72,8 +72,8 @@ function makeSignature(alg: Algorithm, key: string, input: string): string {
 }
 
 function makeJwt({ key, header, payload }: JwtInput): string {
-  const signingInput = makeSigningInput(header, payload)
   try {
+    const signingInput = makeSigningInput(header, payload)
     return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
   } catch (err) {
     err.message = `Failed to create a JWT: ${err.message}`

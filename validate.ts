@@ -115,17 +115,19 @@ async function validateAndHandleHeaders(
   ]
 }
 
-function parseAndDecode(jwt: string) {
-  if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/.test(jwt))
-    throw Error("no valid JWT serialization")
+function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
+  // throws error on invalid JWT serialization
   const parsedArray = jwt
+    .match(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/)!
+    .shift()!
     .split(".")
     .map(convertBase64urlToBase64)
-    .map((str, index) => {
-      return index === 2
-        ? convertUint8ArrayToHex(convertBase64ToUint8Array(str))
-        : JSON.parse(new TextDecoder().decode(convertBase64ToUint8Array(str)))
-    })
+    .map(convertBase64ToUint8Array)
+    .map((str, index) =>
+      index === 2
+        ? convertUint8ArrayToHex(str)
+        : JSON.parse(new TextDecoder().decode(str))
+    )
   return {
     header: parsedArray[0],
     payload: parsedArray[1] === "" ? undefined : parsedArray[1],
@@ -158,4 +160,4 @@ async function validateJwt(
 }
 
 export default validateJwt
-export { Jose, Payload, JwtObject }
+export { parseAndDecode, Jose, Payload, JwtObject }
