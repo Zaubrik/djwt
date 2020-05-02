@@ -6,6 +6,7 @@ import makeJwt, {
   convertHexToUint8Array,
 } from "../create.ts"
 import validateJwt from "../validate.ts"
+import { parseAndDecode } from "../validate.ts"
 import { convertBase64urlToBase64 } from "../base64/base64url.ts"
 import {
   convertBase64ToUint8Array,
@@ -57,6 +58,47 @@ Deno.test("makeSignatureTests", async function (): Promise<void> {
     ),
     anotherVerifiedSignatureInBase64Url
   )
+})
+
+Deno.test("parseAndDecodeTests", function (): void {
+  try {
+    const r1 = parseAndDecode(".aaa.bbb")
+  } catch (err) {
+    assertEquals(err instanceof TypeError, true)
+  }
+  try {
+    const r2 = parseAndDecode(".aaa.bbb")
+  } catch (err) {
+    assertEquals(err instanceof TypeError, true)
+  }
+  try {
+    const r3 = parseAndDecode("a..aa.bbb")
+  } catch (err) {
+    assertEquals(err instanceof TypeError, true)
+  }
+  try {
+    const r4 = parseAndDecode("aaa.bbb.ccc.")
+  } catch (err) {
+    assertEquals(err instanceof TypeError, true)
+  }
+  const jwt =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+  const header = {
+    alg: "HS256" as const,
+    typ: "JWT",
+  }
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    iat: 1516239022,
+  }
+  assertEquals(parseAndDecode(jwt), {
+    header,
+    payload,
+    signature:
+      "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
+  })
+  assertEquals(makeJwt({ header, payload, key: "your-256-bit-secret" }), jwt)
 })
 
 Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
