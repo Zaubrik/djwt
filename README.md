@@ -93,11 +93,7 @@ server will check the validity of the JWT.
 import { serve } from "https://deno.land/std/http/server.ts"
 import { encode, decode } from "https://deno.land/std/encoding/utf8.ts"
 import validateJwt from "https://deno.land/x/djwt/validate.ts"
-import makeJwt, {
-  setExpiration,
-  Jose,
-  Payload,
-} from "https://deno.land/x/djwt/create.ts"
+import makeJwt, { setExpiration, Jose, Payload, } from "https://deno.land/x/djwt/create.ts"
 
 const key = "your-secret"
 const payload: Payload = {
