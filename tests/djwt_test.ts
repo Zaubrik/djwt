@@ -2,12 +2,14 @@ import makeJwt, {
   setExpiration,
   makeSignature,
   convertHexToBase64url,
-  convertBase64ToBase64url,
   convertHexToUint8Array,
 } from "../create.ts"
 import validateJwt from "../validate.ts"
 import { parseAndDecode } from "../validate.ts"
-import { convertBase64urlToBase64 } from "../base64/base64url.ts"
+import {
+  convertBase64urlToBase64,
+  convertBase64ToBase64url,
+} from "../base64/base64url.ts"
 import {
   convertBase64ToUint8Array,
   convertUint8ArrayToBase64,

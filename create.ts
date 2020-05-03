@@ -1,5 +1,4 @@
-import { convertBase64ToBase64url } from "./base64/base64url.ts"
-import { convertUint8ArrayToBase64 } from "./base64/base64.ts"
+import { convertUint8ArrayToBase64url } from "./base64/base64url.ts"
 import { decodeString as convertHexToUint8Array } from "https://deno.land/std/encoding/hex.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
@@ -33,15 +32,11 @@ interface Jose {
 }
 
 function convertHexToBase64url(input: string): string {
-  return convertBase64ToBase64url(
-    convertUint8ArrayToBase64(convertHexToUint8Array(input))
-  )
+  return     convertUint8ArrayToBase64url(convertHexToUint8Array(input))
 }
 
 function convertStringToBase64url(input: string): string {
-  return convertBase64ToBase64url(
-    convertUint8ArrayToBase64(new TextEncoder().encode(input))
-  )
+  return convertUint8ArrayToBase64url(new TextEncoder().encode(input))
 }
 
 function makeSigningInput(header: Jose, payload?: Payload): string {
@@ -94,7 +89,6 @@ export {
   setExpiration,
   makeSignature,
   convertHexToBase64url,
-  convertBase64ToBase64url,
   convertStringToBase64url,
   convertHexToUint8Array,
   Payload,

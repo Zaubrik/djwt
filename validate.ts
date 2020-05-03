@@ -1,6 +1,5 @@
 import makeJwt, { Payload, Jose, JsonValue } from "./create.ts"
-import { convertBase64ToUint8Array } from "./base64/base64.ts"
-import { convertBase64urlToBase64 } from "./base64/base64url.ts"
+import { convertBase64urlToUint8Array } from "./base64/base64url.ts"
 import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std/encoding/hex.ts"
 
 type JwtObject = { header: Jose; payload?: Payload; signature: string }
@@ -126,8 +125,7 @@ function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
     .match(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/)!
     .shift()!
     .split(".")
-    .map(convertBase64urlToBase64)
-    .map(convertBase64ToUint8Array)
+    .map(convertBase64urlToUint8Array)
     .map((str, index) =>
       index === 2
         ? convertUint8ArrayToHex(str)
