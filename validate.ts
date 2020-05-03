@@ -34,7 +34,6 @@ function checkHeaderCrit(
   header: Jose,
   handlers?: Handlers
 ): Promise<JsonValue[]> {
-
   function checkCritHeaderValidity(
     critOrNothing: Jose["crit"]
   ): Required<Jose>["crit"] {
@@ -47,7 +46,7 @@ function checkHeaderCrit(
       )
     else return critOrNothing
   }
- 
+
   function checkReservedWords(crit: Required<Jose>["crit"]) {
     // prettier-ignore
     if (crit.some((str: string) => new Set([ 
@@ -57,7 +56,7 @@ function checkHeaderCrit(
     throw Error("the 'crit' list contains a non-extension header parameter")
     else return crit
   }
- 
+
   function checkCritHandlers(
     crit: Required<Jose>["crit"],
     handlers?: Handlers
@@ -71,7 +70,7 @@ function checkHeaderCrit(
       throw Error("critical extension header parameters are not understood")
     else return [crit, handlers]
   }
- 
+
   function executeCritHandlers([crit, handlers]: [
     Required<Jose>["crit"],
     Handlers
@@ -86,7 +85,9 @@ function checkHeaderCrit(
   )
 }
 
-function validateJwtObject(jwtObject: Record<keyof JwtObject, unknown>) {
+function validateJwtObject(
+  jwtObject: Record<keyof JwtObject, unknown>
+): JwtObject {
   if (typeof jwtObject.signature !== "string")
     throw ReferenceError("the signature is no string")
   if (
@@ -120,7 +121,7 @@ async function validateAndHandleHeaders(
 }
 
 function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
-  // throws error on invalid JWT serialization
+  // throws error if JWT serialization is invalid
   const parsedArray = jwt
     .match(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/)!
     .shift()!
