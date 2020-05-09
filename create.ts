@@ -32,7 +32,7 @@ interface Jose {
 }
 
 function convertHexToBase64url(input: string): string {
-  return     convertUint8ArrayToBase64url(convertHexToUint8Array(input))
+  return convertUint8ArrayToBase64url(convertHexToUint8Array(input))
 }
 
 function convertStringToBase64url(input: string): string {

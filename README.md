@@ -87,11 +87,10 @@ Try djwt out with this simple _server_ example:
 
 The server will respond to a **GET** request with a newly created JWT.  
 On the other hand, if you send a JWT as data along with a **POST** request, the
-server will check the validity of the JWT.
+server will check the validity of the JWT. Start this example with `deno run -A`.
 
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
-import { encode, decode } from "https://deno.land/std/encoding/utf8.ts"
 import validateJwt from "https://deno.land/x/djwt/validate.ts"
 import makeJwt, { setExpiration, Jose, Payload, } from "https://deno.land/x/djwt/create.ts"
 
@@ -108,13 +107,12 @@ const header: Jose = {
 console.log("server is listening at 0.0.0.0:8000")
 for await (const req of serve("0.0.0.0:8000")) {
   if (req.method === "GET") {
-    const jwt = makeJwt({ header, payload, key })
-    req.respond({ body: encode(jwt + "\n") })
+    req.respond({ body: makeJwt({ header, payload, key }) + "\n" })
   } else {
-    const requestBody = decode(await Deno.readAll(req.body))
-    await validateJwt(requestBody, key, false)
-      ? req.respond({ body: encode("Valid JWT\n") })
-      : req.respond({ body: encode("Invalid JWT\n"), status: 401 })
+    const jwt = new TextDecoder().decode(await Deno.readAll(req.body))
+    await validateJwt(jwt, key, false)
+      ? req.respond({ body: "Valid JWT\n" })
+      : req.respond({ body: "Invalid JWT\n", status: 401 })
   }
 }
 ```
