@@ -67,7 +67,7 @@ _payload_.
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to a JWT representation as JavaScript object:
 `{ header, payload, signature }`. If the Jwt is invalid the promise resolves to
-`null` or an `Error` is thrown - depending how you set the boolean `isThrowing`.
+`null` or an `Error` is thrown - depending how you set the boolean `isThrowing` (default is `true`).
 
 #### setExpiration(exp: number | Date): number
 
