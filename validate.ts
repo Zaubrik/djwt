@@ -107,15 +107,14 @@ function validateJwtObject(
   return maybeJwtObject as JwtObject
 }
 
-async function validateAndHandleHeaders(
-  jwtObject: Record<keyof JwtObject, unknown>,
+async function handleJwtObject(
+  jwtObject: JwtObject,
   critHandlers?: Handlers
 ): Promise<[JwtObject, JsonValue]> {
-  const validatedJwtObj = validateJwtObject(jwtObject)
   return [
-    validatedJwtObj,
-    "crit" in validatedJwtObj.header
-      ? await checkHeaderCrit(validatedJwtObj.header, critHandlers)
+    jwtObject,
+    "crit" in jwtObject.header
+      ? await checkHeaderCrit(jwtObject.header, critHandlers)
       : null,
   ]
 }
@@ -145,8 +144,8 @@ async function validateJwt(
   { isThrowing, critHandlers }: Opts = { isThrowing: true }
 ): Promise<JwtObject | null> {
   try {
-    const [oldJwtObject] = await validateAndHandleHeaders(
-      parseAndDecode(jwt),
+    const [oldJwtObject] = await handleJwtObject(
+      validateJwtObject(parseAndDecode(jwt)),
       critHandlers
     )
     if (
