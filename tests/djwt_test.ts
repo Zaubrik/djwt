@@ -17,7 +17,11 @@ import {
   encodeToString as convertUint8ArrayToHex,
   decodeString as convertHexToUint8Array,
 } from "https://deno.land/std/encoding/hex.ts"
-import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
+import {
+  assertEquals,
+  assertThrows,
+  assertThrowsAsync,
+} from "https://deno.land/std/testing/asserts.ts"
 
 const key = "your-secret"
 
@@ -81,42 +85,36 @@ Deno.test("makeValidateJwtObjectTest", async function (): Promise<void> {
     signature,
   })
   assertEquals(jwtObject!.payload, payload)
-
-  try {
-    const jwtObject = validateJwtObject({
-      header: {
-        alg: 10,
-        typ: "JWT",
-      },
-      payload,
-      signature,
-    })
-  } catch (err) {
-    assertEquals(err.message, "header parameter 'alg' is not a string")
-  }
+  assertThrows(
+    (): void => {
+      const jwtObject = validateJwtObject({
+        header: {
+          alg: 10,
+          typ: "JWT",
+        },
+        payload,
+        signature,
+      })
+    },
+    ReferenceError,
+    "header parameter 'alg' is not a string"
+  )
 })
 
 Deno.test("parseAndDecodeTests", function (): void {
-  try {
-    const r1 = parseAndDecode(".aaa.bbb")
-  } catch (err) {
-    assertEquals(err instanceof TypeError, true)
-  }
-  try {
-    const r2 = parseAndDecode(".aaa.bbb")
-  } catch (err) {
-    assertEquals(err instanceof TypeError, true)
-  }
-  try {
-    const r3 = parseAndDecode("a..aa.bbb")
-  } catch (err) {
-    assertEquals(err instanceof TypeError, true)
-  }
-  try {
-    const r4 = parseAndDecode("aaa.bbb.ccc.")
-  } catch (err) {
-    assertEquals(err instanceof TypeError, true)
-  }
+  assertThrows((): void => {
+    parseAndDecode(".aaa.bbb")
+  }, TypeError)
+
+  assertThrows((): void => {
+    parseAndDecode(".aaa.bbb")
+  }, TypeError)
+  assertThrows((): void => {
+    parseAndDecode("a..aa.bbb")
+  }, TypeError)
+  assertThrows((): void => {
+    parseAndDecode("aaa.bbb.ccc.")
+  }, TypeError)
   const jwt =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
   const header = {
@@ -162,14 +160,13 @@ Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
 
   const invalidJwt = // jwt with not supported crypto algorithm in alg header:
     "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.bQTnz6AuMJvmXXQsVPrxeQNvzDkimo7VNXxHeSBfClLufmCVZRUuyTwJF311JHuh"
-  try {
-    const validatedJwt = await validateJwt(invalidJwt, "")
-  } catch (err) {
-    assertEquals(
-      err.message,
-      "Invalid JWT: Failed to create a JWT: no matching crypto algorithm in the header: HS384"
-    )
-  }
+  assertThrowsAsync(
+    async (): Promise<void> => {
+      await validateJwt(invalidJwt, "")
+    },
+    RangeError,
+    "Invalid JWT: Failed to create a JWT: no matching crypto algorithm in the header: HS384"
+  )
 })
 
 Deno.test("testExpiredJwt", async function (): Promise<void> {
@@ -183,11 +180,14 @@ Deno.test("testExpiredJwt", async function (): Promise<void> {
     dummy: 100,
   }
   const jwt = makeJwt({ header, payload, key })
-  try {
-    const validatedJwt = await validateJwt(jwt, key)
-  } catch (err) {
-    assertEquals(err.message, "Invalid JWT: the jwt is expired")
-  }
+
+  assertThrowsAsync(
+    async (): Promise<void> => {
+      await validateJwt(jwt, key)
+    },
+    RangeError,
+    "Invalid JWT: the jwt is expired"
+  )
 })
 
 Deno.test("makeHeaderCritTest", async function (): Promise<void> {
@@ -218,14 +218,14 @@ Deno.test("makeHeaderCritTest", async function (): Promise<void> {
     jwt.slice(jwt.lastIndexOf(".") + 1),
     convertHexToBase64url(validatedJwt!.signature)
   )
-  try {
-    const failing = await validateJwt(jwt, key)
-  } catch (err) {
-    assertEquals(
-      err.message,
-      "Invalid JWT: critical extension header parameters are not understood"
-    )
-  }
+
+  assertThrowsAsync(
+    async (): Promise<void> => {
+      const failing = await validateJwt(jwt, key)
+    },
+    Error,
+    "Invalid JWT: critical extension header parameters are not understood"
+  )
 })
 
 // https://tools.ietf.org/html/rfc7519#section-6
@@ -253,5 +253,3 @@ Deno.test("createJwtWithEmptyPayloadTest", async function (): Promise<void> {
   assertEquals(validatedJwt!.payload, undefined)
   assertEquals(validatedJwt!.header, header)
 })
-
-// await Deno.runTests()
