@@ -31,6 +31,14 @@ interface Jose {
   [key: string]: JsonValue | undefined
 }
 
+/*
+ * Helper function: setExpiration()
+ * returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
+ */
+function setExpiration(exp: number | Date): number {
+  return (exp instanceof Date ? exp : new Date(exp)).getTime()
+}
+
 function convertHexToBase64url(input: string): string {
   return convertUint8ArrayToBase64url(convertHexToUint8Array(input))
 }
@@ -76,21 +84,12 @@ function makeJwt({ key, header, payload }: JwtInput): string {
   }
 }
 
-/*
- * Helper function: setExpiration()
- * returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
- */
-function setExpiration(exp: number | Date): number {
-  return (exp instanceof Date ? exp : new Date(exp)).getTime()
-}
-
-export default makeJwt
 export {
+  makeJwt,
   setExpiration,
   makeSignature,
   convertHexToBase64url,
   convertStringToBase64url,
-  convertHexToUint8Array,
   Payload,
   Jose,
   JwtInput,

@@ -1,8 +1,9 @@
-import makeJwt, { Payload, Jose, JsonValue } from "./create.ts"
+import { makeJwt, Payload, Jose, JsonValue } from "./create.ts"
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts"
 import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std/encoding/hex.ts"
 
 type JwtObject = { header: Jose; payload?: Payload; signature: string }
+type Opts = { isThrowing: boolean; critHandlers?: Handlers }
 type Handlers = {
   [key: string]: (header?: Jose[string]) => JsonValue | Promise<JsonValue>
 }
@@ -85,25 +86,25 @@ function checkHeaderCrit(
 }
 
 function validateJwtObject(
-  jwtObject: Record<keyof JwtObject, unknown>
+  maybeJwtObject: Record<keyof JwtObject, unknown>
 ): JwtObject {
-  if (typeof jwtObject.signature !== "string")
+  if (typeof maybeJwtObject.signature !== "string")
     throw ReferenceError("the signature is no string")
   if (
     !(
-      isObject(jwtObject.header) &&
-      has("alg", jwtObject.header) &&
-      typeof jwtObject.header.alg === "string"
+      isObject(maybeJwtObject.header) &&
+      has("alg", maybeJwtObject.header) &&
+      typeof maybeJwtObject.header.alg === "string"
     )
   )
-    throw ReferenceError("header parameter 'alg' is empty")
-  if (isObject(jwtObject.payload) && has("exp", jwtObject.payload)) {
-    if (typeof jwtObject.payload.exp !== "number")
+    throw ReferenceError("header parameter 'alg' is not a string")
+  if (isObject(maybeJwtObject.payload) && has("exp", maybeJwtObject.payload)) {
+    if (typeof maybeJwtObject.payload.exp !== "number")
       throw RangeError("claim 'exp' is not a number")
-    else if (isExpired(jwtObject.payload.exp))
+    else if (isExpired(maybeJwtObject.payload.exp))
       throw RangeError("the jwt is expired")
   }
-  return jwtObject as JwtObject
+  return maybeJwtObject as JwtObject
 }
 
 async function validateAndHandleHeaders(
@@ -141,8 +142,7 @@ function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
 async function validateJwt(
   jwt: string,
   key: string,
-  isThrowing = true,
-  critHandlers?: Handlers
+  { isThrowing, critHandlers }: Opts = { isThrowing: true }
 ): Promise<JwtObject | null> {
   try {
     const [oldJwtObject] = await validateAndHandleHeaders(
@@ -162,5 +162,12 @@ async function validateJwt(
   }
 }
 
-export default validateJwt
-export { parseAndDecode, Jose, Payload, JwtObject }
+export {
+  validateJwt,
+  validateJwtObject,
+  parseAndDecode,
+  Jose,
+  Payload,
+  JwtObject,
+  Opts,
+}

@@ -62,7 +62,7 @@ In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
 only need the signing and verification feature of the JWS, you can omit the
 _payload_.
 
-#### validateJwt(jwt: string, key: string, isThrowing: boolean = true, critHandlers?: Handlers): Promise<JwtObject | null>
+#### validateJwt(jwt: string, key: string, { isThrowing, critHandlers }: Opts): Promise<JwtObject | null>
 
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to a JWT representation as JavaScript object:
@@ -91,8 +91,8 @@ server will check the validity of the JWT. Start this example with `deno run -A`
 
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
-import validateJwt from "https://deno.land/x/djwt/validate.ts"
-import makeJwt, { setExpiration, Jose, Payload, } from "https://deno.land/x/djwt/create.ts"
+import { validateJwt } from "https://deno.land/x/djwt/validate.ts"
+import { makeJwt, setExpiration, Jose, Payload, } from "https://deno.land/x/djwt/create.ts"
 
 const key = "your-secret"
 const payload: Payload = {
@@ -110,7 +110,7 @@ for await (const req of serve("0.0.0.0:8000")) {
     req.respond({ body: makeJwt({ header, payload, key }) + "\n" })
   } else {
     const jwt = new TextDecoder().decode(await Deno.readAll(req.body))
-    await validateJwt(jwt, key, false)
+    await validateJwt(jwt, key, { isThrowing: false })
       ? req.respond({ body: "Valid JWT\n" })
       : req.respond({ body: "Invalid JWT\n", status: 401 })
   }

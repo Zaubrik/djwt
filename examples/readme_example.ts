@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std/http/server.ts"
-import validateJwt from "../validate.ts"
-import makeJwt, { setExpiration, Jose, Payload } from "../create.ts"
+import {validateJwt} from "../validate.ts"
+import  {makeJwt, setExpiration, Jose, Payload } from "../create.ts"
 
 const key = "your-secret"
 const payload: Payload = {
@@ -18,7 +18,7 @@ for await (const req of serve("0.0.0.0:8000")) {
     req.respond({ body: makeJwt({ header, payload, key }) + "\n" })
   } else {
     const jwt = new TextDecoder().decode(await Deno.readAll(req.body))
-    await validateJwt(jwt, key, false)
+    await validateJwt(jwt, key, {isThrowing:false})
       ? req.respond({ body: "Valid JWT\n" })
       : req.respond({ body: "Invalid JWT\n", status: 401 })
   }
