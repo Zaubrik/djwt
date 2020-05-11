@@ -1,11 +1,10 @@
-import makeJwt, {
+import {
+  makeJwt,
   setExpiration,
   makeSignature,
   convertHexToBase64url,
-  convertHexToUint8Array,
 } from "../create.ts"
-import validateJwt from "../validate.ts"
-import { parseAndDecode } from "../validate.ts"
+import { validateJwt, validateJwtObject, parseAndDecode } from "../validate.ts"
 import {
   convertBase64urlToBase64,
   convertBase64ToBase64url,
@@ -14,7 +13,10 @@ import {
   convertBase64ToUint8Array,
   convertUint8ArrayToBase64,
 } from "../base64/base64.ts"
-import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std/encoding/hex.ts"
+import {
+  encodeToString as convertUint8ArrayToHex,
+  decodeString as convertHexToUint8Array,
+} from "https://deno.land/std/encoding/hex.ts"
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts"
 
 const key = "your-secret"
@@ -60,6 +62,38 @@ Deno.test("makeSignatureTests", async function (): Promise<void> {
     ),
     anotherVerifiedSignatureInBase64Url
   )
+})
+
+Deno.test("makeValidateJwtObjectTest", async function (): Promise<void> {
+  const header = {
+    alg: "HS256" as const,
+    typ: "JWT",
+  }
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    iat: 1516239022,
+  }
+  const signature = "SARsBE5x_ua2ye823r2zKpQNaew3Daq8riKz5A4h3o4"
+  const jwtObject = validateJwtObject({
+    header,
+    payload,
+    signature,
+  })
+  assertEquals(jwtObject!.payload, payload)
+
+  try {
+    const jwtObject = validateJwtObject({
+      header: {
+        alg: 10,
+        typ: "JWT",
+      },
+      payload,
+      signature,
+    })
+  } catch (err) {
+    assertEquals(err.message, "header parameter 'alg' is not a string")
+  }
 })
 
 Deno.test("parseAndDecodeTests", function (): void {
@@ -174,7 +208,10 @@ Deno.test("makeHeaderCritTest", async function (): Promise<void> {
   }
 
   const jwt = makeJwt({ header, payload, key })
-  const validatedJwt = await validateJwt(jwt, key, true, critHandlers)
+  const validatedJwt = await validateJwt(jwt, key, {
+    critHandlers,
+    isThrowing: true,
+  })
   assertEquals(validatedJwt!.payload, payload)
   assertEquals(validatedJwt!.header, header)
   assertEquals(
@@ -182,7 +219,7 @@ Deno.test("makeHeaderCritTest", async function (): Promise<void> {
     convertHexToBase64url(validatedJwt!.signature)
   )
   try {
-    const failing = await validateJwt(jwt, key, true)
+    const failing = await validateJwt(jwt, key)
   } catch (err) {
     assertEquals(
       err.message,
