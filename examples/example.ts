@@ -5,7 +5,7 @@ const payload = {
   iss: "joe",
   jti: "123456789abc",
   exp: setExpiration(new Date().getTime() + 1000),
-  // exp: setExpiration(new Date().getTime() - 10000), // Invalid JWT: the jwt is expired
+  // exp: setExpiration(new Date().getTime() - 20000), // Invalid JWT: the jwt is expired
 }
 const header = {
   alg: "HS256" as const,
