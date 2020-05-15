@@ -108,10 +108,10 @@ function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
     .shift()!
     .split(".")
     .map(convertBase64urlToUint8Array)
-    .map((uint8array, index) =>
+    .map((uint8Array, index) =>
       index === 2
-        ? convertUint8ArrayToHex(uint8array)
-        : JSON.parse(new TextDecoder().decode(uint8array))
+        ? convertUint8ArrayToHex(uint8Array)
+        : JSON.parse(new TextDecoder().decode(uint8Array))
     )
   return {
     header: parsedArray[0],
