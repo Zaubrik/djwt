@@ -1,5 +1,6 @@
 import { makeJwt, Payload, Jose, JsonValue } from "./create.ts"
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts"
+import { isExpired, isObject, has } from "./utils.ts"
 import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std/encoding/hex.ts"
 
 type JwtObject = { header: Jose; payload?: Payload; signature: string }
@@ -8,28 +9,8 @@ type Handlers = {
   [key: string]: (header?: Jose[string]) => JsonValue | Promise<JsonValue>
 }
 
-/*
- * Implementers MAY provide for some small leeway to account for clock skew (JWT §4.1.4)
- */
-function isExpired(exp: number, cushion = 10000): boolean {
-  return new Date(exp + cushion) < new Date()
-}
-
-function isObject(obj: unknown): obj is object {
-  return obj !== null && typeof obj === "object" && Array.isArray(obj) === false
-}
-
-function has<K extends string>(
-  key: K,
-  x: object
-): x is { [key in K]: unknown } {
-  return key in x
-}
-
-/*
- * A present 'crit' header parameter indicates that the JWS signature validator
- * must understand and process additional claims (JWS §4.1.11)
- */
+// A present 'crit' header parameter indicates that the JWS signature validator
+// must understand and process additional claims (JWS §4.1.11)
 function checkHeaderCrit(
   header: Jose,
   handlers?: Handlers
@@ -101,7 +82,8 @@ function validateJwtObject(
   if (isObject(maybeJwtObject.payload) && has("exp", maybeJwtObject.payload)) {
     if (typeof maybeJwtObject.payload.exp !== "number")
       throw RangeError("claim 'exp' is not a number")
-    else if (isExpired(maybeJwtObject.payload.exp))
+    // Implementers MAY provide for some small leeway to account for clock skew (JWT §4.1.4)
+    else if (isExpired(maybeJwtObject.payload.exp, 10000))
       throw RangeError("the jwt is expired")
   }
   return maybeJwtObject as JwtObject
@@ -120,16 +102,16 @@ async function handleJwtObject(
 }
 
 function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
-  // throws error if JWT serialization is invalid
+  // throws runtime error if JWT serialization is invalid
   const parsedArray = jwt
     .match(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/)!
     .shift()!
     .split(".")
     .map(convertBase64urlToUint8Array)
-    .map((str, index) =>
+    .map((uint8array, index) =>
       index === 2
-        ? convertUint8ArrayToHex(str)
-        : JSON.parse(new TextDecoder().decode(str))
+        ? convertUint8ArrayToHex(uint8array)
+        : JSON.parse(new TextDecoder().decode(uint8array))
     )
   return {
     header: parsedArray[0],

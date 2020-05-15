@@ -1,10 +1,6 @@
-import {
-  makeJwt,
-  setExpiration,
-  makeSignature,
-  convertHexToBase64url,
-} from "../create.ts"
+import { makeJwt, makeSignature, convertHexToBase64url } from "../create.ts"
 import { validateJwt, validateJwtObject, parseAndDecode } from "../validate.ts"
+import { setExpiration, isExpired } from "../utils.ts"
 import {
   convertBase64urlToBase64,
   convertBase64ToBase64url,
@@ -25,7 +21,26 @@ import {
 
 const key = "your-secret"
 
-Deno.test("makeConversionTest", function (): void {
+Deno.test("makeSetAndCheckExpirationTest", function (): void {
+  // A specific date:
+  const t1 = setExpiration(new Date("2020-01-01"))
+  const t2 = setExpiration(new Date("2099-01-01"))
+  // One hour from now:
+  const t3 = setExpiration(new Date().getTime() + 60 * 60 * 1000)
+  //  1 second from now:
+  const t4 = setExpiration(new Date().getTime() + 1000)
+  //  1 second earlier:
+  const t5 = setExpiration(new Date().getTime() - 1000)
+  assertEquals(isExpired(t1), true)
+  assertEquals(isExpired(t2), false)
+  assertEquals(isExpired(t3), false)
+  assertEquals(isExpired(t4), false)
+  assertEquals(isExpired(t5), true)
+  // add leeway:
+  assertEquals(isExpired(t5, 1500), false)
+})
+
+Deno.test("makeDataConversionTest", function (): void {
   const hex1 =
     "a4a99a8e21149ccbc5c5aabd310e5d5208b12db90dff749171d5014b688ce808"
   const hex2 = convertUint8ArrayToHex(
@@ -165,7 +180,7 @@ Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
       await validateJwt(invalidJwt, "")
     },
     RangeError,
-    "Invalid JWT: Failed to create a JWT: no matching crypto algorithm in the header: HS384"
+    "Invalid JWT: Failed to create JWT: no matching crypto algorithm in the header: HS384"
   )
 })
 

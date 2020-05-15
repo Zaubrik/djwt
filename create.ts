@@ -1,4 +1,5 @@
 import { convertUint8ArrayToBase64url } from "./base64/base64url.ts"
+import { setExpiration } from "./utils.ts"
 import { decodeString as convertHexToUint8Array } from "https://deno.land/std/encoding/hex.ts"
 import { hmac } from "https://denopkg.com/chiefbiiko/hmac/mod.ts"
 
@@ -29,14 +30,6 @@ interface Jose {
   alg: Algorithm
   crit?: string[]
   [key: string]: JsonValue | undefined
-}
-
-/*
- * Helper function: setExpiration()
- * returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
- */
-function setExpiration(exp: number | Date): number {
-  return (exp instanceof Date ? exp : new Date(exp)).getTime()
 }
 
 function convertHexToBase64url(input: string): string {
@@ -79,7 +72,7 @@ function makeJwt({ key, header, payload }: JwtInput): string {
     const signingInput = makeSigningInput(header, payload)
     return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`
   } catch (err) {
-    err.message = `Failed to create a JWT: ${err.message}`
+    err.message = `Failed to create JWT: ${err.message}`
     throw err
   }
 }
