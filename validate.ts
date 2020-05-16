@@ -6,7 +6,7 @@ import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std/
 type JwtObject = { header: Jose; payload?: Payload; signature: string }
 type Opts = { isThrowing: boolean; critHandlers?: Handlers }
 type Handlers = {
-  [key: string]: (header?: Jose[string]) => JsonValue | Promise<JsonValue>
+  [key: string]: (header: JsonValue) => unknown
 }
 
 // A present 'crit' header parameter indicates that the JWS signature validator
@@ -14,55 +14,29 @@ type Handlers = {
 function checkHeaderCrit(
   header: Jose,
   handlers?: Handlers
-): Promise<JsonValue[]> {
-  function checkCritHeaderValidity(
-    critOrNothing: Jose["crit"]
-  ): Required<Jose>["crit"] {
-    if (
-      !Array.isArray(critOrNothing) ||
-      critOrNothing.some((str: string) => typeof str !== "string" || !str)
-    )
-      throw Error(
-        "header parameter 'crit' must be an array of non-empty strings"
-      )
-    else return critOrNothing
-  }
-
-  function checkReservedWords(crit: Required<Jose>["crit"]) {
-    // prettier-ignore
-    if (crit.some((str: string) => new Set([ 
+): Promise<unknown[]> {
+  // prettier-ignore
+  const reservedWords=new Set([ 
     "alg", "jku", "jwk", "kid", "x5u", "x5c", "x5t", "x5t#S256", "typ", "cty",
     "crit", "enc", "zip", "epk", "apu", "apv", "iv", "tag", "p2s", "p2c",
-  ]).has(str)))
+  ])
+  if (
+    !Array.isArray(header.crit) ||
+    header.crit.some((str: string) => typeof str !== "string" || !str)
+  )
+    throw Error("header parameter 'crit' must be an array of non-empty strings")
+  if (header.crit.some((str: string) => reservedWords.has(str)))
     throw Error("the 'crit' list contains a non-extension header parameter")
-    else return crit
-  }
-
-  function checkCritHandlers(
-    crit: Required<Jose>["crit"],
-    handlers?: Handlers
-  ): [Required<Jose>["crit"], Handlers] {
-    if (
-      !handlers ||
-      crit.some(
-        (str: string) => !header[str] || typeof handlers[str] !== "function"
-      )
+  if (
+    header.crit.some(
+      (str: string) =>
+        typeof header[str] === "undefined" ||
+        typeof handlers?.[str] !== "function"
     )
-      throw Error("critical extension header parameters are not understood")
-    else return [crit, handlers]
-  }
-
-  function executeCritHandlers([crit, handlers]: [
-    Required<Jose>["crit"],
-    Handlers
-  ]) {
-    return Promise.all(crit.map((str: string) => handlers[str](header[str])))
-  }
-  return executeCritHandlers(
-    checkCritHandlers(
-      checkReservedWords(checkCritHeaderValidity(header.crit)),
-      handlers
-    )
+  )
+    throw Error("critical extension header parameters are not understood")
+  return Promise.all(
+    header.crit.map((str: string) => handlers![str](header[str] as JsonValue))
   )
 }
 
@@ -92,7 +66,7 @@ function validateJwtObject(
 async function handleJwtObject(
   jwtObject: JwtObject,
   critHandlers?: Handlers
-): Promise<[JwtObject, JsonValue]> {
+): Promise<[JwtObject, unknown]> {
   return [
     jwtObject,
     "crit" in jwtObject.header
@@ -146,9 +120,11 @@ async function validateJwt(
 export {
   validateJwt,
   validateJwtObject,
+  checkHeaderCrit,
   parseAndDecode,
   Jose,
   Payload,
+  Handlers,
   JwtObject,
   Opts,
 }
