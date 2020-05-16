@@ -1,5 +1,11 @@
 import { makeJwt, makeSignature, convertHexToBase64url } from "../create.ts"
-import { validateJwt, validateJwtObject, parseAndDecode } from "../validate.ts"
+import {
+  validateJwt,
+  validateJwtObject,
+  checkHeaderCrit,
+  parseAndDecode,
+  Handlers,
+} from "../validate.ts"
 import { setExpiration, isExpired } from "../utils.ts"
 import {
   convertBase64urlToBase64,
@@ -148,6 +154,30 @@ Deno.test("parseAndDecodeTests", function (): void {
       "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
   })
   assertEquals(makeJwt({ header, payload, key: "your-256-bit-secret" }), jwt)
+})
+
+Deno.test("makeCheckHeaderCritTest", async function (): Promise<void> {
+  const payload = {
+    iss: "joe",
+    jti: "123456789abc",
+    exp: setExpiration(new Date().getTime() + 1),
+  }
+  const header = {
+    alg: "HS256" as const,
+    crit: ["dummy", "asyncDummy"],
+    dummy: 100,
+    asyncDummy: 200,
+  }
+  const critHandlers: Handlers = {
+    dummy(value) {
+      return value
+    },
+    async asyncDummy(value) {
+      return value
+    },
+  }
+  const result = await checkHeaderCrit(header, critHandlers)
+  assertEquals(result, [100, 200])
 })
 
 Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
