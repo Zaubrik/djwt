@@ -1,12 +1,26 @@
 import { makeJwt, Payload, Jose, JsonValue } from "./create.ts"
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts"
-import { isExpired, isObject, has } from "./utils.ts"
 import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std/encoding/hex.ts"
 
 type JwtObject = { header: Jose; payload?: Payload; signature: string }
 type Opts = { isThrowing: boolean; critHandlers?: Handlers }
 type Handlers = {
   [key: string]: (header: JsonValue) => unknown
+}
+
+function isObject(obj: unknown): obj is object {
+  return obj !== null && typeof obj === "object" && Array.isArray(obj) === false
+}
+
+function has<K extends string>(
+  key: K,
+  x: object
+): x is { [key in K]: unknown } {
+  return key in x
+}
+
+function isExpired(exp: number, leeway = 0): boolean {
+  return new Date(exp + leeway) < new Date()
 }
 
 // A present 'crit' header parameter indicates that the JWS signature validator
@@ -122,6 +136,7 @@ export {
   validateJwtObject,
   checkHeaderCrit,
   parseAndDecode,
+  isExpired,
   Jose,
   Payload,
   Handlers,

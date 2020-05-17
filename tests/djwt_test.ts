@@ -1,12 +1,17 @@
-import { makeJwt, makeSignature, convertHexToBase64url } from "../create.ts"
+import {
+  makeJwt,
+  makeSignature,
+  convertHexToBase64url,
+  setExpiration,
+} from "../create.ts"
 import {
   validateJwt,
   validateJwtObject,
   checkHeaderCrit,
   parseAndDecode,
+  isExpired,
   Handlers,
 } from "../validate.ts"
-import { setExpiration, isExpired } from "../utils.ts"
 import {
   convertBase64urlToBase64,
   convertBase64ToBase64url,
