@@ -27,11 +27,11 @@ process where a web token is represented as the concatenation of
 
 ### Cryptographic Algorithm
 
-**HMAC SHA-256** ("HS256"), **HMAC SHA-512** ("HS512") and **none**
-([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)) of the
-signature and MAC algorithms defined in the JSON Web Algorithms (JWA)
-[specification](https://www.rfc-editor.org/rfc/rfc7518.html) have been
-implemented already. But more shall come soon.
+The following signature and MAC algorithms - which are defined in the JSON Web
+Algorithms (JWA) [specification](https://www.rfc-editor.org/rfc/rfc7518.html) -
+have been implemented already: **HMAC SHA-256** ("HS256"), **HMAC SHA-512**
+("HS512") and **none**
+([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).
 
 ### Expiration Time
 
@@ -60,14 +60,15 @@ The function `makeJwt` returns the url-safe encoded JWT.
 
 In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
 only need the signing and verification feature of the JWS, you can omit the
-_payload_.
+**payload**.
 
 #### validateJwt(jwt: string, key: string, { isThrowing, critHandlers }: Opts): Promise<JwtObject | null>
 
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to a JWT representation as JavaScript object:
-`{ header, payload, signature }`. If the Jwt is invalid the promise resolves to
-`null` or an `Error` is thrown - depending how you set the boolean `isThrowing` (default is `true`).
+`{ header, payload, signature }`. If the Jwt is invalid, the promise resolves to
+`null` or an `Error` is thrown - depending how you set the boolean `isThrowing`
+(default is `true`).
 
 #### setExpiration(exp: number | Date): number
 
@@ -83,16 +84,21 @@ setExpiration(new Date().getTime() + 60 * 60 * 1000)
 
 ## Example
 
-Try djwt out with this simple _server_ example:
+Run the following _server_ example with `deno run -A example.ts`:
 
 The server will respond to a **GET** request with a newly created JWT.  
 On the other hand, if you send a JWT as data along with a **POST** request, the
-server will check the validity of the JWT. Start this example with `deno run -A`.
+server will check the validity of the JWT.
 
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
 import { validateJwt } from "https://deno.land/x/djwt/validate.ts"
-import { makeJwt, setExpiration, Jose, Payload, } from "https://deno.land/x/djwt/create.ts"
+import {
+  makeJwt,
+  setExpiration,
+  Jose,
+  Payload,
+} from "https://deno.land/x/djwt/create.ts"
 
 const key = "your-secret"
 const payload: Payload = {
@@ -120,10 +126,3 @@ for await (const req of serve("0.0.0.0:8000")) {
 ## Contribution
 
 Every kind of contribution to this project is highly appreciated.
-
-## Todo
-
-1. Add more optional features from the
-   [JWT](https://tools.ietf.org/html/rfc7519) and
-   [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications
-2. Make more tests
