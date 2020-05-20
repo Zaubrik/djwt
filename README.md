@@ -77,7 +77,7 @@ setting an expiration date.
 
 ```javascript
 // A specific date:
-setExpiration(new Date("2020-07-01"))
+setExpiration(new Date("2022-07-01"))
 // One hour from now:
 setExpiration(new Date().getTime() + 60 * 60 * 1000)
 ```
@@ -93,12 +93,7 @@ server will check the validity of the JWT.
 ```javascript
 import { serve } from "https://deno.land/std/http/server.ts"
 import { validateJwt } from "https://deno.land/x/djwt/validate.ts"
-import {
-  makeJwt,
-  setExpiration,
-  Jose,
-  Payload,
-} from "https://deno.land/x/djwt/create.ts"
+import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts"
 
 const key = "your-secret"
 const payload: Payload = {

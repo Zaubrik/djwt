@@ -31,11 +31,9 @@ interface Jose {
   [key: string]: JsonValue | undefined
 }
 
-/*
- * Helper function: setExpiration()
- * returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
- */
- function setExpiration(exp: number | Date): number {
+// Helper function: setExpiration()
+// returns the number of milliseconds since January 1, 1970, 00:00:00 UTC
+function setExpiration(exp: number | Date): number {
   return (exp instanceof Date ? exp : new Date(exp)).getTime()
 }
 
