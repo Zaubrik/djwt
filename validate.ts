@@ -90,10 +90,7 @@ async function handleJwtObject(
 }
 
 function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
-  // throws runtime error if JWT serialization is invalid
   const parsedArray = jwt
-    .match(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*$/)!
-    .shift()!
     .split(".")
     .map(convertBase64urlToUint8Array)
     .map((uint8Array, index) =>
@@ -101,6 +98,7 @@ function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
         ? convertUint8ArrayToHex(uint8Array)
         : JSON.parse(new TextDecoder().decode(uint8Array))
     )
+  if (parsedArray.length !== 3) throw TypeError("invalid serialization")
   return {
     header: parsedArray[0],
     payload: parsedArray[1] === "" ? undefined : parsedArray[1],

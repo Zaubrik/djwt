@@ -130,17 +130,17 @@ Deno.test("makeValidateJwtObjectTest", async function (): Promise<void> {
 Deno.test("parseAndDecodeTests", function (): void {
   assertThrows((): void => {
     parseAndDecode(".aaa.bbb")
-  }, TypeError)
+  }, SyntaxError)
 
   assertThrows((): void => {
     parseAndDecode(".aaa.bbb")
-  }, TypeError)
+  }, SyntaxError)
   assertThrows((): void => {
     parseAndDecode("a..aa.bbb")
   }, TypeError)
   assertThrows((): void => {
     parseAndDecode("aaa.bbb.ccc.")
-  }, TypeError)
+  }, SyntaxError)
   const jwt =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
   const header = {
