@@ -1,8 +1,8 @@
 function convertBase64ToUint8Array(data: string): Uint8Array {
-  var binString = atob(data);
-  var size = binString.length;
-  var bytes = new Uint8Array(size);
-  for (var i = 0; i < size; i++) {
+  const binString = atob(data);
+  const size = binString.length;
+  const bytes = new Uint8Array(size);
+  for (let i = 0; i < size; i++) {
     bytes[i] = binString.charCodeAt(i);
   }
   return bytes;
@@ -11,7 +11,7 @@ function convertBase64ToUint8Array(data: string): Uint8Array {
 // credit: https://gist.github.com/enepomnyaschih/72c423f727d395eeaa09697058238727
 function convertUint8ArrayToBase64(bytes: Uint8Array): string {
   const base64abc = (() => {
-    let abc = [],
+    const abc = [],
       A = "A".charCodeAt(0),
       a = "a".charCodeAt(0),
       n = "0".charCodeAt(0);
