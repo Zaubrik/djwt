@@ -29,8 +29,7 @@ process where a web token is represented as the concatenation of
 
 The following signature and MAC algorithms - which are defined in the JSON Web
 Algorithms (JWA) [specification](https://www.rfc-editor.org/rfc/rfc7518.html) -
-have been implemented already: **HMAC SHA-256** ("HS256"), **HMAC SHA-512**
-("HS512") and **none**
+have been implemented already: **HMAC SHA-256** ("HS256") and **none**
 ([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).
 
 ### Expiration Time
