@@ -1,8 +1,9 @@
 import { convertUint8ArrayToBase64url } from "./base64/base64url.ts";
-import { decodeString as convertHexToUint8Array } from "https://deno.land/std@v0.53.0/encoding/hex.ts";
-import { HmacSha256 } from "https://deno.land/std@v0.53.0/hash/sha256.ts";
+import { decodeString as convertHexToUint8Array } from "https://deno.land/std@v0.56.0/encoding/hex.ts";
+import { HmacSha256 } from "https://deno.land/std@v0.56.0/hash/sha256.ts";
+import { HmacSha512 } from "https://deno.land/std@v0.56.0/hash/sha512.ts";
 
-type Algorithm = "none" | "HS256";
+type Algorithm = "none" | "HS256" | "HS512";
 type JsonPrimitive = string | number | boolean | null;
 type JsonObject = { [member: string]: JsonValue };
 type JsonArray = JsonValue[];
@@ -46,11 +47,9 @@ function convertStringToBase64url(input: string): string {
 }
 
 function makeSigningInput(header: Jose, payload?: Payload): string {
-  return `${
-    convertStringToBase64url(
-      JSON.stringify(header),
-    )
-  }.${convertStringToBase64url(JSON.stringify(payload || ""))}`;
+  return `${convertStringToBase64url(
+    JSON.stringify(header)
+  )}.${convertStringToBase64url(JSON.stringify(payload || ""))}`;
 }
 
 function encrypt(alg: Algorithm, key: string, msg: string): string | null {
@@ -61,8 +60,9 @@ function encrypt(alg: Algorithm, key: string, msg: string): string | null {
     case "none":
       return null;
     case "HS256":
-      const hmac = new HmacSha256(key);
-      return hmac.update(msg).toString();
+      return new HmacSha256(key).update(msg).toString();
+    case "HS512":
+      return new HmacSha512(key).update(msg).toString();
     default:
       assertNever(alg);
   }

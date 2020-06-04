@@ -29,7 +29,7 @@ process where a web token is represented as the concatenation of
 
 The following signature and MAC algorithms - which are defined in the JSON Web
 Algorithms (JWA) [specification](https://www.rfc-editor.org/rfc/rfc7518.html) -
-have been implemented already: **HMAC SHA-256** ("HS256") and **none**
+have been implemented already: **HMAC SHA-256** ("HS256"), **HMAC SHA-512** ("HS512") and **none**
 ([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).
 
 ### Expiration Time
@@ -65,7 +65,7 @@ only need the signing and verification feature of the JWS, you can omit the
 
 The function `validateJwt` returns a _promise_ which - if the JWT is valid -
 resolves to a JWT representation as JavaScript object:
-`{ header, payload, signature }`. If the Jwt is invalid, the promise resolves to
+`{ header, payload, signature }`. If the JWT is invalid, the promise resolves to
 `null` or an `Error` is thrown - depending how you set the boolean `isThrowing`
 (default is `true`).
 
