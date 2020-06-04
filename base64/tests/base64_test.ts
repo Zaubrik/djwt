@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@v0.53.0/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@v0.56.0/testing/asserts.ts";
 import {
   convertBase64ToUint8Array,
   convertUint8ArrayToBase64,
