@@ -29,8 +29,10 @@ process where a web token is represented as the concatenation of
 
 The following signature and MAC algorithms - which are defined in the JSON Web
 Algorithms (JWA) [specification](https://www.rfc-editor.org/rfc/rfc7518.html) -
-have been implemented already: **HMAC SHA-256** ("HS256"), **HMAC SHA-512** ("HS512") and **none**
-([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).
+have been implemented already: **HMAC SHA-256** ("HS256"), **HMAC SHA-512**
+("HS512") and **none**
+([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)). As soon as
+`deno` expands its [crypto library](https://github.com/denoland/deno/tree/master/std/hash), we will add more algorithms.
 
 ### Expiration Time
 
@@ -61,13 +63,14 @@ In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
 only need the signing and verification feature of the JWS, you can omit the
 **payload**.
 
-#### validateJwt(jwt: string, key: string, { isThrowing, critHandlers }: Opts): Promise<JwtObject | null>
+#### validateJwt(jwt: string, key: string, { critHandlers }: Opts): Promise<JwtValidation>
 
-The function `validateJwt` returns a _promise_ which - if the JWT is valid -
-resolves to a JWT representation as JavaScript object:
-`{ header, payload, signature }`. If the JWT is invalid, the promise resolves to
-`null` or an `Error` is thrown - depending how you set the boolean `isThrowing`
-(default is `true`).
+The function `validateJwt` returns a _promise_.  
+This promise resolves to an _object_ with the property `isValid` among others.
+If the JWT is valid, the _type_ of the resolved promise is:
+`{ header: Jose; payload?: Payload; signature: string; jwt: string; isValid: true; critResult?: unknown[] }`.  
+If the JWT is invalid, the promise resolves to
+`{ jwt: unknown; error: JwtError; isValid: false; isExpired: boolean }`.
 
 #### setExpiration(exp: number | Date): number
 
@@ -76,9 +79,9 @@ setting an expiration date.
 
 ```javascript
 // A specific date:
-setExpiration(new Date("2022-07-01"))
+setExpiration(new Date("2022-07-01"));
 // One hour from now:
-setExpiration(new Date().getTime() + 60 * 60 * 1000)
+setExpiration(new Date().getTime() + 60 * 60 * 1000);
 ```
 
 ## Example
@@ -90,29 +93,29 @@ On the other hand, if you send a JWT as data along with a **POST** request, the
 server will check the validity of the JWT.
 
 ```javascript
-import { serve } from "https://deno.land/std/http/server.ts"
-import { validateJwt } from "https://deno.land/x/djwt/validate.ts"
-import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts"
+import { serve } from "https://deno.land/std@v0.53.0/http/server.ts";
+import { validateJwt } from "https://deno.land/x/djwt/validate.ts";
+import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts";
 
-const key = "your-secret"
+const key = "your-secret";
 const payload: Payload = {
   iss: "joe",
   exp: setExpiration(new Date().getTime() + 60000),
-}
+};
 const header: Jose = {
   alg: "HS256",
   typ: "JWT",
-}
+};
 
-console.log("server is listening at 0.0.0.0:8000")
+console.log("server is listening at 0.0.0.0:8000");
 for await (const req of serve("0.0.0.0:8000")) {
   if (req.method === "GET") {
-    req.respond({ body: makeJwt({ header, payload, key }) + "\n" })
+    req.respond({ body: makeJwt({ header, payload, key }) + "\n" });
   } else {
-    const jwt = new TextDecoder().decode(await Deno.readAll(req.body))
-    await validateJwt(jwt, key, { isThrowing: false })
+    const jwt = new TextDecoder().decode(await Deno.readAll(req.body));
+    (await validateJwt(jwt, key)).isValid
       ? req.respond({ body: "Valid JWT\n" })
-      : req.respond({ body: "Invalid JWT\n", status: 401 })
+      : req.respond({ body: "Invalid JWT\n", status: 401 });
   }
 }
 ```

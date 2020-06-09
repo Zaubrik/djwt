@@ -3,10 +3,24 @@ import { convertBase64urlToUint8Array } from "./base64/base64url.ts";
 import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std@v0.56.0/encoding/hex.ts";
 
 type JwtObject = { header: Jose; payload?: Payload; signature: string };
-type Opts = { isThrowing: boolean; critHandlers?: Handlers };
+type JwtValidation =
+  | (JwtObject & { jwt: string; isValid: true; critResult?: unknown[] })
+  | { jwt: unknown; error: JwtError; isValid: false; isExpired: boolean };
+type Opts = { critHandlers?: Handlers };
 type Handlers = {
   [key: string]: (header: JsonValue) => unknown;
 };
+
+class JwtError extends Error {
+  readonly message: string;
+  readonly date: Date;
+  constructor(message: string) {
+    super(message);
+    this.message = message;
+    this.name = this.constructor.name;
+    this.date = new Date();
+  }
+}
 
 function isObject(obj: unknown): obj is object {
   return (
@@ -77,7 +91,7 @@ function validateJwtObject(
     if (typeof maybeJwtObject.payload.exp !== "number") {
       throw RangeError("claim 'exp' is not a number");
     } // Implementers MAY provide for some small leeway to account for clock skew (JWT §4.1.4)
-    else if (isExpired(maybeJwtObject.payload.exp, 10000)) {
+    else if (isExpired(maybeJwtObject.payload.exp, 1000)) {
       throw RangeError("the jwt is expired");
     }
   }
@@ -87,12 +101,12 @@ function validateJwtObject(
 async function handleJwtObject(
   jwtObject: JwtObject,
   critHandlers?: Handlers
-): Promise<[JwtObject, unknown]> {
+): Promise<[JwtObject, unknown[] | undefined]> {
   return [
     jwtObject,
     "crit" in jwtObject.header
       ? await checkHeaderCrit(jwtObject.header, critHandlers)
-      : null,
+      : undefined,
   ];
 }
 
@@ -116,23 +130,26 @@ function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
 async function validateJwt(
   jwt: string,
   key: string,
-  { isThrowing, critHandlers }: Opts = { isThrowing: true }
-): Promise<JwtObject | null> {
+  { critHandlers }: Opts = {}
+): Promise<JwtValidation> {
   try {
-    const [oldJwtObject] = await handleJwtObject(
+    const [oldJwtObject, critResult] = await handleJwtObject(
       validateJwtObject(parseAndDecode(jwt)),
       critHandlers
     );
     if (
-      oldJwtObject.signature ===
+      oldJwtObject.signature !==
       parseAndDecode(makeJwt({ ...oldJwtObject, key })).signature
-    ) {
-      return oldJwtObject;
-    } else throw Error("signatures don't match");
+    )
+      throw Error("signatures don't match");
+    return { ...oldJwtObject, jwt, critResult, isValid: true };
   } catch (err) {
-    err.message = `Invalid JWT: ${err.message}`;
-    if (isThrowing) throw err;
-    else return null;
+    return {
+      jwt,
+      error: new JwtError(err.message),
+      isValid: false,
+      isExpired: err.message === "the jwt is expired" ? true : false,
+    };
   }
 }
 
@@ -146,5 +163,6 @@ export {
   Payload,
   Handlers,
   JwtObject,
+  JwtValidation,
   Opts,
 };

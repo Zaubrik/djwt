@@ -161,6 +161,63 @@ Deno.test("parseAndDecodeTests", function (): void {
   assertEquals(makeJwt({ header, payload, key: "your-256-bit-secret" }), jwt);
 });
 
+Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
+  const header = {
+    alg: "HS256" as const,
+    typ: "JWT",
+  };
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    iat: 1516239022,
+  };
+  const jwt = makeJwt({ header, payload, key });
+  const validatedJwt = await validateJwt(jwt, key);
+  assertEquals(
+    jwt,
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SARsBE5x_ua2ye823r2zKpQNaew3Daq8riKz5A4h3o4"
+  );
+  if (validatedJwt.isValid) {
+    assertEquals(validatedJwt!.payload, payload);
+    assertEquals(validatedJwt!.header, header);
+    assertEquals(
+      jwt.slice(jwt.lastIndexOf(".") + 1),
+      convertHexToBase64url(validatedJwt!.signature)
+    );
+  } else {
+    throw new Error("invalid JWT");
+  }
+  const invalidJwt = // jwt with not supported crypto algorithm in alg header:
+    "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.bQTnz6AuMJvmXXQsVPrxeQNvzDkimo7VNXxHeSBfClLufmCVZRUuyTwJF311JHuh";
+  const invalidatedJwt = await validateJwt(invalidJwt, "");
+  if (invalidatedJwt.isValid) throw Error("jwt should be invalid");
+  else
+    assertEquals(
+      invalidatedJwt.error.message,
+      "Failed to create JWT: no matching crypto algorithm in the header: HS384"
+    );
+});
+
+Deno.test("testExpiredJwt", async function (): Promise<void> {
+  const payload = {
+    iss: "joe",
+    jti: "123456789abc",
+    exp: setExpiration(new Date().getTime() - 20000),
+  };
+  const header = {
+    alg: "HS256" as const,
+    dummy: 100,
+  };
+  const jwt = makeJwt({ header, payload, key });
+
+  const validatedJwt = await validateJwt(jwt, key);
+  if (validatedJwt.isValid) throw Error("jwt should be invalid");
+  else {
+    assertEquals(validatedJwt.error.message, "the jwt is expired");
+    assertEquals(validatedJwt.isExpired, true);
+  }
+});
+
 Deno.test("makeCheckHeaderCritTest", async function (): Promise<void> {
   const payload = {
     iss: "joe",
@@ -185,61 +242,6 @@ Deno.test("makeCheckHeaderCritTest", async function (): Promise<void> {
   assertEquals(result, [100, 200]);
 });
 
-Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
-  const header = {
-    alg: "HS256" as const,
-    typ: "JWT",
-  };
-  const payload = {
-    sub: "1234567890",
-    name: "John Doe",
-    iat: 1516239022,
-  };
-  const jwt = makeJwt({ header, payload, key });
-  const validatedJwt = await validateJwt(jwt, key);
-  assertEquals(
-    jwt,
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SARsBE5x_ua2ye823r2zKpQNaew3Daq8riKz5A4h3o4"
-  );
-  assertEquals(validatedJwt!.payload, payload);
-  assertEquals(validatedJwt!.header, header);
-  assertEquals(
-    jwt.slice(jwt.lastIndexOf(".") + 1),
-    convertHexToBase64url(validatedJwt!.signature)
-  );
-
-  const invalidJwt = // jwt with not supported crypto algorithm in alg header:
-    "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.bQTnz6AuMJvmXXQsVPrxeQNvzDkimo7VNXxHeSBfClLufmCVZRUuyTwJF311JHuh";
-  assertThrowsAsync(
-    async (): Promise<void> => {
-      await validateJwt(invalidJwt, "");
-    },
-    RangeError,
-    "Invalid JWT: Failed to create JWT: no matching crypto algorithm in the header: HS384"
-  );
-});
-
-Deno.test("testExpiredJwt", async function (): Promise<void> {
-  const payload = {
-    iss: "joe",
-    jti: "123456789abc",
-    exp: setExpiration(new Date().getTime() - 20000),
-  };
-  const header = {
-    alg: "HS256" as const,
-    dummy: 100,
-  };
-  const jwt = makeJwt({ header, payload, key });
-
-  assertThrowsAsync(
-    async (): Promise<void> => {
-      await validateJwt(jwt, key);
-    },
-    RangeError,
-    "Invalid JWT: the jwt is expired"
-  );
-});
-
 Deno.test("makeHeaderCritTest", async function (): Promise<void> {
   const payload = {
     iss: "joe",
@@ -260,22 +262,28 @@ Deno.test("makeHeaderCritTest", async function (): Promise<void> {
   const jwt = makeJwt({ header, payload, key });
   const validatedJwt = await validateJwt(jwt, key, {
     critHandlers,
-    isThrowing: true,
   });
-  assertEquals(validatedJwt!.payload, payload);
-  assertEquals(validatedJwt!.header, header);
-  assertEquals(
-    jwt.slice(jwt.lastIndexOf(".") + 1),
-    convertHexToBase64url(validatedJwt!.signature)
-  );
+  if (validatedJwt.isValid) {
+    assertEquals(validatedJwt.critResult, [200]);
+    assertEquals(validatedJwt!.payload, payload);
+    assertEquals(validatedJwt!.header, header);
+    assertEquals(
+      jwt.slice(jwt.lastIndexOf(".") + 1),
+      convertHexToBase64url(validatedJwt!.signature)
+    );
+  } else {
+    throw new Error("invalid JWT");
+  }
 
-  assertThrowsAsync(
-    async (): Promise<void> => {
-      const failing = await validateJwt(jwt, key);
-    },
-    Error,
-    "Invalid JWT: critical extension header parameters are not understood"
-  );
+  const failing = await validateJwt(jwt, key);
+  if (failing.isValid) throw Error("jwt should be invalid");
+  else {
+    assertEquals(
+      failing.error.message,
+      "critical extension header parameters are not understood"
+    );
+    assertEquals(failing.isExpired, false);
+  }
 });
 
 // https://tools.ietf.org/html/rfc7519#section-6
@@ -290,9 +298,13 @@ Deno.test("makeUnsecuredJwtTest", async function (): Promise<void> {
   };
   const jwt = makeJwt({ header, payload, key });
   const validatedJwt = await validateJwt(jwt, "keyIsIgnored");
-  assertEquals(validatedJwt!.payload, payload);
-  assertEquals(validatedJwt!.header, header);
-  assertEquals(validatedJwt!.signature, "");
+  if (validatedJwt.isValid) {
+    assertEquals(validatedJwt!.payload, payload);
+    assertEquals(validatedJwt!.header, header);
+    assertEquals(validatedJwt!.signature, "");
+  } else {
+    throw new Error("invalid JWT");
+  }
 });
 
 // https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F
@@ -300,8 +312,12 @@ Deno.test("createJwtWithEmptyPayloadTest", async function (): Promise<void> {
   const header = { typ: "JWT", alg: "HS256" as const };
   const jwt = makeJwt({ header, key });
   const validatedJwt = await validateJwt(jwt, key);
-  assertEquals(validatedJwt!.payload, undefined);
-  assertEquals(validatedJwt!.header, header);
+  if (validatedJwt.isValid) {
+    assertEquals(validatedJwt!.payload, undefined);
+    assertEquals(validatedJwt!.header, header);
+  } else {
+    throw new Error("invalid JWT");
+  }
 });
 
 Deno.test("makeHmacSha512Test", async function (): Promise<void> {
@@ -317,7 +333,11 @@ Deno.test("makeHmacSha512Test", async function (): Promise<void> {
     "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.VFb0qJ1LRg_4ujbZoRMXnVkUgiuKq5KxWqNdbKq_G9Vvz-S1zZa9LPxtHWKa64zDl2ofkT8F6jBt_K4riU-fPg";
   const jwt = makeJwt({ header, payload, key });
   const validatedJwt = await validateJwt(jwt, key);
-  assertEquals(jwt, externallyVerifiedJwt);
-  assertEquals(validatedJwt!.payload, payload);
-  assertEquals(validatedJwt!.header, header);
+  if (validatedJwt.isValid) {
+    assertEquals(jwt, externallyVerifiedJwt);
+    assertEquals(validatedJwt!.payload, payload);
+    assertEquals(validatedJwt!.header, header);
+  } else {
+    throw new Error("invalid JWT");
+  }
 });

@@ -18,7 +18,7 @@ for await (const req of serve("0.0.0.0:8000")) {
     req.respond({ body: makeJwt({ header, payload, key }) + "\n" });
   } else {
     const jwt = new TextDecoder().decode(await Deno.readAll(req.body));
-    await validateJwt(jwt, key, { isThrowing: false })
+    (await validateJwt(jwt, key)).isValid
       ? req.respond({ body: "Valid JWT\n" })
       : req.respond({ body: "Invalid JWT\n", status: 401 });
   }
