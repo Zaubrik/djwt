@@ -32,7 +32,9 @@ Algorithms (JWA) [specification](https://www.rfc-editor.org/rfc/rfc7518.html) -
 have been implemented already: **HMAC SHA-256** ("HS256"), **HMAC SHA-512**
 ("HS512") and **none**
 ([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)). As soon as
-`deno` expands its [crypto library](https://github.com/denoland/deno/tree/master/std/hash), we will add more algorithms.
+`deno` expands its
+[crypto library](https://github.com/denoland/deno/tree/master/std/hash), we will
+add more algorithms.
 
 ### Expiration Time
 
@@ -65,12 +67,14 @@ only need the signing and verification feature of the JWS, you can omit the
 
 #### validateJwt(jwt: string, key: string, { critHandlers }: Opts): Promise<JwtValidation>
 
-The function `validateJwt` returns a _promise_.  
-This promise resolves to an _object_ with the property `isValid` among others.
-If the JWT is valid, the _type_ of the resolved promise is:
-`{ header: Jose; payload?: Payload; signature: string; jwt: string; isValid: true; critResult?: unknown[] }`.  
+The function `validateJwt` returns a _promise_. This promise resolves to an
+_object_ with a _union type_ where the boolean property `isValid` serves as
+[discriminant](https://www.typescriptlang.org/docs/handbook/advanced-types.html#discriminated-unions).  
+If the JWT is valid (`.isValid === true`), the _type_ of the resolved promise
+is:
+`{ isValid: true; header: Jose; payload?: Payload; signature: string; jwt: string; critResult?: unknown[] }`.  
 If the JWT is invalid, the promise resolves to
-`{ jwt: unknown; error: JwtError; isValid: false; isExpired: boolean }`.
+`{ isValid: false; jwt: unknown; error: JwtError; isExpired: boolean }`.
 
 #### setExpiration(exp: number | Date): number
 
