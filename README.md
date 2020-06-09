@@ -31,8 +31,8 @@ The following signature and MAC algorithms - which are defined in the JSON Web
 Algorithms (JWA) [specification](https://www.rfc-editor.org/rfc/rfc7518.html) -
 have been implemented already: **HMAC SHA-256** ("HS256"), **HMAC SHA-512**
 ("HS512") and **none**
-([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)). As soon as
-`deno` expands its
+([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).  
+As soon as deno expands its
 [crypto library](https://github.com/denoland/deno/tree/master/std/hash), we will
 add more algorithms.
 
