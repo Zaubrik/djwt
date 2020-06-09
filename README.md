@@ -65,7 +65,7 @@ In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
 only need the signing and verification feature of the JWS, you can omit the
 **payload**.
 
-#### validateJwt(jwt: string, key: string, { critHandlers }: Opts): Promise<JwtValidation>
+#### validateJwt(jwt: string, key: string, { critHandlers }: Opts): Promise\<JwtValidation>
 
 The function `validateJwt` returns a _promise_. This promise resolves to an
 _object_ with a _union type_ where the boolean property `isValid` serves as
