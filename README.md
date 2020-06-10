@@ -124,6 +124,12 @@ for await (const req of serve("0.0.0.0:8000")) {
 }
 ```
 
+## Applications
+
+To see how djwt can be implemented further, you can find a djwt _middleware_
+implementation for the [Oak](https://oakserver.github.io/oak/) framework
+[here](https://github.com/halvardssm/oak-middleware-jwt).
+
 ## Contribution
 
 Every kind of contribution to this project is highly appreciated.
