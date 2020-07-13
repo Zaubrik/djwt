@@ -23,12 +23,11 @@ import {
 import {
   encodeToString as convertUint8ArrayToHex,
   decodeString as convertHexToUint8Array,
-} from "https://deno.land/std@v0.56.0/encoding/hex.ts";
+} from "https://deno.land/std@v0.60.0/encoding/hex.ts";
 import {
   assertEquals,
   assertThrows,
-  assertThrowsAsync,
-} from "https://deno.land/std@v0.56.0/testing/asserts.ts";
+} from "https://deno.land/std@v0.60.0/testing/asserts.ts";
 
 const key = "your-secret";
 
@@ -62,14 +61,14 @@ Deno.test("makeDataConversionTest", function (): void {
             convertHexToUint8Array(
               convertUint8ArrayToHex(
                 convertBase64ToUint8Array(
-                  convertBase64urlToBase64(convertHexToBase64url(hex1))
-                )
-              )
-            )
-          )
-        )
-      )
-    )
+                  convertBase64urlToBase64(convertHexToBase64url(hex1)),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
   );
   assertEquals(hex1, hex2);
 });
@@ -82,15 +81,15 @@ Deno.test("makeSignatureTests", async function (): Promise<void> {
     "p2KneqJhji8T0PDlVxcG4DROyzTgWXbDhz_mcTVojXo";
   assertEquals(
     makeSignature("HS256", "m$y-key", "thisTextWillBeEncrypted"),
-    convertHexToBase64url(computedHmacInHex)
+    convertHexToBase64url(computedHmacInHex),
   );
   assertEquals(
     makeSignature(
       "HS256",
       "m$y-key",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
     ),
-    anotherVerifiedSignatureInBase64Url
+    anotherVerifiedSignatureInBase64Url,
   );
 });
 
@@ -123,7 +122,7 @@ Deno.test("makeValidateJwtObjectTest", async function (): Promise<void> {
       });
     },
     ReferenceError,
-    "header parameter 'alg' is not a string"
+    "header parameter 'alg' is not a string",
   );
 });
 
@@ -175,14 +174,14 @@ Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
   const validatedJwt = await validateJwt(jwt, key);
   assertEquals(
     jwt,
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SARsBE5x_ua2ye823r2zKpQNaew3Daq8riKz5A4h3o4"
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SARsBE5x_ua2ye823r2zKpQNaew3Daq8riKz5A4h3o4",
   );
   if (validatedJwt.isValid) {
     assertEquals(validatedJwt!.payload, payload);
     assertEquals(validatedJwt!.header, header);
     assertEquals(
       jwt.slice(jwt.lastIndexOf(".") + 1),
-      convertHexToBase64url(validatedJwt!.signature)
+      convertHexToBase64url(validatedJwt!.signature),
     );
   } else {
     throw new Error("invalid JWT");
@@ -191,11 +190,12 @@ Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
     "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.bQTnz6AuMJvmXXQsVPrxeQNvzDkimo7VNXxHeSBfClLufmCVZRUuyTwJF311JHuh";
   const invalidatedJwt = await validateJwt(invalidJwt, "");
   if (invalidatedJwt.isValid) throw Error("jwt should be invalid");
-  else
+  else {
     assertEquals(
       invalidatedJwt.error.message,
-      "Failed to create JWT: no matching crypto algorithm in the header: HS384"
+      "Failed to create JWT: no matching crypto algorithm in the header: HS384",
     );
+  }
 });
 
 Deno.test("testExpiredJwt", async function (): Promise<void> {
@@ -269,7 +269,7 @@ Deno.test("makeHeaderCritTest", async function (): Promise<void> {
     assertEquals(validatedJwt!.header, header);
     assertEquals(
       jwt.slice(jwt.lastIndexOf(".") + 1),
-      convertHexToBase64url(validatedJwt!.signature)
+      convertHexToBase64url(validatedJwt!.signature),
     );
   } else {
     throw new Error("invalid JWT");
@@ -280,7 +280,7 @@ Deno.test("makeHeaderCritTest", async function (): Promise<void> {
   else {
     assertEquals(
       failing.error.message,
-      "critical extension header parameters are not understood"
+      "critical extension header parameters are not understood",
     );
     assertEquals(failing.isExpired, false);
   }
