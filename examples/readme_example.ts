@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@v0.53.0/http/server.ts";
+import { serve } from "https://deno.land/std@v0.60.0/http/server.ts";
 import { validateJwt } from "../validate.ts";
 import { makeJwt, setExpiration, Jose, Payload } from "../create.ts";
 

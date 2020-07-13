@@ -1,9 +1,7 @@
-import { assertEquals } from "https://deno.land/std@v0.56.0/testing/asserts.ts";
-import { encode } from "https://deno.land/std@v0.56.0/encoding/base64.ts";
+import { assertEquals } from "https://deno.land/std@v0.60.0/testing/asserts.ts";
 import {
   convertBase64ToBase64url,
   convertBase64urlToBase64,
-  addPaddingToBase64url,
 } from "../base64url.ts";
 import { convertUint8ArrayToBase64 } from "../base64.ts";
 
@@ -25,8 +23,8 @@ Deno.test("convertBase64urlToBase64Test", function (): void {
 Deno.test("convertStringToBase64urlTest", function (): void {
   assertEquals(
     convertBase64ToBase64url(
-      convertUint8ArrayToBase64(new TextEncoder().encode(">?>d?ß"))
+      convertUint8ArrayToBase64(new TextEncoder().encode(">?>d?ß")),
     ),
-    "Pj8-ZD_Dnw"
+    "Pj8-ZD_Dnw",
   );
 });

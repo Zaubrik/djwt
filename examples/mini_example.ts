@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@v0.53.0/http/server.ts";
-import { encode, decode } from "https://deno.land/std@v0.53.0/encoding/utf8.ts";
+import { serve } from "https://deno.land/std@v0.60.0/http/server.ts";
+import { encode, decode } from "https://deno.land/std@v0.60.0/encoding/utf8.ts";
 import { makeJwt } from "../create.ts";
 import { validateJwt } from "../validate.ts";
 

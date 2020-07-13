@@ -38,12 +38,6 @@ The `+` and `/` characters of standard **base64** are respectively replaced by
 
 Converts a **base64url** string to standard **base64**.
 
-#### addPaddingToBase64url(base64url: string): string
-
-The `addPaddingToBase64url` function makes the string length a _multiple of 4_
-by adding the padding character (`=`).  
-More about this [here](https://en.wikipedia.org/wiki/Base64#URL_applications).
-
 ### Example
 
 ```typescript
