@@ -26,3 +26,23 @@ const uint8Array = new TextEncoder().encode(str)
 uint8Array === convertBase64ToUint8Array(convertUint8ArrayToBase64(uint8Array))
 str === convertBase64ToString(convertStringToBase64(str))
 ```
+
+## base64url
+
+#### convertBase64ToBase64url(base64: string): string
+
+The `+` and `/` characters of standard **base64** are respectively replaced by
+`-` and `_` and the padding `=` characters are removed.
+
+#### convertBase64urlToBase64(base64url: string): string
+
+Converts a **base64url** string to standard **base64**.
+
+### Example
+
+```typescript
+const base64 = "c3ViamVjdHM/X2Q9MQ=="
+const base64url = convertBase64ToBase64url(base64)
+
+console.log(base64url) // c3ViamVjdHM_X2Q9MQ
+```
