@@ -89,6 +89,7 @@ export {
   makeSignature,
   convertHexToBase64url,
   convertStringToBase64url,
+  Algorithm,
   Payload,
   Jose,
   JwtInput,

@@ -1,4 +1,4 @@
-import { makeJwt, Payload, Jose, JsonValue } from "./create.ts";
+import { makeJwt, Payload, Jose, JsonValue, Algorithm } from "./create.ts";
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts";
 import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std@v0.56.0/encoding/hex.ts";
 
@@ -6,7 +6,7 @@ type JwtObject = { header: Jose; payload?: Payload; signature: string };
 type JwtValidation =
   | (JwtObject & { jwt: string; isValid: true; critResult?: unknown[] })
   | { jwt: unknown; error: JwtError; isValid: false; isExpired: boolean };
-type Opts = { critHandlers?: Handlers };
+type Opts = { algorithm: Algorithm | Algorithm[]; critHandlers?: Handlers };
 type Handlers = {
   [key: string]: (header: JsonValue) => unknown;
 };
@@ -46,7 +46,8 @@ function checkHeaderCrit(
   handlers?: Handlers
 ): Promise<unknown[]> {
   // prettier-ignore
-  const reservedWords = new Set(["alg", "jku", "jwk", "kid", "x5u", "x5c", "x5t", "x5t#S256", "typ", "cty", "crit", "enc", "zip", "epk", "apu", "apv", "iv", "tag", "p2s", "p2c"]);
+  const reservedWords = new Set(["alg", "jku", "jwk", "kid", "x5u", "x5c", "x5t",
+    "x5t#S256", "typ", "cty", "crit", "enc", "zip", "epk", "apu", "apv", "iv", "tag", "p2s", "p2c"]);
   if (
     !Array.isArray(header.crit) ||
     header.crit.some((str: string) => typeof str !== "string" || !str)
@@ -127,16 +128,26 @@ function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
   };
 }
 
+function makeArray<T>(...arg: T[]) {
+  return arg.flat(1);
+}
+
 async function validateJwt(
   jwt: string,
   key: string,
-  { critHandlers }: Opts = {}
+  { critHandlers, algorithm }: Opts
 ): Promise<JwtValidation> {
   try {
     const [oldJwtObject, critResult] = await handleJwtObject(
       validateJwtObject(parseAndDecode(jwt)),
       critHandlers
     );
+    if (
+      !makeArray<Algorithm | Algorithm[]>(algorithm).includes(
+        oldJwtObject.header.alg
+      )
+    )
+      throw Error("no matching algorithm: " + oldJwtObject.header.alg);
     if (
       oldJwtObject.signature !==
       parseAndDecode(makeJwt({ ...oldJwtObject, key })).signature

@@ -16,7 +16,11 @@ for await (const req of serve("0.0.0.0:8000")) {
       body: encode(makeJwt(jwtInput) + "\n"),
     });
   } else {
-    (await validateJwt(decode(await Deno.readAll(req.body)), "abc123")).isValid
+    (
+      await validateJwt(decode(await Deno.readAll(req.body)), "abc123", {
+        algorithm: "HS256",
+      })
+    ).isValid
       ? req.respond({ body: encode("Valid JWT\n") })
       : req.respond({ status: 401, body: encode("Invalid JWT\n") });
   }

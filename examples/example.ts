@@ -23,6 +23,7 @@ const jwt = makeJwt({ header, payload, key });
 console.log("JWT:", jwt);
 const validatedJwt = await validateJwt(jwt, key, {
   critHandlers,
+  algorithm: ["HS256", "HS512"],
 });
 if (validatedJwt.isValid) console.log("JWT is valid!\n", validatedJwt);
 else console.log("JWT is invalid!\n", validatedJwt);
