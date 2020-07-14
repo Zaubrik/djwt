@@ -126,7 +126,7 @@ Deno.test("makeValidateJwtObjectTest", async function (): Promise<void> {
   );
 });
 
-Deno.test("parseAndDecodeTests", function (): void {
+Deno.test("parseAndDecodeTests", async function (): Promise<void> {
   assertThrows((): void => {
     parseAndDecode(".aaa.bbb");
   }, SyntaxError);
@@ -157,7 +157,10 @@ Deno.test("parseAndDecodeTests", function (): void {
     signature:
       "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
   });
-  assertEquals(makeJwt({ header, payload, key: "your-256-bit-secret" }), jwt);
+  assertEquals(
+    await makeJwt({ header, payload, key: "your-256-bit-secret" }),
+    jwt
+  );
 });
 
 Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
@@ -170,7 +173,7 @@ Deno.test("makeCreationAndValidationTest", async function (): Promise<void> {
     name: "John Doe",
     iat: 1516239022,
   };
-  const jwt = makeJwt({ header, payload, key });
+  const jwt = await makeJwt({ header, payload, key });
   const validatedJwt = await validateJwt(jwt, key, { algorithm: "HS256" });
   assertEquals(
     jwt,
@@ -207,7 +210,7 @@ Deno.test("testExpiredJwt", async function (): Promise<void> {
     alg: "HS256" as const,
     dummy: 100,
   };
-  const jwt = makeJwt({ header, payload, key });
+  const jwt = await makeJwt({ header, payload, key });
 
   const validatedJwt = await validateJwt(jwt, key, { algorithm: "HS256" });
   if (validatedJwt.isValid) throw Error("jwt should be invalid");
@@ -258,7 +261,7 @@ Deno.test("makeHeaderCritTest", async function (): Promise<void> {
     },
   };
 
-  const jwt = makeJwt({ header, payload, key });
+  const jwt = await makeJwt({ header, payload, key });
   const validatedJwt = await validateJwt(jwt, key, {
     critHandlers,
     algorithm: ["HS256", "HS512"],
@@ -296,7 +299,7 @@ Deno.test("makeUnsecuredJwtTest", async function (): Promise<void> {
     alg: "none" as const,
     dummy: 100,
   };
-  const jwt = makeJwt({ header, payload, key });
+  const jwt = await makeJwt({ header, payload, key });
   const validatedJwt = await validateJwt(jwt, "keyIsIgnored", {
     algorithm: "none",
   });
@@ -312,7 +315,7 @@ Deno.test("makeUnsecuredJwtTest", async function (): Promise<void> {
 // https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F
 Deno.test("createJwtWithEmptyPayloadTest", async function (): Promise<void> {
   const header = { typ: "JWT", alg: "HS256" as const };
-  const jwt = makeJwt({ header, key });
+  const jwt = await makeJwt({ header, key });
   const validatedJwt = await validateJwt(jwt, key, { algorithm: "HS256" });
   if (validatedJwt.isValid) {
     assertEquals(validatedJwt!.payload, undefined);
@@ -333,7 +336,7 @@ Deno.test("makeHmacSha512Test", async function (): Promise<void> {
   const key = "your-512-bit-secret";
   const externallyVerifiedJwt =
     "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.VFb0qJ1LRg_4ujbZoRMXnVkUgiuKq5KxWqNdbKq_G9Vvz-S1zZa9LPxtHWKa64zDl2ofkT8F6jBt_K4riU-fPg";
-  const jwt = makeJwt({ header, payload, key });
+  const jwt = await makeJwt({ header, payload, key });
   const validatedJwt = await validateJwt(jwt, key, { algorithm: "HS512" });
   if (validatedJwt.isValid) {
     assertEquals(jwt, externallyVerifiedJwt);

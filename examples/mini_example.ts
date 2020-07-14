@@ -13,7 +13,7 @@ console.log("server is listening at 0.0.0.0:8000");
 for await (const req of serve("0.0.0.0:8000")) {
   if (req.method === "GET") {
     req.respond({
-      body: encode(makeJwt(jwtInput) + "\n"),
+      body: encode((await makeJwt(jwtInput)) + "\n"),
     });
   } else {
     (

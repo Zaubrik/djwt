@@ -19,7 +19,7 @@ const critHandlers = {
 };
 const key = "abc123";
 
-const jwt = makeJwt({ header, payload, key });
+const jwt = await makeJwt({ header, payload, key });
 console.log("JWT:", jwt);
 const validatedJwt = await validateJwt(jwt, key, {
   critHandlers,

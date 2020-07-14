@@ -150,7 +150,7 @@ async function validateJwt(
       throw Error("no matching algorithm: " + oldJwtObject.header.alg);
     if (
       oldJwtObject.signature !==
-      parseAndDecode(makeJwt({ ...oldJwtObject, key })).signature
+      parseAndDecode(await makeJwt({ ...oldJwtObject, key })).signature
     )
       throw Error("signatures don't match");
     return { ...oldJwtObject, jwt, critResult, isValid: true };

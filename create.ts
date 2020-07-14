@@ -73,7 +73,7 @@ function makeSignature(alg: Algorithm, key: string, input: string): string {
   return encryptionInHex ? convertHexToBase64url(encryptionInHex) : "";
 }
 
-function makeJwt({ key, header, payload }: JwtInput): string {
+async function makeJwt({ key, header, payload }: JwtInput): Promise<string> {
   try {
     const signingInput = makeSigningInput(header, payload);
     return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`;
