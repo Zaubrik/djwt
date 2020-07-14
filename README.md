@@ -57,7 +57,7 @@ to see how the **crit** header parameter works.
 The API consists mostly of the two functions `makeJwt` and `validateJwt`,
 generating and validating a JWT, respectively.
 
-#### makeJwt({ key: string, header: Jose, payload?: Payload }): Promise<string>
+#### makeJwt({ key: string, header: Jose, payload?: Payload }): Promise\<string>
 
 The function `makeJwt` returns the url-safe encoded JWT as promise.
 
