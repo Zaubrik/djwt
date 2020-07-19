@@ -1,7 +1,7 @@
 import { convertUint8ArrayToBase64url } from "./base64/base64url.ts";
-import { decodeString as convertHexToUint8Array } from "https://deno.land/std@v0.60.0/encoding/hex.ts";
-import { HmacSha256 } from "https://deno.land/std@v0.60.0/hash/sha256.ts";
-import { HmacSha512 } from "https://deno.land/std@v0.60.0/hash/sha512.ts";
+import { decodeString as convertHexToUint8Array } from "https://deno.land/std@v0.61.0/encoding/hex.ts";
+import { HmacSha256 } from "https://deno.land/std@v0.61.0/hash/sha256.ts";
+import { HmacSha512 } from "https://deno.land/std@v0.61.0/hash/sha512.ts";
 
 type Algorithm = "none" | "HS256" | "HS512";
 type JsonPrimitive = string | number | boolean | null;

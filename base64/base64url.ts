@@ -4,7 +4,7 @@ import {
 } from "./base64.ts";
 import {
   addPaddingToBase64url,
-} from "https://deno.land/std@v0.60.0/encoding/base64url.ts";
+} from "https://deno.land/std@v0.61.0/encoding/base64url.ts";
 
 function convertBase64urlToBase64(base64url: string): string {
   return addPaddingToBase64url(base64url).replace(/\-/g, "+").replace(

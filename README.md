@@ -65,7 +65,7 @@ In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
 only need the signing and verification feature of the JWS, you can omit the
 **payload**.
 
-#### validateJwt(jwt: string, key: string, { algorithm, critHandlers }: Opts): Promise\<JwtValidation>
+#### validateJwt({ jwt: string, key: string, algorithm: Algorithm | Algorithm[], critHandlers?: Handlers }): Promise\<JwtValidation>
 
 The function `validateJwt` returns a _promise_. This promise resolves to an
 _object_ with a _union type_ where the boolean property `isValid` serves as
@@ -75,8 +75,6 @@ is:
 `{ isValid: true; header: Jose; payload?: Payload; signature: string; jwt: string; critResult?: unknown[] }`.  
 If the JWT is invalid, the promise resolves to
 `{ isValid: false; jwt: unknown; error: JwtError; isExpired: boolean }`.  
-The `Opts` type is:
-`{ algorithm: Algorithm | Algorithm[]; critHandlers?: Handlers }`.
 
 #### setExpiration(exp: number | Date): number
 
@@ -99,7 +97,7 @@ On the other hand, if you send a JWT as data along with a **POST** request, the
 server will check the validity of the JWT.
 
 ```javascript
-import { serve } from "https://deno.land/std@v0.60.0/http/server.ts"
+import { serve } from "https://deno.land/std@v0.61.0/http/server.ts"
 import { validateJwt } from "https://deno.land/x/djwt/validate.ts"
 import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts"
 
@@ -119,7 +117,7 @@ for await (const req of serve("0.0.0.0:8000")) {
     req.respond({ body: (await makeJwt({ header, payload, key })) + "\n" });
   } else {
     const jwt = new TextDecoder().decode(await Deno.readAll(req.body));
-    (await validateJwt(jwt, key, { algorithm: "HS256" })).isValid
+    (await validateJwt({ jwt, key, algorithm: "HS256" })).isValid
       ? req.respond({ body: "Valid JWT\n" })
       : req.respond({ body: "Invalid JWT\n", status: 401 });
   }

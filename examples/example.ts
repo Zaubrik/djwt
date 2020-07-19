@@ -21,7 +21,9 @@ const key = "abc123";
 
 const jwt = await makeJwt({ header, payload, key });
 console.log("JWT:", jwt);
-const validatedJwt = await validateJwt(jwt, key, {
+const validatedJwt = await validateJwt({
+  jwt,
+  key,
   critHandlers,
   algorithm: ["HS256", "HS512"],
 });

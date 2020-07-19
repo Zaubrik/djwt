@@ -1,12 +1,17 @@
 import { makeJwt, Payload, Jose, JsonValue, Algorithm } from "./create.ts";
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts";
-import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std@v0.60.0/encoding/hex.ts";
+import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std@v0.61.0/encoding/hex.ts";
 
 type JwtObject = { header: Jose; payload?: Payload; signature: string };
 type JwtValidation =
   | (JwtObject & { jwt: string; isValid: true; critResult?: unknown[] })
   | { jwt: unknown; error: JwtError; isValid: false; isExpired: boolean };
-type Opts = { algorithm: Algorithm | Algorithm[]; critHandlers?: Handlers };
+type Validation = {
+  jwt: string;
+  key: string;
+  algorithm: Algorithm | Algorithm[];
+  critHandlers?: Handlers;
+};
 type Handlers = {
   [key: string]: (header: JsonValue) => unknown;
 };
@@ -132,11 +137,12 @@ function makeArray<T>(...arg: T[]) {
   return arg.flat(1);
 }
 
-async function validateJwt(
-  jwt: string,
-  key: string,
-  { critHandlers, algorithm }: Opts
-): Promise<JwtValidation> {
+async function validateJwt({
+  jwt,
+  key,
+  critHandlers,
+  algorithm,
+}: Validation): Promise<JwtValidation> {
   try {
     const [oldJwtObject, critResult] = await handleJwtObject(
       validateJwtObject(parseAndDecode(jwt)),
@@ -175,5 +181,5 @@ export {
   Handlers,
   JwtObject,
   JwtValidation,
-  Opts,
+  Validation,
 };
