@@ -41,7 +41,7 @@ function has<K extends string>(
 }
 
 function isExpired(exp: number, leeway = 0): boolean {
-  return new Date(exp + leeway) < new Date();
+  return exp + leeway < new Date().getTime() / 1000;
 }
 
 // A present 'crit' header parameter indicates that the JWS signature validator
@@ -97,7 +97,7 @@ function validateJwtObject(
     if (typeof maybeJwtObject.payload.exp !== "number") {
       throw RangeError("claim 'exp' is not a number");
     } // Implementers MAY provide for some small leeway to account for clock skew (JWT §4.1.4)
-    else if (isExpired(maybeJwtObject.payload.exp, 1000)) {
+    else if (isExpired(maybeJwtObject.payload.exp, 1)) {
       throw RangeError("the jwt is expired");
     }
   }
