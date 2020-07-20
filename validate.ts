@@ -41,7 +41,7 @@ function has<K extends string>(
 }
 
 function isExpired(exp: number, leeway = 0): boolean {
-  return exp + leeway < new Date().getTime() / 1000;
+  return exp + leeway < Date.now() / 1000;
 }
 
 // A present 'crit' header parameter indicates that the JWS signature validator
