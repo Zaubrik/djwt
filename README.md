@@ -79,13 +79,13 @@ If the JWT is invalid, the promise resolves to
 #### setExpiration(exp: number | Date): number
 
 Additionally there is the helper function `setExpiration` which simplifies
-setting an expiration date.
+setting an expiration date. It takes either an `Date` object or a number (in seconds) as argument.
 
 ```javascript
 // A specific date:
-setExpiration(new Date("2022-07-01"))
+setExpiration(new Date("2025-07-01"))
 // One hour from now:
-setExpiration(new Date().getTime() + 60 * 60 * 1000)
+setExpiration(60 * 60)
 ```
 
 ## Example
@@ -104,7 +104,7 @@ import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/
 const key = "your-secret";
 const payload: Payload = {
   iss: "joe",
-  exp: setExpiration(new Date().getTime() + 60000),
+  exp: setExpiration(60),
 };
 const header: Jose = {
   alg: "HS256",

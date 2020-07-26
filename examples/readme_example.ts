@@ -5,7 +5,7 @@ import { makeJwt, setExpiration, Jose, Payload } from "../create.ts";
 const key = "your-secret";
 const payload: Payload = {
   iss: "joe",
-  exp: setExpiration(new Date().getTime() + 60000),
+  exp: setExpiration(60),
 };
 const header: Jose = {
   alg: "HS256",

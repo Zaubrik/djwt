@@ -35,19 +35,22 @@ Deno.test("makeSetAndCheckExpirationTest", function (): void {
   // A specific date:
   const t1 = setExpiration(new Date("2020-01-01"));
   const t2 = setExpiration(new Date("2099-01-01"));
+  // Ten seconds from now:
+  const t3 = setExpiration(10);
   // One hour from now:
-  const t3 = setExpiration(new Date().getTime() + 60 * 60 * 1000);
+  const t4 = setExpiration(60 * 60);
   //  1 second from now:
-  const t4 = setExpiration(new Date().getTime() + 1000);
+  const t5 = setExpiration(1);
   //  1 second earlier:
-  const t5 = setExpiration(new Date().getTime() - 1000);
+  const t6 = setExpiration(-1);
   assertEquals(isExpired(t1), true);
   assertEquals(isExpired(t2), false);
-  assertEquals(isExpired(t3), false);
+  assertEquals(10, t3 - Math.round(Date.now() / 1000));
   assertEquals(isExpired(t4), false);
-  assertEquals(isExpired(t5), true);
+  assertEquals(isExpired(t5), false);
+  assertEquals(isExpired(t6), true);
   // add leeway:
-  assertEquals(isExpired(t5, 1500), false);
+  assertEquals(isExpired(t6, 1500), false);
 });
 
 Deno.test("makeDataConversionTest", function (): void {
@@ -206,7 +209,7 @@ Deno.test("testExpiredJwt", async function (): Promise<void> {
   const payload = {
     iss: "joe",
     jti: "123456789abc",
-    exp: setExpiration(new Date().getTime() - 20000),
+    exp: setExpiration(-20000),
   };
   const header = {
     alg: "HS256" as const,
@@ -226,7 +229,7 @@ Deno.test("makeCheckHeaderCritTest", async function (): Promise<void> {
   const payload = {
     iss: "joe",
     jti: "123456789abc",
-    exp: setExpiration(new Date().getTime() + 1),
+    exp: setExpiration(1),
   };
   const header = {
     alg: "HS256" as const,
@@ -250,7 +253,7 @@ Deno.test("makeHeaderCritTest", async function (): Promise<void> {
   const payload = {
     iss: "joe",
     jti: "123456789abc",
-    exp: setExpiration(new Date().getTime() + 1),
+    exp: setExpiration(1),
   };
   const header = {
     alg: "HS256" as const,

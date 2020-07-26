@@ -36,7 +36,7 @@ interface Jose {
 // returns the number of seconds since January 1, 1970, 00:00:00 UTC
 function setExpiration(exp: number | Date): number {
   return Math.round(
-    (exp instanceof Date ? exp : new Date(exp)).getTime() / 1000
+    (exp instanceof Date ? exp.getTime() : Date.now() + exp * 1000) / 1000
   );
 }
 

@@ -4,7 +4,7 @@ import { validateJwt } from "../validate.ts";
 const payload = {
   iss: "joe",
   jti: "123456789abc",
-  exp: setExpiration(new Date().getTime() + 20000),
+  exp: setExpiration(new Date("July 26, 2040 22:43:00")),
 };
 const header = {
   alg: "HS256" as const,
