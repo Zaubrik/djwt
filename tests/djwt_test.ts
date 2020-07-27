@@ -51,6 +51,7 @@ Deno.test("makeSetAndCheckExpirationTest", function (): void {
   assertEquals(isExpired(t6), true);
   // add leeway:
   assertEquals(isExpired(t6, 1500), false);
+  assertEquals(setExpiration(10), setExpiration(new Date(Date.now() + 10000)));
 });
 
 Deno.test("makeDataConversionTest", function (): void {
