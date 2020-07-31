@@ -96,8 +96,9 @@ The server will respond to a **GET** request with a newly created JWT.
 On the other hand, if you send a JWT as data along with a **POST** request, the
 server will check the validity of the JWT.
 
-```javascript
-import { serve } from "https://deno.land/std@v0.61.0/http/server.ts"
+```typescript
+//Always use versioned imports for your dependencies
+import { serve } from "https://deno.land/std/http/server.ts"
 import { validateJwt } from "https://deno.land/x/djwt/validate.ts"
 import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts"
 

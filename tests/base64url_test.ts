@@ -1,9 +1,9 @@
-import { assertEquals } from "https://deno.land/std@v0.61.0/testing/asserts.ts";
+import { assertEquals } from "./test_deps.ts";
 import {
   convertBase64ToBase64url,
   convertBase64urlToBase64,
-} from "../base64url.ts";
-import { convertUint8ArrayToBase64 } from "../base64.ts";
+} from "../base64/base64url.ts";
+import { convertUint8ArrayToBase64 } from "../base64/base64.ts";
 
 const oneBase64 = "c3ViamVjdHM/X2Q9MQ==";
 const oneBase64url = "c3ViamVjdHM_X2Q9MQ";

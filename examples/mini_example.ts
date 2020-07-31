@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@v0.61.0/http/server.ts";
-import { encode, decode } from "https://deno.land/std@v0.61.0/encoding/utf8.ts";
+import { serve } from "./example_deps.ts";
+import { encode, decode } from "./example_deps.ts";
 import { makeJwt } from "../create.ts";
 import { validateJwt } from "../validate.ts";
 
@@ -17,12 +17,12 @@ for await (const req of serve("0.0.0.0:8000")) {
     });
   } else {
     (
-      await validateJwt({
-        jwt: decode(await Deno.readAll(req.body)),
-        key: "abc123",
-        algorithm: "HS256",
-      })
-    ).isValid
+        await validateJwt({
+          jwt: decode(await Deno.readAll(req.body)),
+          key: "abc123",
+          algorithm: "HS256",
+        })
+      ).isValid
       ? req.respond({ body: encode("Valid JWT\n") })
       : req.respond({ status: 401, body: encode("Invalid JWT\n") });
   }
