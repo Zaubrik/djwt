@@ -99,12 +99,7 @@ example `https://deno.land/x/djwt@v1.2/create.ts`.
 ```typescript
 import { serve } from "https://deno.land/std/http/server.ts";
 import { validateJwt } from "https://deno.land/x/djwt/validate.ts";
-import {
-  makeJwt,
-  setExpiration,
-  Jose,
-  Payload,
-} from "https://deno.land/x/djwt/create.ts";
+import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts";
 
 const key = "your-secret";
 const payload: Payload = {
