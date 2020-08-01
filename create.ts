@@ -1,10 +1,9 @@
 import { convertUint8ArrayToBase64url } from "./base64/base64url.ts";
-import {
-  convertHexToUint8Array,
-  HmacSha256,
-  HmacSha512,
-} from "./deps.ts";
+import { convertHexToUint8Array, HmacSha256, HmacSha512 } from "./deps.ts";
 
+// https://www.rfc-editor.org/rfc/rfc7515.html#page-8
+// The payload can be any content and need not be a representation of a JSON object
+type Payload = PayloadObject | JsonPrimitive | JsonArray;
 type Algorithm = "none" | "HS256" | "HS512";
 type JsonPrimitive = string | number | boolean | null;
 type JsonObject = { [member: string]: JsonValue };
@@ -14,10 +13,10 @@ type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 interface JwtInput {
   key: string;
   header: Jose;
-  payload?: Payload;
+  payload: Payload;
 }
 
-interface Payload {
+interface PayloadObject {
   iss?: string;
   sub?: string;
   aud?: string[] | string;
@@ -50,12 +49,12 @@ function convertStringToBase64url(input: string): string {
   return convertUint8ArrayToBase64url(new TextEncoder().encode(input));
 }
 
-function makeSigningInput(header: Jose, payload?: Payload): string {
+function makeSigningInput(header: Jose, payload: Payload): string {
   return `${
     convertStringToBase64url(
       JSON.stringify(header),
     )
-  }.${convertStringToBase64url(JSON.stringify(payload || ""))}`;
+  }.${convertStringToBase64url(JSON.stringify(payload))}`;
 }
 
 function encrypt(alg: Algorithm, key: string, msg: string): string | null {
@@ -97,6 +96,7 @@ export {
   convertStringToBase64url,
   Algorithm,
   Payload,
+  PayloadObject,
   Jose,
   JwtInput,
   JsonValue,

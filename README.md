@@ -57,13 +57,9 @@ to see how the **crit** header parameter works.
 The API consists mostly of the two functions `makeJwt` and `validateJwt`,
 generating and validating a JWT, respectively.
 
-#### makeJwt({ key: string, header: Jose, payload?: Payload }): Promise\<string>
+#### makeJwt({ key: string, header: Jose, payload: Payload }): Promise\<string>
 
 The function `makeJwt` returns the url-safe encoded JWT as promise.
-
-In [cases](https://www.rfc-editor.org/rfc/rfc7515.html#appendix-F) where you
-only need the signing and verification feature of the JWS, you can omit the
-**payload**.
 
 #### validateJwt({ jwt: string, key: string, algorithm: Algorithm | Algorithm[], critHandlers?: Handlers }): Promise\<JwtValidation>
 
@@ -72,20 +68,21 @@ _object_ with a _union type_ where the boolean property `isValid` serves as
 [discriminant](https://www.typescriptlang.org/docs/handbook/advanced-types.html#discriminated-unions).  
 If the JWT is valid (`.isValid === true`), the _type_ of the resolved promise
 is:
-`{ isValid: true; header: Jose; payload?: Payload; signature: string; jwt: string; critResult?: unknown[] }`.  
+`{ isValid: true; header: Jose; payload: Payload; signature: string; jwt: string; critResult?: unknown[] }`.  
 If the JWT is invalid, the promise resolves to
-`{ isValid: false; jwt: unknown; error: JwtError; isExpired: boolean }`.  
+`{ isValid: false; jwt: unknown; error: JwtError; isExpired: boolean }`.
 
 #### setExpiration(exp: number | Date): number
 
 Additionally there is the helper function `setExpiration` which simplifies
-setting an expiration date. It takes either an `Date` object or a number (in seconds) as argument.
+setting an expiration date. It takes either an `Date` object or a number (in
+seconds) as argument.
 
 ```javascript
 // A specific date:
-setExpiration(new Date("2025-07-01"))
+setExpiration(new Date("2025-07-01"));
 // One hour from now:
-setExpiration(60 * 60)
+setExpiration(60 * 60);
 ```
 
 ## Example
@@ -96,12 +93,18 @@ The server will respond to a **GET** request with a newly created JWT.
 On the other hand, if you send a JWT as data along with a **POST** request, the
 server will check the validity of the JWT.
 
-Always use [versioned imports](https://deno.land/x) for your dependencies.
+Always use [versioned imports](https://deno.land/x) for your dependencies. For
+example `https://deno.land/x/djwt@v1.2/create.ts`.
 
 ```typescript
 import { serve } from "https://deno.land/std/http/server.ts";
 import { validateJwt } from "https://deno.land/x/djwt/validate.ts";
-import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts";
+import {
+  makeJwt,
+  setExpiration,
+  Jose,
+  Payload,
+} from "https://deno.land/x/djwt/create.ts";
 
 const key = "your-secret";
 const payload: Payload = {

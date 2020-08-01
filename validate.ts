@@ -1,8 +1,13 @@
 import { makeJwt, Payload, Jose, JsonValue, Algorithm } from "./create.ts";
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts";
-import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std@v0.61.0/encoding/hex.ts";
+import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std@v0.63.0/encoding/hex.ts";
 
-type JwtObject = { header: Jose; payload?: Payload; signature: string };
+type JwtObject = { header: Jose; payload: Payload; signature: string };
+type JwtObjectWithUnknownProps = {
+  header: unknown;
+  payload: unknown;
+  signature: unknown;
+};
 type JwtValidation =
   | (JwtObject & { jwt: string; isValid: true; critResult?: unknown[] })
   | { jwt: unknown; error: JwtError; isValid: false; isExpired: boolean };
@@ -44,37 +49,38 @@ function isExpired(exp: number, leeway = 0): boolean {
   return exp + leeway < Date.now() / 1000;
 }
 
+function makeArray<T>(...arg: T[]) {
+  return arg.flat(1);
+}
+
 // A present 'crit' header parameter indicates that the JWS signature validator
 // must understand and process additional claims (JWS §4.1.11)
 function checkHeaderCrit(
   header: Jose,
   handlers?: Handlers,
 ): Promise<unknown[]> {
-  // prettier-ignore
-  const reservedWords = new Set(
-    [
-      "alg",
-      "jku",
-      "jwk",
-      "kid",
-      "x5u",
-      "x5c",
-      "x5t",
-      "x5t#S256",
-      "typ",
-      "cty",
-      "crit",
-      "enc",
-      "zip",
-      "epk",
-      "apu",
-      "apv",
-      "iv",
-      "tag",
-      "p2s",
-      "p2c",
-    ],
-  );
+  const reservedWords = new Set([
+    "alg",
+    "jku",
+    "jwk",
+    "kid",
+    "x5u",
+    "x5c",
+    "x5t",
+    "x5t#S256",
+    "typ",
+    "cty",
+    "crit",
+    "enc",
+    "zip",
+    "epk",
+    "apu",
+    "apv",
+    "iv",
+    "tag",
+    "p2s",
+    "p2c",
+  ]);
   if (
     !Array.isArray(header.crit) ||
     header.crit.some((str: string) => typeof str !== "string" || !str)
@@ -101,7 +107,7 @@ function checkHeaderCrit(
 }
 
 function validateJwtObject(
-  maybeJwtObject: Record<keyof JwtObject, unknown>,
+  maybeJwtObject: JwtObjectWithUnknownProps,
 ): JwtObject {
   if (typeof maybeJwtObject.signature !== "string") {
     throw ReferenceError("the signature is no string");
@@ -138,7 +144,7 @@ async function handleJwtObject(
   ];
 }
 
-function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
+function parseAndDecode(jwt: string): JwtObjectWithUnknownProps {
   const parsedArray = jwt
     .split(".")
     .map(convertBase64urlToUint8Array)
@@ -150,13 +156,9 @@ function parseAndDecode(jwt: string): Record<keyof JwtObject, unknown> {
   if (parsedArray.length !== 3) throw TypeError("invalid serialization");
   return {
     header: parsedArray[0],
-    payload: parsedArray[1] === "" ? undefined : parsedArray[1],
+    payload: parsedArray[1],
     signature: parsedArray[2],
   };
-}
-
-function makeArray<T>(...arg: T[]) {
-  return arg.flat(1);
 }
 
 async function validateJwt({
