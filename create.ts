@@ -1,7 +1,9 @@
 import { convertUint8ArrayToBase64url } from "./base64/base64url.ts";
-import { decodeString as convertHexToUint8Array } from "https://deno.land/std@v0.61.0/encoding/hex.ts";
-import { HmacSha256 } from "https://deno.land/std@v0.61.0/hash/sha256.ts";
-import { HmacSha512 } from "https://deno.land/std@v0.61.0/hash/sha512.ts";
+import {
+  convertHexToUint8Array,
+  HmacSha256,
+  HmacSha512,
+} from "./deps.ts";
 
 type Algorithm = "none" | "HS256" | "HS512";
 type JsonPrimitive = string | number | boolean | null;
@@ -36,7 +38,7 @@ interface Jose {
 // returns the number of seconds since January 1, 1970, 00:00:00 UTC
 function setExpiration(exp: number | Date): number {
   return Math.round(
-    (exp instanceof Date ? exp.getTime() : Date.now() + exp * 1000) / 1000
+    (exp instanceof Date ? exp.getTime() : Date.now() + exp * 1000) / 1000,
   );
 }
 
@@ -49,9 +51,11 @@ function convertStringToBase64url(input: string): string {
 }
 
 function makeSigningInput(header: Jose, payload?: Payload): string {
-  return `${convertStringToBase64url(
-    JSON.stringify(header)
-  )}.${convertStringToBase64url(JSON.stringify(payload || ""))}`;
+  return `${
+    convertStringToBase64url(
+      JSON.stringify(header),
+    )
+  }.${convertStringToBase64url(JSON.stringify(payload || ""))}`;
 }
 
 function encrypt(alg: Algorithm, key: string, msg: string): string | null {

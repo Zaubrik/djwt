@@ -96,10 +96,12 @@ The server will respond to a **GET** request with a newly created JWT.
 On the other hand, if you send a JWT as data along with a **POST** request, the
 server will check the validity of the JWT.
 
-```javascript
-import { serve } from "https://deno.land/std@v0.61.0/http/server.ts"
-import { validateJwt } from "https://deno.land/x/djwt/validate.ts"
-import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts"
+Always use [versioned imports](https://deno.land/x) for your dependencies.
+
+```typescript
+import { serve } from "https://deno.land/std/http/server.ts";
+import { validateJwt } from "https://deno.land/x/djwt/validate.ts";
+import { makeJwt, setExpiration, Jose, Payload } from "https://deno.land/x/djwt/create.ts";
 
 const key = "your-secret";
 const payload: Payload = {
@@ -132,4 +134,5 @@ implementation for the [Oak](https://oakserver.github.io/oak/) framework
 
 ## Contribution
 
-Every kind of contribution to this project is highly appreciated.
+Every kind of contribution to this project is highly appreciated.  
+Please run `deno fmt` on the changed files before making a pull request.
