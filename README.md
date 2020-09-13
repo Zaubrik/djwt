@@ -1,3 +1,5 @@
+[![nest badge](https://nest.land/badge.svg)](https://nest.land/package/djwt)
+
 # djwt
 
 The absolute minimum to make JSON Web Tokens in deno. Based on
