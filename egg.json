@@ -1,0 +1,13 @@
+{
+  "name": "djwt",
+  "description": "The absolute minimum to make JSON Web Tokens in deno. Based on JWT and JWS specifications.",
+  "stable": true,
+  "files": [
+    "base64",
+    "tests",
+    "create.ts",
+    "depts.ts",
+    "validate.ts",
+    "README.md"
+  ]
+}

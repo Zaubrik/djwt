@@ -4,7 +4,8 @@ The absolute minimum to make JSON Web Tokens in deno. Based on
 [JWT](https://tools.ietf.org/html/rfc7519) and
 [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications.
 
-This library is accessible through the https://deno.land/x/ service.
+This library is accessible through the https://deno.land/x/ service and the 
+https://nest.land/package/djwt service.
 
 ## Features
 
@@ -72,6 +73,16 @@ is:
 If the JWT is invalid, the promise resolves to
 `{ isValid: false; jwt: unknown; error: JwtError; isExpired: boolean }`.
 
+The JWS specification [says](https://www.rfc-editor.org/rfc/rfc7515.html#page-8)
+about the payload of a JWS the following:
+
+> The payload can be any content and need not be a representation of a JSON
+> object
+
+Therefore, you must verify that the returned value is actually an object and has
+the desired properties. Please take a look at
+[this issue](https://github.com/timonson/djwt/issues/25) for more information.
+
 #### setExpiration(exp: number | Date): number
 
 Additionally there is the helper function `setExpiration` which simplifies
@@ -134,3 +145,5 @@ implementation for the [Oak](https://oakserver.github.io/oak/) framework
 
 Every kind of contribution to this project is highly appreciated.  
 Please run `deno fmt` on the changed files before making a pull request.
+
+[![nest badge](https://nest.land/badge.svg)](https://nest.land/package/djwt)
