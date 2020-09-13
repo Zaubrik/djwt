@@ -5,7 +5,7 @@ The absolute minimum to make JSON Web Tokens in deno. Based on
 [JWS](https://www.rfc-editor.org/rfc/rfc7515.html) specifications.
 
 This library is accessible through the https://deno.land/x/ service and the 
-https://nest.land/package/djwt service.
+https://nest.land/ service.
 
 ## Features
 

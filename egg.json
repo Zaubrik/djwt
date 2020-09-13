@@ -2,6 +2,7 @@
   "name": "djwt",
   "description": "The absolute minimum to make JSON Web Tokens in deno. Based on JWT and JWS specifications.",
   "stable": true,
+  "repository": "https://github.com/timonson/djwt",
   "files": [
     "base64",
     "tests",
