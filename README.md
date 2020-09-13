@@ -1,3 +1,5 @@
+[![nest badge](https://nest.land/badge.svg)](https://nest.land/package/djwt)
+
 # djwt
 
 The absolute minimum to make JSON Web Tokens in deno. Based on
@@ -145,5 +147,3 @@ implementation for the [Oak](https://oakserver.github.io/oak/) framework
 
 Every kind of contribution to this project is highly appreciated.  
 Please run `deno fmt` on the changed files before making a pull request.
-
-[![nest badge](https://nest.land/badge.svg)](https://nest.land/package/djwt)
