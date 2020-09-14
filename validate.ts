@@ -209,10 +209,13 @@ export {
   isExpired,
   isObject,
   hasProperty,
+};
+
+export type {
   Jose,
   Payload,
   Handlers,
   JwtObject,
   JwtValidation,
   Validation,
-};
+}
