@@ -4,11 +4,12 @@
   "stable": true,
   "repository": "https://github.com/timonson/djwt",
   "files": [
-    "base64",
-    "tests",
+    "base64/*",
+    "tests/*",
     "create.ts",
     "deps.ts",
     "validate.ts",
     "README.md"
-  ]
+  ],
+  "ignore": [".git"]
 }
