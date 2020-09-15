@@ -1,6 +1,6 @@
 import { makeJwt, Payload, Jose, JsonValue, Algorithm } from "./create.ts";
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts";
-import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std@0.63.0/encoding/hex.ts";
+import { convertUint8ArrayToHex } from "./deps.ts";
 
 type JwtObject = { header: Jose; payload: Payload; signature: string };
 type JwtObjectWithUnknownProps = {
