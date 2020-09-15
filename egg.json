@@ -7,7 +7,7 @@
     "base64",
     "tests",
     "create.ts",
-    "depts.ts",
+    "deps.ts",
     "validate.ts",
     "README.md"
   ]
