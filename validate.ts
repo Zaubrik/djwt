@@ -1,4 +1,5 @@
-import { makeJwt, Payload, Jose, JsonValue, Algorithm } from "./create.ts";
+import { makeJwt } from "./create.ts";
+import type { Jose, Payload, JsonValue, Algorithm } from "./create.ts";
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts";
 import { convertUint8ArrayToHex } from "./deps.ts";
 
@@ -218,4 +219,4 @@ export type {
   JwtObject,
   JwtValidation,
   Validation,
-}
+};

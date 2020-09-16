@@ -93,7 +93,7 @@ export {
   setExpiration,
   makeSignature,
   convertHexToBase64url,
-  convertStringToBase64url,  
+  convertStringToBase64url,
 };
 
 export type {
@@ -103,4 +103,4 @@ export type {
   Jose,
   JwtInput,
   JsonValue,
-}
+};
