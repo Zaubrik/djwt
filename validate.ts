@@ -1,4 +1,5 @@
-import { makeJwt, Payload, Jose, JsonValue, Algorithm } from "./create.ts";
+import { makeJwt } from "./create.ts";
+import type { Jose, Payload, JsonValue, Algorithm } from "./create.ts";
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts";
 import { encodeToString as convertUint8ArrayToHex } from "https://deno.land/std@0.63.0/encoding/hex.ts";
 
@@ -218,4 +219,4 @@ export type {
   JwtObject,
   JwtValidation,
   Validation,
-}
+};
