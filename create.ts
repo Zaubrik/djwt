@@ -1,10 +1,10 @@
 import { convertUint8ArrayToBase64url } from "./base64/base64url.ts";
-import { convertHexToUint8Array, HmacSha256, HmacSha512 } from "./deps.ts";
+import { convertHexToUint8Array, HmacSha256, HmacSha512, RSA } from "./deps.ts";
 
 // https://www.rfc-editor.org/rfc/rfc7515.html#page-8
 // The payload can be any content and need not be a representation of a JSON object
 type Payload = PayloadObject | JsonPrimitive | JsonArray;
-type Algorithm = "none" | "HS256" | "HS512";
+type Algorithm = "none" | "HS256" | "HS512" | "RS256";
 type JsonPrimitive = string | number | boolean | null;
 type JsonObject = { [member: string]: JsonValue };
 type JsonArray = JsonValue[];
@@ -33,6 +33,10 @@ interface Jose {
   [key: string]: JsonValue | undefined;
 }
 
+function assertNever(alg: never, message: string): never {
+  throw new RangeError(message);
+}
+
 // Helper function: setExpiration()
 // returns the number of seconds since January 1, 1970, 00:00:00 UTC
 function setExpiration(exp: number | Date): number {
@@ -57,31 +61,44 @@ function makeSigningInput(header: Jose, payload: Payload): string {
   }.${convertStringToBase64url(JSON.stringify(payload))}`;
 }
 
-function encrypt(alg: Algorithm, key: string, msg: string): string | null {
-  function assertNever(alg: never): never {
-    throw new RangeError("no matching crypto algorithm in the header: " + alg);
-  }
+async function encrypt(
+  alg: Algorithm,
+  key: string,
+  msg: string,
+): Promise<string> {
   switch (alg) {
     case "none":
-      return null;
+      return "";
     case "HS256":
       return new HmacSha256(key).update(msg).toString();
     case "HS512":
       return new HmacSha512(key).update(msg).toString();
+    case "RS256":
+      return (
+        await new RSA(RSA.parseKey(key)).sign(msg, { hash: "sha256" })
+      ).hex();
     default:
-      assertNever(alg);
+      assertNever(alg, "no matching crypto algorithm in the header: " + alg);
   }
 }
 
-function makeSignature(alg: Algorithm, key: string, input: string): string {
-  const encryptionInHex = encrypt(alg, key, input);
-  return encryptionInHex ? convertHexToBase64url(encryptionInHex) : "";
+async function makeSignature(
+  alg: Algorithm,
+  key: string,
+  input: string,
+): Promise<string> {
+  const encryptionInHex = await encrypt(alg, key, input);
+  return convertHexToBase64url(encryptionInHex);
 }
 
 async function makeJwt({ key, header, payload }: JwtInput): Promise<string> {
   try {
     const signingInput = makeSigningInput(header, payload);
-    return `${signingInput}.${makeSignature(header.alg, key, signingInput)}`;
+    return `${signingInput}.${await makeSignature(
+      header.alg,
+      key,
+      signingInput,
+    )}`;
   } catch (err) {
     err.message = `Failed to create JWT: ${err.message}`;
     throw err;
@@ -90,17 +107,12 @@ async function makeJwt({ key, header, payload }: JwtInput): Promise<string> {
 
 export {
   makeJwt,
+  encrypt,
   setExpiration,
   makeSignature,
   convertHexToBase64url,
   convertStringToBase64url,
+  assertNever,
 };
 
-export type {
-  Algorithm,
-  Payload,
-  PayloadObject,
-  Jose,
-  JwtInput,
-  JsonValue,
-};
+export type { Algorithm, Payload, PayloadObject, Jose, JwtInput, JsonValue };
