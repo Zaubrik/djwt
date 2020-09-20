@@ -192,6 +192,7 @@ async function verifySignature({
       return await new RSA(RSA.parseKey(key)).verify(
         convertHexToUint8Array(signature),
         signingInput,
+        { hash: "sha256" },
       );
     }
     default:
