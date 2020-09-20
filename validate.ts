@@ -165,10 +165,13 @@ function validateAlgorithm(
   algorithm: Algorithm | Algorithm[],
   jwtAlg: Algorithm,
 ): boolean {
-  return (
-    (Array.isArray(algorithm) && algorithm.includes(jwtAlg)) ||
-    algorithm === jwtAlg
-  );
+  if (Array.isArray(algorithm)) {
+    if (algorithm.length > 1 && algorithm.includes("none")) {
+      throw Error("algorithm 'none' must be used alone");
+    } else return algorithm.includes(jwtAlg);
+  } else {
+    return algorithm === jwtAlg;
+  }
 }
 
 async function verifySignature({
