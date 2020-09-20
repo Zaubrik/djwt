@@ -87,8 +87,7 @@ async function makeSignature(
   key: string,
   input: string,
 ): Promise<string> {
-  const encryptionInHex = await encrypt(alg, key, input);
-  return convertHexToBase64url(encryptionInHex);
+  return convertHexToBase64url(await encrypt(alg, key, input));
 }
 
 async function makeJwt({ key, header, payload }: JwtInput): Promise<string> {
