@@ -33,7 +33,7 @@ process where a web token is represented as the concatenation of
 The following signature and MAC algorithms - which are defined in the JSON Web
 Algorithms (JWA) [specification](https://www.rfc-editor.org/rfc/rfc7518.html) -
 have been implemented already: **HMAC SHA-256** ("HS256"), **HMAC SHA-512**
-("HS512") and **none**
+("HS512"), **RSASSA-PKCS1-v1_5 SHA-256** ("RS256") and **none**
 ([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).  
 As soon as deno expands its
 [crypto library](https://github.com/denoland/deno/tree/master/std/hash), we will

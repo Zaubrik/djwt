@@ -1,7 +1,7 @@
-import { makeJwt } from "./create.ts";
+import { encrypt, assertNever } from "./create.ts";
 import type { Jose, Payload, JsonValue, Algorithm } from "./create.ts";
 import { convertBase64urlToUint8Array } from "./base64/base64url.ts";
-import { convertUint8ArrayToHex } from "./deps.ts";
+import { convertUint8ArrayToHex, convertHexToUint8Array, RSA } from "./deps.ts";
 
 type JwtObject = { header: Jose; payload: Payload; signature: string };
 type JwtObjectWithUnknownProps = {
@@ -165,10 +165,42 @@ function validateAlgorithm(
   algorithm: Algorithm | Algorithm[],
   jwtAlg: Algorithm,
 ): boolean {
-  return (
-    (Array.isArray(algorithm) && algorithm.includes(jwtAlg)) ||
-    algorithm === jwtAlg
-  );
+  if (Array.isArray(algorithm)) {
+    if (algorithm.length > 1 && algorithm.includes("none")) {
+      throw Error("algorithm 'none' must be used alone");
+    } else return algorithm.includes(jwtAlg);
+  } else {
+    return algorithm === jwtAlg;
+  }
+}
+
+async function verifySignature({
+  signature,
+  key,
+  alg,
+  signingInput,
+}: {
+  signature: string;
+  key: string;
+  alg: Algorithm;
+  signingInput: string;
+}): Promise<boolean> {
+  switch (alg) {
+    case "none":
+    case "HS256":
+    case "HS512": {
+      return signature === (await encrypt(alg, key, signingInput));
+    }
+    case "RS256": {
+      return await new RSA(RSA.parseKey(key)).verify(
+        convertHexToUint8Array(signature),
+        signingInput,
+        { hash: "sha256" },
+      );
+    }
+    default:
+      assertNever(alg, "no matching crypto alg in the header: " + alg);
+  }
 }
 
 async function validateJwt({
@@ -186,8 +218,12 @@ async function validateJwt({
       throw Error("no matching algorithm: " + oldJwtObject.header.alg);
     }
     if (
-      oldJwtObject.signature !==
-        parseAndDecode(await makeJwt({ ...oldJwtObject, key })).signature
+      !(await verifySignature({
+        signature: oldJwtObject.signature,
+        key,
+        alg: oldJwtObject.header.alg,
+        signingInput: jwt.slice(0, jwt.lastIndexOf(".")),
+      }))
     ) {
       throw Error("signatures don't match");
     }
@@ -205,6 +241,7 @@ async function validateJwt({
 export {
   validateJwt,
   validateJwtObject,
+  verifySignature,
   checkHeaderCrit,
   parseAndDecode,
   isExpired,
@@ -212,11 +249,4 @@ export {
   hasProperty,
 };
 
-export type {
-  Jose,
-  Payload,
-  Handlers,
-  JwtObject,
-  JwtValidation,
-  Validation,
-};
+export type { Jose, Payload, Handlers, JwtObject, JwtValidation, Validation };
