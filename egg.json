@@ -1,6 +1,8 @@
 {
   "name": "djwt",
   "description": "The absolute minimum to make JSON Web Tokens in deno. Based on JWT and JWS specifications.",
+  "bump": "patch",
+  "entry": "/mod.ts",
   "stable": true,
   "repository": "https://github.com/timonson/djwt",
   "files": [
@@ -9,7 +11,14 @@
     "create.ts",
     "deps.ts",
     "validate.ts",
-    "README.md"
+    "README.md",
+    "./mod.ts"
   ],
-  "ignore": [".git"]
+  "ignore": [
+    ".git"
+  ],
+  "checkFormat": "deno fmt",
+  "checkAll": true,
+  "unlisted": false,
+  "version": "0.1.0"
 }
