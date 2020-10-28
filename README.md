@@ -70,7 +70,7 @@ getNumericDate(60 * 60)
 
 ### Not Before (nbf)
 
-The **nbf** (not before) claim identifies the time before which the jwt must not
+The optional **nbf** (not before) claim identifies the time before which the jwt must not
 be accepted for processing. Its value must be a number containing a
 `NumericDate` value like the `exp` claim does.
 
