@@ -11,7 +11,7 @@ Takes a `header`, `payload` and `key` and returns the url-safe encoded `jwt`.
 ```typescript
 import { create } from "https://deno.land/x@$VERSION/djwt/mod.ts"
 
-const jwt = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, key)
+const jwt = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, "secret")
 // eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ
 ```
 
@@ -23,7 +23,7 @@ if the `jwt` is valid. Otherwise it throws an `Error`.
 ```typescript
 import { verify } from "https://deno.land/x@$VERSION/djwt/mod.ts"
 
-const payload = await verify(jwt, key, "HS512") // { foo: "bar" }
+const payload = await verify(jwt, "secret", "HS512") // { foo: "bar" }
 ```
 
 ### decode
