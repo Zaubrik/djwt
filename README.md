@@ -6,38 +6,38 @@ Create and verify JSON Web Tokens.
 
 ### create
 
-Takes a `payload`, `header` and `key` and returns the url-safe encoded `jwt`.
+Takes a `header`, `payload` and `key` and returns the url-safe encoded `jwt`.
 
 ```typescript
 import { create } from "https://deno.land/x@$VERSION/djwt/mod.ts"
 
-const token = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, key)
+const jwt = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, key)
 // eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ
 ```
 
 ### verify
 
-Takes a `token`, `key` and an `algorithm` and returns the `payload` of the
-`token` if the `token` is valid. Otherwise it throws an `Error`.
+Takes a `jwt`, `key` and an `algorithm` and returns the `payload` of the `jwt`
+if the `jwt` is valid. Otherwise it throws an `Error`.
 
 ```typescript
 import { verify } from "https://deno.land/x@$VERSION/djwt/mod.ts"
 
-const payload = await verify(token, key, "HS512") // { foo: "bar" }
+const payload = await verify(jwt, key, "HS512") // { foo: "bar" }
 ```
 
 ### decode
 
-Takes a `token` to return an object with the `header`, `payload` and `signature`
-properties if the `token` is valid. Otherwise it throws an `Error`.
+Takes a `jwt` to return an object with the `header`, `payload` and `signature`
+properties if the `jwt` is valid. Otherwise it throws an `Error`.
 
 ```typescript
 import { decode } from "https://deno.land/x@$VERSION/djwt/mod.ts"
 
-const token =
+const jwt =
   "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ"
 
-const { payload, signature, header } = await decode(token)
+const { payload, signature, header } = await decode(jwt)
 // { header: { alg: "HS512", typ: "JWT" }, payload: { foo: "bar" }, signature: "59e3e5eda72191dd2818d07c5d117f2c9c3197288f66aa5d36074aa436e8023493b16abe68e18dca74e9f133aff0a8e89c5ca6f2fc05c29a5738ba0b5db90869" }
 ```
 
@@ -52,7 +52,7 @@ date/time is before the expiration date/time listed in the **exp** claim.
 
 ```typescript
 const oneHour = 60 * 60
-const token = await create({ exp: Date.now() / 1000 + oneHour }, "secret")
+const jwt = await create(header, { exp: Date.now() / 1000 + oneHour }, "secret")
 ```
 
 #### getNumericDate
