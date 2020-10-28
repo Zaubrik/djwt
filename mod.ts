@@ -1,4 +1,4 @@
-import { base64url, convertUint8ArrayToHex } from "./depts.ts";
+import { base64url, convertUint8ArrayToHex } from "./_depts.ts";
 import {
   create as createSignature,
   verify as verifySignature,

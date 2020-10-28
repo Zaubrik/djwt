@@ -5,7 +5,7 @@ import {
   HmacSha256,
   HmacSha512,
   RSA,
-} from "./depts.ts";
+} from "./_depts.ts";
 
 function assertNever(alg: never, message: string): never {
   throw new RangeError(message);

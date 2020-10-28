@@ -1,9 +1,9 @@
 import {
   create,
   decode,
+  getNumericDate,
   Header,
   Payload,
-  getNumericDate,
   verify,
 } from "../mod.ts";
 
@@ -442,5 +442,8 @@ Deno.test("[jwt] getNumericDate", function (): void {
   assertEquals(t4 < Date.now() / 1000, false);
   assertEquals(t5 < Date.now() / 1000, false);
   assertEquals(t6 < Date.now() / 1000, true);
-  assertEquals(getNumericDate(10), getNumericDate(new Date(Date.now() + 10000)));
+  assertEquals(
+    getNumericDate(10),
+    getNumericDate(new Date(Date.now() + 10000)),
+  );
 });
