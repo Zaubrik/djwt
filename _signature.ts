@@ -22,10 +22,10 @@ export function convertHexToBase64url(input: string): string {
  * CREDIT: https://github.com/Bruce17/safe-compare
  */
 function safeCompare(a: string, b: string) {
-  var strA = String(a);
-  var strB = String(b);
-  var lenA = strA.length;
-  var result = 0;
+  const strA = String(a);
+  const lenA = strA.length;
+  let strB = String(b);
+  let result = 0;
 
   if (lenA !== strB.length) {
     strB = strA;
