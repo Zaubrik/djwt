@@ -9,7 +9,7 @@ Create and verify JSON Web Tokens.
 Takes a `header`, `payload` and `key` and returns the url-safe encoded `jwt`.
 
 ```typescript
-import { create } from "https://deno.land/x@$VERSION/djwt/mod.ts"
+import { create } from "https://deno.land/x/djwt@$VERSION/mod.ts"
 
 const jwt = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, "secret")
 // eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ
@@ -21,7 +21,7 @@ Takes a `jwt`, `key` and an `algorithm` and returns the `payload` of the `jwt`
 if the `jwt` is valid. Otherwise it throws an `Error`.
 
 ```typescript
-import { verify } from "https://deno.land/x@$VERSION/djwt/mod.ts"
+import { verify } from "https://deno.land/x/djwt@$VERSION/mod.ts"
 
 const payload = await verify(jwt, "secret", "HS512") // { foo: "bar" }
 ```
@@ -32,7 +32,7 @@ Takes a `jwt` to return an object with the `header`, `payload` and `signature`
 properties if the `jwt` is valid. Otherwise it throws an `Error`.
 
 ```typescript
-import { decode } from "https://deno.land/x@$VERSION/djwt/mod.ts"
+import { decode } from "https://deno.land/x/djwt@$VERSION/mod.ts"
 
 const jwt =
   "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ"
