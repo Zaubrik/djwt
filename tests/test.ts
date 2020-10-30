@@ -77,6 +77,18 @@ Deno.test({
 
     await assertThrowsAsync(
       async () => {
+        await verify(
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UifQ.xuEv8qrfXu424LZk8bVgr9MQJUIrp1rHcPyZw_KSsd",
+          key,
+          "HS256",
+        );
+      },
+      Error,
+      "The jwt's signature does not match the verification signature.",
+    );
+
+    await assertThrowsAsync(
+      async () => {
         // payload = { "exp": false }
         await verify(
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOmZhbHNlfQ.LXb8M9J6ar14CTq7shnqDMWmSsoH_zyIHiD44Rqd6uI",

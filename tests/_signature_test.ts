@@ -34,13 +34,19 @@ Deno.test("[jwt] create signature", async function () {
 Deno.test("[jwt] verify signature", async function () {
   const jwt = await create({ alg: "HS512", typ: "JWT" }, {}, key);
   const { header, signature } = decode(jwt);
-
   const validSignature = await verifySignature({
     signature,
     key,
     algorithm: header.alg,
     signingInput: jwt.slice(0, jwt.lastIndexOf(".")),
   });
-
   assertEquals(validSignature, true);
+
+  const invalidSignature = await verifySignature({
+    signature: signature.slice(1),
+    key,
+    algorithm: header.alg,
+    signingInput: jwt.slice(0, jwt.lastIndexOf(".")),
+  });
+  assertEquals(invalidSignature, false);
 });
