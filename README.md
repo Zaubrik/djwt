@@ -55,10 +55,16 @@ const oneHour = 60 * 60
 const jwt = await create(header, { exp: Date.now() / 1000 + oneHour }, "secret")
 ```
 
-#### getNumericDate
+### Not Before (nbf)
 
-We export the helper function `getNumericDate` which simplifies setting an
-expiration date. It takes either an Date object or a number (in seconds) as
+The optional **nbf** (not before) claim identifies the time before which the jwt
+must not be accepted for processing. Its value must be a number containing a
+**NumericDate** value like the **exp** claim does.
+
+### getNumericDate
+
+We export the helper function `getNumericDate` which simplifies setting a
+**NumericDate**. It takes either an `Date` object or a `number` (in seconds) as
 argument.
 
 ```typescript
@@ -67,12 +73,6 @@ getNumericDate(new Date("2025-07-01"))
 // One hour from now:
 getNumericDate(60 * 60)
 ```
-
-### Not Before (nbf)
-
-The optional **nbf** (not before) claim identifies the time before which the jwt must not
-be accepted for processing. Its value must be a number containing a
-`NumericDate` value like the `exp` claim does.
 
 ## Algorithms
 
