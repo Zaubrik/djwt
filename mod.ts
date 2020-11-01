@@ -68,8 +68,10 @@ function isObject(obj: unknown) {
   );
 }
 
-function hasValidExpAndNbfClaims(claimValue: unknown) {
-  return claimValue !== undefined ? typeof claimValue === "number" : true;
+function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
+  return claimValues.some((claimValue) =>
+    claimValue !== undefined ? typeof claimValue !== "number" : false
+  );
 }
 
 export function decode(
@@ -79,7 +81,7 @@ export function decode(
   payload: Payload;
   signature: string;
 } {
-  const parsedArray = jwt
+  const [header, payload, signature] = jwt
     .split(".")
     .map(base64url.decode)
     .map((uint8Array, index) => {
@@ -96,8 +98,6 @@ export function decode(
       }
       throw TypeError("The serialization is invalid.");
     });
-
-  const [header, payload, signature] = parsedArray;
 
   if (typeof signature !== "string") {
     throw new Error(`The signature is missing.`);
@@ -116,24 +116,15 @@ export function decode(
     throw new Error(`The jwt claims set is not a JSON object.`);
   }
 
-  if (
-    !hasValidExpAndNbfClaims(payload.exp) ||
-    !hasValidExpAndNbfClaims(payload.nbf)
-  ) {
+  if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
     throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
   }
 
-  if (
-    typeof payload.exp === "number" &&
-    isExpired(payload.exp, 1)
-  ) {
+  if (typeof payload.exp === "number" && isExpired(payload.exp, 1)) {
     throw RangeError("The jwt is expired.");
   }
 
-  if (
-    typeof payload.nbf === "number" &&
-    isTooEarly(payload.nbf, 1)
-  ) {
+  if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, 1)) {
     throw RangeError("The jwt is used too early.");
   }
 

@@ -121,7 +121,8 @@ Deno.test({
         await verify(
           await create(header, {
             // @ts-ignore */
-            exp: "invalid",
+            nbf: "invalid",
+            exp: 100000000000000000000,
           }, key),
           key,
           "HS512",
