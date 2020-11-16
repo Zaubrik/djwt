@@ -51,8 +51,7 @@ JWT must not be accepted for processing. This module checks if the current
 date/time is before the expiration date/time listed in the **exp** claim.
 
 ```typescript
-const oneHour = 60 * 60
-const jwt = await create(header, { exp: Date.now() / 1000 + oneHour }, "secret")
+const jwt = await create(header, { exp: getNumericDate(60 * 60) }, "secret")
 ```
 
 ### Not Before (nbf)
