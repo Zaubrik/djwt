@@ -13,7 +13,7 @@ import {
   assertThrowsAsync,
   dirname,
   fromFileUrl,
-} from "./test_depts.ts";
+} from "./test_deps.ts";
 
 const header: Header = {
   alg: "HS256",

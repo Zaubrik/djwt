@@ -1,11 +1,11 @@
-import type { Algorithm } from "./_algorithm.ts";
+import type { Algorithm } from "./algorithm.ts";
 import {
   base64url,
   convertHexToUint8Array,
   HmacSha256,
   HmacSha512,
   RSA,
-} from "./_depts.ts";
+} from "./deps.ts";
 
 function assertNever(alg: never, message: string): never {
   throw new RangeError(message);

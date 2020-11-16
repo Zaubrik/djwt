@@ -1,11 +1,11 @@
-import { assertEquals } from "./test_depts.ts";
+import { assertEquals } from "./test_deps.ts";
 import { create, decode } from "../mod.ts";
 
 import {
   convertHexToBase64url,
   create as createSignature,
   verify as verifySignature,
-} from "../_signature.ts";
+} from "../signature.ts";
 
 const algorithm = "HS256";
 const key = "m$y-key";

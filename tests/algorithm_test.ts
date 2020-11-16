@@ -1,6 +1,6 @@
-import { assertEquals } from "./test_depts.ts";
+import { assertEquals } from "./test_deps.ts";
 
-import { verify as verifyAlgorithm } from "../_algorithm.ts";
+import { verify as verifyAlgorithm } from "../algorithm.ts";
 
 Deno.test("[jwt] verify algorithm", function () {
   assertEquals(verifyAlgorithm("HS512", "HS512"), true);

@@ -1,11 +1,11 @@
-import { base64url, convertUint8ArrayToHex } from "./_depts.ts";
+import { base64url, convertUint8ArrayToHex } from "./deps.ts";
 import {
   create as createSignature,
   verify as verifySignature,
-} from "./_signature.ts";
-import { verify as verifyAlgorithm } from "./_algorithm.ts";
+} from "./signature.ts";
+import { verify as verifyAlgorithm } from "./algorithm.ts";
 
-import type { Algorithm, AlgorithmInput } from "./_algorithm.ts";
+import type { Algorithm, AlgorithmInput } from "./algorithm.ts";
 
 /*
  * JWT §4.1: The following Claim Names are registered in the IANA
