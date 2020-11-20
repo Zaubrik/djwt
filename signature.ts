@@ -32,7 +32,7 @@ function safeCompare(a: string, b: string) {
     result = 1;
   }
 
-  for (var i = 0; i < lenA; i++) {
+  for (let i = 0; i < lenA; i++) {
     result |= (strA.charCodeAt(i) ^ strB.charCodeAt(i));
   }
 
