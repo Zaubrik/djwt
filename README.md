@@ -28,8 +28,9 @@ const payload = await verify(jwt, "secret", "HS512") // { foo: "bar" }
 
 ### decode
 
-Takes a `jwt` to return an object with the `header`, `payload` and `signature`
-properties if the `jwt` is valid. Otherwise it throws an `Error`.
+Takes a `jwt` and returns an object with the `header`, `payload` and `signature`
+properties if the `jwt` is valid (without signature verification). Otherwise it
+throws an `Error`.
 
 ```typescript
 import { decode } from "https://deno.land/x/djwt@$VERSION/mod.ts"
@@ -92,3 +93,11 @@ This application uses the JWS Compact Serialization only.
 - [JSON Web Token](https://tools.ietf.org/html/rfc7519)
 - [JSON Web Signature](https://www.rfc-editor.org/rfc/rfc7515.html)
 - [JSON Web Algorithms](https://www.rfc-editor.org/rfc/rfc7518.html)
+
+## Contribution
+
+Every kind of contribution to this project is highly appreciated. Please run
+`deno fmt` on the changed files before making a pull request.
+
+Big **Thank you** to [timreichen](https://github.com/timreichen) and all the
+other amazing contributors.
