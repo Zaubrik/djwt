@@ -41,16 +41,6 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 /*
- * Helper function: getNumericDate()
- * returns the number of seconds since January 1, 1970, 00:00:00 UTC
- */
-export function getNumericDate(exp: number | Date): number {
-  return Math.round(
-    (exp instanceof Date ? exp.getTime() : Date.now() + exp * 1000) / 1000,
-  );
-}
-
-/*
  * JWT §4.1.4: Implementers MAY provide for some small leeway to account for
  * clock skew.
  */
@@ -199,4 +189,14 @@ export async function create(
   const signature = await createSignature(header.alg, key, signingInput);
 
   return `${signingInput}.${signature}`;
+}
+
+/*
+ * Helper function: getNumericDate()
+ * returns the number of seconds since January 1, 1970, 00:00:00 UTC
+ */
+export function getNumericDate(exp: number | Date): number {
+  return Math.round(
+    (exp instanceof Date ? exp.getTime() : Date.now() + exp * 1000) / 1000,
+  );
 }
