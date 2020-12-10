@@ -9,5 +9,5 @@ jobs:
       - uses: actions/checkout@master
       - uses: denolib/setup-deno@master
         with:
-          deno-version: v1.5.0
+          deno-version: v1.6.0
       - run: deno test -A
