@@ -437,6 +437,52 @@ Deno.test("[jwt] RS256 algorithm", async function (): Promise<void> {
   assertEquals(receivedPayload, payload);
 });
 
+Deno.test("[jwt] RS512 algorithm", async function (): Promise<void> {
+  const header = { alg: "RS512" as const, typ: "JWT" };
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    admin: true,
+    iat: 1516239022,
+  };
+  const moduleDir = dirname(fromFileUrl(import.meta.url));
+  const publicKey = await Deno.readTextFile(moduleDir + "/certs/public.pem");
+  const privateKey = await Deno.readTextFile(moduleDir + "/certs/private.pem");
+  const externallyVerifiedJwt =
+    "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.JlX3gXGyClTBFciHhknWrjo7SKqyJ5iBO0n-3S2_I7cIgfaZAeRDJ3SQEbaPxVC7X8aqGCOM-pQOjZPKUJN8DMFrlHTOdqMs0TwQ2PRBmVAxXTSOZOoEhD4ZNCHohYoyfoDhJDP4Qye_FCqu6POJzg0Jcun4d3KW04QTiGxv2PkYqmB7nHxYuJdnqE3704hIS56pc_8q6AW0WIT0W-nIvwzaSbtBU9RgaC7ZpBD2LiNE265UBIFraMDF8IAFw9itZSUCTKg1Q-q27NwwBZNGYStMdIBDor2Bsq5ge51EkWajzZ7ALisVp-bskzUsqUf77ejqX_CBAqkNdH1Zebn93A";
+  const jwt = await create(header, payload, privateKey);
+  const receivedPayload = await verify(
+    jwt,
+    publicKey,
+    "RS512",
+  );
+  assertEquals(jwt, externallyVerifiedJwt);
+  assertEquals(receivedPayload, payload);
+});
+
+Deno.test("[jwt] PS256 algorithm", async function (): Promise<void> {
+  const header = { alg: "PS256" as const, typ: "JWT" };
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    admin: true,
+    iat: 1516239022,
+  };
+  const moduleDir = dirname(fromFileUrl(import.meta.url));
+  const publicKey = await Deno.readTextFile(moduleDir + "/certs/public.pem");
+  const privateKey = await Deno.readTextFile(moduleDir + "/certs/private.pem");
+  const externallyVerifiedJwt =
+    "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.hZnl5amPk_I3tb4O-Otci_5XZdVWhPlFyVRvcqSwnDo_srcysDvhhKOD01DigPK1lJvTSTolyUgKGtpLqMfRDXQlekRsF4XhAjYZTmcynf-C-6wO5EI4wYewLNKFGGJzHAknMgotJFjDi_NCVSjHsW3a10nTao1lB82FRS305T226Q0VqNVJVWhE4G0JQvi2TssRtCxYTqzXVt22iDKkXeZJARZ1paXHGV5Kd1CljcZtkNZYIGcwnj65gvuCwohbkIxAnhZMJXCLaVvHqv9l-AAUV7esZvkQR1IpwBAiDQJh4qxPjFGylyXrHMqh5NlT_pWL2ZoULWTg_TJjMO9TuQ";
+  const jwt = await create(header, payload, privateKey);
+  const receivedPayload = await verify(
+    jwt,
+    publicKey,
+    "PS256",
+  );
+  assertEquals(jwt, externallyVerifiedJwt);
+  assertEquals(receivedPayload, payload);
+});
+
 Deno.test("[jwt] getNumericDate", function (): void {
   // A specific date:
   const t1 = getNumericDate(new Date("2020-01-01"));
