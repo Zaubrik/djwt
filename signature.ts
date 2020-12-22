@@ -106,47 +106,53 @@ export async function verify({
   algorithm: Algorithm;
   signingInput: string;
 }): Promise<boolean> {
-  switch (algorithm) {
-    case "none":
-    case "HS256":
-    case "HS512": {
-      return safeCompare(
-        signature,
-        (await encrypt(algorithm, key, signingInput)),
-      );
+  // Need to add a try...catch statement because the god_crypto library throws
+  // strings instead of Error objects.
+  try {
+    switch (algorithm) {
+      case "none":
+      case "HS256":
+      case "HS512": {
+        return safeCompare(
+          signature,
+          (await encrypt(algorithm, key, signingInput)),
+        );
+      }
+      case "RS256": {
+        return await new RSA(RSA.parseKey(key)).verify(
+          convertHexToUint8Array(signature),
+          signingInput,
+          { algorithm: "rsassa-pkcs1-v1_5", hash: "sha256" },
+        );
+      }
+      case "RS512": {
+        return await new RSA(RSA.parseKey(key)).verify(
+          convertHexToUint8Array(signature),
+          signingInput,
+          { algorithm: "rsassa-pkcs1-v1_5", hash: "sha512" },
+        );
+      }
+      case "PS256": {
+        return await new RSA(RSA.parseKey(key)).verify(
+          convertHexToUint8Array(signature),
+          signingInput,
+          { algorithm: "rsassa-pss", hash: "sha256" },
+        );
+      }
+      case "PS512": {
+        return await new RSA(RSA.parseKey(key)).verify(
+          convertHexToUint8Array(signature),
+          signingInput,
+          { algorithm: "rsassa-pss", hash: "sha512" },
+        );
+      }
+      default:
+        assertNever(
+          algorithm,
+          "no matching crypto algorithm in the header: " + algorithm,
+        );
     }
-    case "RS256": {
-      return await new RSA(RSA.parseKey(key)).verify(
-        convertHexToUint8Array(signature),
-        signingInput,
-        { algorithm: "rsassa-pkcs1-v1_5", hash: "sha256" },
-      );
-    }
-    case "RS512": {
-      return await new RSA(RSA.parseKey(key)).verify(
-        convertHexToUint8Array(signature),
-        signingInput,
-        { algorithm: "rsassa-pkcs1-v1_5", hash: "sha512" },
-      );
-    }
-    case "PS256": {
-      return await new RSA(RSA.parseKey(key)).verify(
-        convertHexToUint8Array(signature),
-        signingInput,
-        { algorithm: "rsassa-pss", hash: "sha256" },
-      );
-    }
-    case "PS512": {
-      return await new RSA(RSA.parseKey(key)).verify(
-        convertHexToUint8Array(signature),
-        signingInput,
-        { algorithm: "rsassa-pss", hash: "sha512" },
-      );
-    }
-    default:
-      assertNever(
-        algorithm,
-        "no matching crypto algorithm in the header: " + algorithm,
-      );
+  } catch (err) {
+    throw err instanceof Error ? err : new Error(err);
   }
 }

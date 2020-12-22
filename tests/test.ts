@@ -395,6 +395,15 @@ Deno.test({
       Error,
       `The jwt's algorithm does not match the specified algorithm 'HS256'.`,
     );
+    assertThrowsAsync(
+      async () => {
+        const jwtWithInvalidSignature =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.XbPfbIHMI6arZ3Y922BhjWgQzcXNrz0ogthfEd2o";
+        await verify(jwtWithInvalidSignature, key, "HS256");
+      },
+      Error,
+      "The jwt's signature does not match the verification signature.",
+    );
   },
 });
 
@@ -435,6 +444,20 @@ Deno.test("[jwt] RS256 algorithm", async function (): Promise<void> {
   );
   assertEquals(jwt, externallyVerifiedJwt);
   assertEquals(receivedPayload, payload);
+
+  assertThrowsAsync(
+    async () => {
+      const jwtWithInvalidSignature =
+        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.POstGetfAytaZS82wHcjoTyoqhMyxXiWdR7Nn7A29DNSl0EiXLdwJ6xC6AfgZWF1bOsS_TuYI3OG85AmiExREkrS6tDfTQ2B3WXlrr-wp5AokiRbz3_oB4OxG-W9KcEEbDRcZc0nH3L7LzYptiy1PtlQGxHTWZXtGz4ht0bAecBgmpdgXMguEIcoqPJ1n3pIWk_dUZegpqx0Lka21H6XxUTxiy8OcaarA8zdnPUnV6AmNP3ecFawIFYdvJB_cm-GvpCSbr8G8y_Mllj8f4x9nBH8pQux89_6gUY618iYv7tuPWBFfEbLxtF2pZS6YC1aSfLQxeNe8djT9YjpvRZA";
+      const receivedPayload2 = await verify(
+        jwtWithInvalidSignature,
+        publicKey,
+        "RS256",
+      );
+    },
+    Error,
+    `Decryption error`,
+  );
 });
 
 Deno.test("[jwt] RS512 algorithm", async function (): Promise<void> {
@@ -479,7 +502,46 @@ Deno.test("[jwt] PS256 algorithm", async function (): Promise<void> {
     publicKey,
     "PS256",
   );
-  assertEquals(jwt, externallyVerifiedJwt);
+  const receivedPayloadFromExternalJwt = await verify(
+    externallyVerifiedJwt,
+    publicKey,
+    "PS256",
+  );
+  assertEquals(receivedPayload, payload);
+  assertEquals(receivedPayloadFromExternalJwt, payload);
+
+  assertThrowsAsync(
+    async () => {
+      const jwtWithInvalidSignature =
+        "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.hZnl5amPk_I3tb4O-Otci_5XZdVWhPlFyVRvcqSwnDo_srcysDvhhKOD01DigPK1lJvTSTolyUgKGtpLqMfRDXQlekRsF4XhAjYZTmcynf-C-6wO5EI4wYewLNKFGGJzHAknMgotJFjDi_NCVSjHsW3a10nTao1lB82FRS305T226Q0VqNVJVWhE4G0JQvi2TssRtCzXVt22iDKkXeZJARZ1paXHGV5Kd1CljcZtkNZYIGcwnj65gvuCwohbkIxAnhZMJXCLaVvHqv9l-AAUV7esZvkQR1IpwBAiDQJh4qxPjFGylyXrHMqh5NlT_pWL2ZoULWTg_TJjMO9TuQ";
+      const receivedPayload2 = await verify(
+        jwtWithInvalidSignature,
+        publicKey,
+        "PS256",
+      );
+    },
+    Error,
+    `The jwt's signature does not match the verification signature.`,
+  );
+});
+
+Deno.test("[jwt] PS512 algorithm", async function (): Promise<void> {
+  const header = { alg: "PS512" as const, typ: "JWT" };
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    admin: true,
+    iat: 1516239022,
+  };
+  const moduleDir = dirname(fromFileUrl(import.meta.url));
+  const publicKey = await Deno.readTextFile(moduleDir + "/certs/public.pem");
+  const privateKey = await Deno.readTextFile(moduleDir + "/certs/private.pem");
+  const jwt = await create(header, payload, privateKey);
+  const receivedPayload = await verify(
+    jwt,
+    publicKey,
+    "PS512",
+  );
   assertEquals(receivedPayload, payload);
 });
 
