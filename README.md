@@ -82,6 +82,9 @@ The following signature and MAC algorithms have been implemented:
 - HS256 (HMAC SHA-256)
 - HS512 (HMAC SHA-512)
 - RS256 (RSASSA-PKCS1-v1_5 SHA-256)
+- RS512 (RSASSA-PKCS1-v1_5 SHA-512)
+- PS256 (rsassa-pss SHA-256)
+- PS512 (rsassa-pss SHA-512)
 - none ([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).
 
 ## Serialization
