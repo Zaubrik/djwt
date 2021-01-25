@@ -52,10 +52,14 @@ function isTooEarly(nbf: number, leeway = 0): boolean {
   return nbf - leeway > Date.now() / 1000;
 }
 
-function isObject(obj: unknown) {
+function isObject(obj: unknown): obj is Record<string, unknown> {
   return (
     obj !== null && typeof obj === "object" && Array.isArray(obj) === false
   );
+}
+
+function is3Tuple(arr: any[]): arr is [unknown, unknown, unknown] {
+  return arr.length === 3;
 }
 
 function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
@@ -66,35 +70,38 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
 
 export function decode(
   jwt: string,
-): {
+): [header: unknown, payload: unknown, signature: unknown] {
+  try {
+    const arr = jwt
+      .split(".")
+      .map(base64url.decode)
+      .map((uint8Array, index) => {
+        switch (index) {
+          case 0:
+          case 1:
+            return JSON.parse(decoder.decode(uint8Array));
+          case 2:
+            return convertUint8ArrayToHex(uint8Array);
+        }
+      });
+    if (is3Tuple(arr)) return arr;
+    else throw new Error();
+  } catch {
+    throw TypeError("The serialization of the jwt is invalid.");
+  }
+}
+
+export function validate([header, payload, signature]: [any, any, any]): {
   header: Header;
   payload: Payload;
   signature: string;
 } {
-  const [header, payload, signature] = jwt
-    .split(".")
-    .map(base64url.decode)
-    .map((uint8Array, index) => {
-      switch (index) {
-        case 0:
-        case 1:
-          try {
-            return JSON.parse(decoder.decode(uint8Array));
-          } catch {
-            break;
-          }
-        case 2:
-          return convertUint8ArrayToHex(uint8Array);
-      }
-      throw TypeError("The serialization is invalid.");
-    });
-
   if (typeof signature !== "string") {
-    throw new Error(`The signature is missing.`);
+    throw new Error(`The signature of the jwt must be a string.`);
   }
 
   if (typeof header?.alg !== "string") {
-    throw new Error(`The header 'alg' parameter must be a string.`);
+    throw new Error(`The header 'alg' parameter of the jwt must be a string.`);
   }
 
   /*
@@ -102,27 +109,27 @@ export function decode(
    * representation of a completely valid JSON object conforming to RFC 7159;
    * let the JWT Claims Set be this JSON object.
    */
-  if (!isObject(payload)) {
+  if (isObject(payload)) {
+    if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
+      throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
+    }
+
+    if (typeof payload.exp === "number" && isExpired(payload.exp, 1)) {
+      throw RangeError("The jwt is expired.");
+    }
+
+    if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, 1)) {
+      throw RangeError("The jwt is used too early.");
+    }
+
+    return {
+      header,
+      payload,
+      signature,
+    };
+  } else {
     throw new Error(`The jwt claims set is not a JSON object.`);
   }
-
-  if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
-    throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
-  }
-
-  if (typeof payload.exp === "number" && isExpired(payload.exp, 1)) {
-    throw RangeError("The jwt is expired.");
-  }
-
-  if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, 1)) {
-    throw RangeError("The jwt is used too early.");
-  }
-
-  return {
-    header,
-    payload,
-    signature,
-  };
 }
 
 export async function verify(
@@ -130,22 +137,11 @@ export async function verify(
   key: string,
   algorithm: AlgorithmInput,
 ): Promise<Payload> {
-  const { header, payload, signature } = decode(jwt);
+  const { header, payload, signature } = validate(decode(jwt));
 
   if (!verifyAlgorithm(algorithm, header.alg)) {
     throw new Error(
       `The jwt's algorithm does not match the specified algorithm '${algorithm}'.`,
-    );
-  }
-
-  /*
-   * JWS §4.1.11: The "crit" (critical) Header Parameter indicates that
-   * extensions to this specification and/or [JWA] are being used that MUST be
-   * understood and processed.
-   */
-  if ("crit" in header) {
-    throw new Error(
-      "The 'crit' header parameter is currently not supported by this module.",
     );
   }
 

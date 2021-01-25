@@ -1,5 +1,5 @@
 import { assertEquals } from "./test_deps.ts";
-import { create, decode } from "../mod.ts";
+import { create, decode, validate } from "../mod.ts";
 
 import {
   convertHexToBase64url,
@@ -33,7 +33,7 @@ Deno.test("[jwt] create signature", async function () {
 
 Deno.test("[jwt] verify signature", async function () {
   const jwt = await create({ alg: "HS512", typ: "JWT" }, {}, key);
-  const { header, signature } = decode(jwt);
+  const { header, signature } = validate(decode(jwt));
   const validSignature = await verifySignature({
     signature,
     key,
