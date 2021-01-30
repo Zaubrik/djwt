@@ -4,6 +4,7 @@ import {
   getNumericDate,
   Header,
   Payload,
+  validate,
   verify,
 } from "../mod.ts";
 
@@ -105,7 +106,7 @@ Deno.test({
         await verify("", key, "HS512");
       },
       Error,
-      "The serialization is invalid.",
+      "The serialization of the jwt is invalid.",
     );
 
     await assertThrowsAsync(
@@ -113,7 +114,7 @@ Deno.test({
         await verify("invalid", key, "HS512");
       },
       Error,
-      "The serialization is invalid.",
+      "The serialization of the jwt is invalid.",
     );
 
     await assertThrowsAsync(
@@ -141,7 +142,7 @@ Deno.test({
         );
       },
       Error,
-      "The serialization is invalid.",
+      "The serialization of the jwt is invalid.",
     );
     await assertThrowsAsync(
       async () => {
@@ -152,7 +153,7 @@ Deno.test({
         );
       },
       Error,
-      "The serialization is invalid.",
+      "The serialization of the jwt is invalid.",
     );
 
     await assertThrowsAsync(
@@ -210,19 +211,19 @@ Deno.test({
       decode(
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.TVCeFl1nnZWUMQkAQKuSo_I97YeIZAS8T1gOkErT7F8",
       ),
-      {
-        header: { alg: "HS256", typ: "JWT" },
-        payload: {},
-        signature:
-          "4d509e165d679d959431090040ab92a3f23ded87886404bc4f580e904ad3ec5f",
-      },
+      [
+        { alg: "HS256", typ: "JWT" },
+        {},
+
+        "4d509e165d679d959431090040ab92a3f23ded87886404bc4f580e904ad3ec5f",
+      ],
     );
     assertThrows(
       () => {
         decode("aaa");
       },
       TypeError,
-      "The serialization is invalid.",
+      "The serialization of the jwt is invalid.",
     );
 
     assertThrows(
@@ -230,7 +231,7 @@ Deno.test({
         decode("a");
       },
       TypeError,
-      "Illegal base64url string!",
+      "The serialization of the jwt is invalid.",
     );
 
     assertThrows(
@@ -239,7 +240,7 @@ Deno.test({
         decode("ImEi.ImEi.ImEi.ImEi");
       },
       TypeError,
-      "The serialization is invalid.",
+      "The serialization of the jwt is invalid.",
     );
 
     const jwt =
@@ -253,12 +254,99 @@ Deno.test({
       name: "John Doe",
       iat: 1516239022,
     };
-    assertEquals(decode(jwt), {
+    assertEquals(decode(jwt), [
       header,
       payload,
-      signature:
-        "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
-    });
+      "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
+    ]);
+    assertEquals(
+      await create(header, payload, "your-256-bit-secret"),
+      jwt,
+    );
+  },
+});
+
+Deno.test({
+  name: "[jwt] validate",
+  fn: async function () {
+    assertEquals(
+      validate(
+        [
+          { alg: "HS256", typ: "JWT" },
+          { exp: 1111111111111111111111111111 },
+          "",
+        ],
+      ),
+      {
+        header: { alg: "HS256", typ: "JWT" },
+        payload: { exp: 1111111111111111111111111111 },
+        signature: "",
+      },
+    );
+    assertThrows(
+      () => {
+        validate([, , null]);
+      },
+      Error,
+      "The signature of the jwt must be a string.",
+    );
+
+    assertThrows(
+      () => {
+        validate([null, {}, ""]);
+      },
+      Error,
+      "The header 'alg' parameter of the jwt must be a string.",
+    );
+
+    assertThrows(
+      () => {
+        validate([{ alg: "HS256", typ: "JWT" }, [], ""]);
+      },
+      Error,
+      "The jwt claims set is not a JSON object.",
+    );
+
+    assertThrows(
+      () => {
+        validate([{ alg: "HS256" }, { exp: "" }, ""]);
+      },
+      Error,
+      "The jwt has an invalid 'exp' or 'nbf' claim.",
+    );
+
+    assertThrows(
+      () => {
+        validate([{ alg: "HS256" }, { exp: 1 }, ""]);
+      },
+      Error,
+      "The jwt is expired.",
+    );
+
+    assertThrows(
+      () => {
+        validate([{ alg: "HS256" }, { nbf: 1111111111111111111111111111 }, ""]);
+      },
+      Error,
+      "The jwt is used too early.",
+    );
+
+    const jwt =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+    const header: Header = {
+      alg: "HS256",
+      typ: "JWT",
+    };
+    const payload = {
+      sub: "1234567890",
+      name: "John Doe",
+      iat: 1516239022,
+    };
+    assertEquals(decode(jwt), [
+      header,
+      payload,
+      "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
+    ]);
     assertEquals(
       await create(header, payload, "your-256-bit-secret"),
       jwt,
