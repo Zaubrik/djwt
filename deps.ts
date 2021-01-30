@@ -5,4 +5,4 @@ export {
 } from "https://deno.land/std@0.85.0/encoding/hex.ts";
 export { HmacSha256 } from "https://deno.land/std@0.85.0/hash/sha256.ts";
 export { HmacSha512 } from "https://deno.land/std@0.85.0/hash/sha512.ts";
-export { RSA } from "https://deno.land/x/god_crypto@v1.4.8/rsa.ts";
+export { RSA } from "https://deno.land/x/god_crypto@v1.4.9/rsa.ts";
