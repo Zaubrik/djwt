@@ -9,9 +9,13 @@ Create and verify JSON Web Tokens with deno.
 Takes a `header`, `payload` and `key` and returns the url-safe encoded `jwt`.
 
 ```typescript
-import { create } from "https://deno.land/x/djwt@$VERSION/mod.ts"
+import { create } from "https://deno.land/x/djwt@$VERSION/mod.ts";
 
-const jwt = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, "secret")
+const jwt = await create(
+  { alg: "HS512", typ: "JWT" },
+  { foo: "bar" },
+  "secret",
+);
 // eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ
 ```
 
@@ -21,9 +25,9 @@ Takes a `jwt`, `key` and an `algorithm` and returns the `payload` of the `jwt`
 if the `jwt` is valid. Otherwise it throws an `Error`.
 
 ```typescript
-import { verify } from "https://deno.land/x/djwt@$VERSION/mod.ts"
+import { verify } from "https://deno.land/x/djwt@$VERSION/mod.ts";
 
-const payload = await verify(jwt, "secret", "HS512") // { foo: "bar" }
+const payload = await verify(jwt, "secret", "HS512"); // { foo: "bar" }
 ```
 
 ### decode
@@ -32,12 +36,12 @@ Takes a `jwt` and returns a 3-tuple `[header, payload, signature]` if the `jwt`
 has a valid _serialization_. Otherwise it throws an `Error`.
 
 ```typescript
-import { decode } from "https://deno.land/x/djwt@$VERSION/mod.ts"
+import { decode } from "https://deno.land/x/djwt@$VERSION/mod.ts";
 
 const jwt =
-  "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ"
+  "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ";
 
-const [payload, signature, header] = decode(jwt)
+const [payload, signature, header] = decode(jwt);
 // [
 // { alg: "HS512", typ: "JWT" },
 // { foo: "bar" },
@@ -54,9 +58,9 @@ This helper function simplifies setting a
 
 ```typescript
 // A specific date:
-getNumericDate(new Date("2025-07-01"))
+getNumericDate(new Date("2025-07-01"));
 // One hour from now:
-getNumericDate(60 * 60)
+getNumericDate(60 * 60);
 ```
 
 ## Claims
@@ -69,7 +73,7 @@ number containing a **NumericDate** value. This module checks if the current
 date/time is before the expiration date/time listed in the **exp** claim.
 
 ```typescript
-const jwt = await create(header, { exp: getNumericDate(60 * 60) }, "secret")
+const jwt = await create(header, { exp: getNumericDate(60 * 60) }, "secret");
 ```
 
 ### Not Before (nbf)
@@ -86,8 +90,8 @@ The following signature and MAC algorithms have been implemented:
 - HS512 (HMAC SHA-512)
 - RS256 (RSASSA-PKCS1-v1_5 SHA-256)
 - RS512 (RSASSA-PKCS1-v1_5 SHA-512)
-- PS256 (rsassa-pss SHA-256)
-- PS512 (rsassa-pss SHA-512)
+- PS256 (RSASSA-PSS SHA-256)
+- PS512 (RSASSA-PSS SHA-512)
 - none ([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).
 
 ## Serialization
