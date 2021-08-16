@@ -12,6 +12,7 @@ import {
   assertEquals,
   assertThrows,
   assertThrowsAsync,
+  decodeHex,
   dirname,
   fromFileUrl,
 } from "./test_deps.ts";
@@ -25,7 +26,121 @@ const payload: Payload = {
   name: "John Doe",
 };
 
-const key = "secret";
+const keyHS256 = await crypto.subtle.importKey(
+  "raw",
+  new TextEncoder().encode("secret"),
+  { name: "HMAC", hash: "SHA-256" },
+  false,
+  ["sign", "verify"],
+);
+
+const keyHS384 = await crypto.subtle.generateKey(
+  { name: "HMAC", hash: "SHA-384" },
+  true,
+  ["sign", "verify"],
+);
+
+const keyHS512 = await crypto.subtle.importKey(
+  "raw",
+  new TextEncoder().encode("secret"),
+  { name: "HMAC", hash: "SHA-512" },
+  false,
+  ["sign", "verify"],
+);
+
+const keyRS256 = await window.crypto.subtle.generateKey(
+  {
+    name: "RSASSA-PKCS1-v1_5",
+    modulusLength: 4096,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: "SHA-256",
+  },
+  true,
+  ["verify", "sign"],
+);
+const keyRS384 = await window.crypto.subtle.generateKey(
+  {
+    name: "RSASSA-PKCS1-v1_5",
+    modulusLength: 4096,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: "SHA-384",
+  },
+  true,
+  ["verify", "sign"],
+);
+const keyRS512 = await window.crypto.subtle.generateKey(
+  {
+    name: "RSASSA-PKCS1-v1_5",
+    modulusLength: 4096,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: "SHA-512",
+  },
+  true,
+  ["verify", "sign"],
+);
+
+const keyPS256 = await window.crypto.subtle.generateKey(
+  {
+    name: "RSA-PSS",
+    // Consider using a 4096-bit key for systems that require long-term security
+    modulusLength: 2048,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: "SHA-256",
+  },
+  true,
+  ["sign", "verify"],
+);
+
+const keyPS384 = await window.crypto.subtle.generateKey(
+  {
+    name: "RSA-PSS",
+    // Consider using a 4096-bit key for systems that require long-term security
+    modulusLength: 2048,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: "SHA-384",
+  },
+  true,
+  ["sign", "verify"],
+);
+
+const keyPS512 = await window.crypto.subtle.generateKey(
+  {
+    name: "RSA-PSS",
+    // Consider using a 4096-bit key for systems that require long-term security
+    modulusLength: 2048,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: "SHA-512",
+  },
+  true,
+  ["sign", "verify"],
+);
+
+const keyES256 = await window.crypto.subtle.generateKey(
+  {
+    name: "ECDSA",
+    namedCurve: "P-256",
+  },
+  true,
+  ["sign", "verify"],
+);
+
+const keyES384 = await window.crypto.subtle.generateKey(
+  {
+    name: "ECDSA",
+    namedCurve: "P-384",
+  },
+  true,
+  ["sign", "verify"],
+);
+
+// const keyES512 = await window.crypto.subtle.generateKey(
+// {
+// name: "ECDSA",
+// namedCurve: "P-512",
+// },
+// true,
+// ["sign", "verify"],
+// );
 
 Deno.test({
   name: "[jwt] create",
@@ -34,7 +149,7 @@ Deno.test({
       await create(
         header,
         payload,
-        key,
+        keyHS256,
       ),
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UifQ.xuEv8qrfXu424LZk8bVgr9MQJUIrp1rHcPyZw_KSsds",
     );
@@ -45,12 +160,12 @@ Deno.test({
           typ: "JWT",
         },
         {},
-        key,
+        keyHS512,
       ),
       "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.e30.dGumW8J3t2BlAwqqoisyWDC6ov2hRtjTAFHzd-Tlr4DUScaHG4OYqTHXLHEzd3hU5wy5xs87vRov6QzZnj410g",
     );
     assertEquals(
-      await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, key),
+      await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, keyHS512),
       "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ",
     );
   },
@@ -61,17 +176,15 @@ Deno.test({
   fn: async function () {
     assertEquals(
       await verify(
-        await create(header, payload, key),
-        key,
-        "HS256",
+        await create(header, payload, keyHS256),
+        keyHS256,
       ),
       payload,
     );
     await assertEquals(
       await verify(
-        await create({ alg: "HS512", typ: "JWT" }, {}, key),
-        key,
-        "HS512",
+        await create({ alg: "HS512", typ: "JWT" }, {}, keyHS512),
+        keyHS512,
       ),
       {},
     );
@@ -80,8 +193,7 @@ Deno.test({
       async () => {
         await verify(
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UifQ.xuEv8qrfXu424LZk8bVgr9MQJUIrp1rHcPyZw_KSsd",
-          key,
-          "HS256",
+          keyHS256,
         );
       },
       Error,
@@ -93,8 +205,7 @@ Deno.test({
         // payload = { "exp": false }
         await verify(
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOmZhbHNlfQ.LXb8M9J6ar14CTq7shnqDMWmSsoH_zyIHiD44Rqd6uI",
-          key,
-          "HS512",
+          keyHS512,
         );
       },
       Error,
@@ -103,7 +214,7 @@ Deno.test({
 
     await assertThrowsAsync(
       async () => {
-        await verify("", key, "HS512");
+        await verify("", keyHS512);
       },
       Error,
       "The serialization of the jwt is invalid.",
@@ -111,7 +222,7 @@ Deno.test({
 
     await assertThrowsAsync(
       async () => {
-        await verify("invalid", key, "HS512");
+        await verify("invalid", keyHS512);
       },
       Error,
       "The serialization of the jwt is invalid.",
@@ -124,9 +235,8 @@ Deno.test({
             // @ts-ignore */
             nbf: "invalid",
             exp: 100000000000000000000,
-          }, key),
-          key,
-          "HS512",
+          }, keyHS512),
+          keyHS512,
         );
       },
       Error,
@@ -137,8 +247,7 @@ Deno.test({
       async () => {
         await verify(
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..F6X5eXaBMszYO1kMrujBGGw4-FTJp2Uld6Daz9v3cu4",
-          key,
-          "HS256",
+          keyHS256,
         );
       },
       Error,
@@ -148,8 +257,7 @@ Deno.test({
       async () => {
         await verify(
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.YWJj.uE63kRv-19VnJUBL4OUKaxULtqZ27cJwl8V9IXjJaHg",
-          key,
-          "HS256",
+          keyHS256,
         );
       },
       Error,
@@ -160,8 +268,7 @@ Deno.test({
       async () => {
         await verify(
           "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.bnVsbA.tv7DbhvALc5Eq2sC61Y9IZlG2G15hvJoug9UO6iwmE_UZOLva8EC-9PURg7IIj6f-F9jFWix8vCn9WaAMHR1AA",
-          key,
-          "HS512",
+          keyHS512,
         );
       },
       Error,
@@ -172,8 +279,7 @@ Deno.test({
       async () => {
         await verify(
           "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.dHJ1ZQ.Wmj2Jb9m6FQaZ0rd4AHNR2u9THED_m-aPfGx1w5mtKalrx7NWFS98ZblUNm_Szeugg9CUzhzBfPDyPUA2LTTkA",
-          key,
-          "HS512",
+          keyHS512,
         );
       },
       Error,
@@ -183,8 +289,7 @@ Deno.test({
       async () => {
         await verify(
           "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.W10.BqmZ-tVI9a-HDx6PpMiBdMq6lzcaqO9sW6pImw-NRajCCmRrVi6IgMhEw7lvOG6sxhteceVMl8_xFRGverJJWw",
-          key,
-          "HS512",
+          keyHS512,
         );
       },
       Error,
@@ -194,8 +299,7 @@ Deno.test({
       async () => {
         await verify(
           "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.WyJhIiwxLHRydWVd.eVsshnlupuoVv9S5Q7VOj2BkLyZmOSC27fCoXwyq_MG8B95P2GkLDkL8Fo0Su7qoh1G0BxYjVRHgVppTgpuZRw",
-          key,
-          "HS512",
+          keyHS512,
         );
       },
       Error,
@@ -215,7 +319,9 @@ Deno.test({
         { alg: "HS256", typ: "JWT" },
         {},
 
-        "4d509e165d679d959431090040ab92a3f23ded87886404bc4f580e904ad3ec5f",
+        decodeHex(new TextEncoder().encode(
+          "4d509e165d679d959431090040ab92a3f23ded87886404bc4f580e904ad3ec5f",
+        )),
       ],
     );
     assertThrows(
@@ -257,10 +363,24 @@ Deno.test({
     assertEquals(decode(jwt), [
       header,
       payload,
-      "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
+      decodeHex(
+        new TextEncoder().encode(
+          "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
+        ),
+      ),
     ]);
     assertEquals(
-      await create(header, payload, "your-256-bit-secret"),
+      await create(
+        header,
+        payload,
+        await crypto.subtle.importKey(
+          "raw",
+          new TextEncoder().encode("your-256-bit-secret"),
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign", "verify"],
+        ),
+      ),
       jwt,
     );
   },
@@ -288,7 +408,7 @@ Deno.test({
         validate([, , null]);
       },
       Error,
-      "The signature of the jwt must be a string.",
+      "The header 'alg' parameter of the jwt must be a string.",
     );
 
     assertThrows(
@@ -345,10 +465,24 @@ Deno.test({
     assertEquals(decode(jwt), [
       header,
       payload,
-      "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
+      decodeHex(
+        new TextEncoder().encode(
+          "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
+        ),
+      ),
     ]);
     assertEquals(
-      await create(header, payload, "your-256-bit-secret"),
+      await create(
+        header,
+        payload,
+        await crypto.subtle.importKey(
+          "raw",
+          new TextEncoder().encode("your-256-bit-secret"),
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign", "verify"],
+        ),
+      ),
       jwt,
     );
   },
@@ -373,10 +507,9 @@ Deno.test({
           await create(
             header,
             { exp: 0 },
-            key,
+            keyHS512,
           ),
-          key,
-          "HS512",
+          keyHS512,
         );
       },
       Error,
@@ -386,9 +519,8 @@ Deno.test({
     await assertThrowsAsync(
       async () => {
         await verify(
-          await create(header, payload, key),
-          key,
-          "HS256",
+          await create(header, payload, keyHS256),
+          keyHS256,
         );
       },
       Error,
@@ -411,18 +543,16 @@ Deno.test({
     const earlyNbf = Date.now() / 1000 + 5;
     assertEquals(
       await verify(
-        await create(header, { ...payload, nbf: lateNbf }, key),
-        key,
-        "HS256",
+        await create(header, { ...payload, nbf: lateNbf }, keyHS256),
+        keyHS256,
       ),
       { ...payload, nbf: lateNbf },
     );
     await assertThrowsAsync(
       async () => {
         await verify(
-          await create(header, { ...payload, nbf: earlyNbf }, key),
-          key,
-          "HS256",
+          await create(header, { ...payload, nbf: earlyNbf }, keyHS256),
+          keyHS256,
         );
       },
       Error,
@@ -441,15 +571,14 @@ Deno.test({
     const header: Header = {
       alg: "none",
     };
-    const jwt = await create(header, payload, key);
+    const jwt = await create(header, payload, null);
     assertEquals(
       jwt,
       "eyJhbGciOiJub25lIn0.eyJpc3MiOiJqb2UiLCJodHRwOi8vZXhhbXBsZS5jb20vaXNfcm9vdCI6dHJ1ZX0.",
     );
     const validatedPayload = await verify(
       jwt,
-      "keyIsIgnored",
-      "none",
+      null,
     );
     assertEquals(validatedPayload, payload);
   },
@@ -467,8 +596,8 @@ Deno.test({
       name: "John Doe",
       iat: 1516239022,
     };
-    const jwt = await create(header, payload, key);
-    const validatedPayload = await verify(jwt, key, "HS256");
+    const jwt = await create(header, payload, keyHS256);
+    const validatedPayload = await verify(jwt, keyHS256);
     assertEquals(
       jwt,
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.XbPfbIHMI6arZ3Y922BhjWgQzWXcXNrz0ogtVhfEd2o",
@@ -478,20 +607,39 @@ Deno.test({
       async () => {
         const invalidJwt = // jwt with not supported crypto algorithm in alg header:
           "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.bQTnz6AuMJvmXXQsVPrxeQNvzDkimo7VNXxHeSBfClLufmCVZRUuyTwJF311JHuh";
-        await verify(invalidJwt, "", "HS256");
+        await verify(
+          invalidJwt,
+          keyHS256,
+        );
       },
       Error,
-      `The jwt's algorithm does not match the specified algorithm 'HS256'.`,
+      `The key algorithm does not match with alg 'HS384'.`,
     );
     assertThrowsAsync(
       async () => {
         const jwtWithInvalidSignature =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.XbPfbIHMI6arZ3Y922BhjWgQzcXNrz0ogthfEd2o";
-        await verify(jwtWithInvalidSignature, key, "HS256");
+        await verify(jwtWithInvalidSignature, keyHS256);
       },
       Error,
       "The jwt's signature does not match the verification signature.",
     );
+  },
+});
+
+Deno.test({
+  name: "[jwt] HS384 algorithm",
+  fn: async function () {
+    const header: Header = { alg: "HS384", typ: "JWT" };
+    const payload = {
+      sub: "1234567890",
+      name: "John Doe",
+      admin: true,
+      iat: 1516239022,
+    };
+    const jwt = await create(header, payload, keyHS384);
+    const validatedPayload = await verify(jwt, keyHS384);
+    assertEquals(validatedPayload, payload);
   },
 });
 
@@ -505,8 +653,8 @@ Deno.test({
       admin: true,
       iat: 1516239022,
     };
-    const jwt = await create(header, payload, key);
-    const validatedPayload = await verify(jwt, key, "HS512");
+    const jwt = await create(header, payload, keyHS512);
+    const validatedPayload = await verify(jwt, keyHS512);
     assertEquals(validatedPayload, payload);
   },
 });
@@ -519,35 +667,49 @@ Deno.test("[jwt] RS256 algorithm", async function (): Promise<void> {
     admin: true,
     iat: 1516239022,
   };
-  const moduleDir = dirname(fromFileUrl(import.meta.url));
-  const publicKey = await Deno.readTextFile(moduleDir + "/certs/public.pem");
-  const privateKey = await Deno.readTextFile(moduleDir + "/certs/private.pem");
-  const externallyVerifiedJwt =
-    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.POstGetfAytaZS82wHcjoTyoqhMyxXiWdR7Nn7A29DNSl0EiXLdwJ6xC6AfgZWF1bOsS_TuYI3OG85AmiExREkrS6tDfTQ2B3WXlrr-wp5AokiRbz3_oB4OxG-W9KcEEbDRcZc0nH3L7LzYptiy1PtAylQGxHTWZXtGz4ht0bAecBgmpdgXMguEIcoqPJ1n3pIWk_dUZegpqx0Lka21H6XxUTxiy8OcaarA8zdnPUnV6AmNP3ecFawIFYdvJB_cm-GvpCSbr8G8y_Mllj8f4x9nBH8pQux89_6gUY618iYv7tuPWBFfEbLxtF2pZS6YC1aSfLQxeNe8djT9YjpvRZA";
-  const jwt = await create(header, payload, privateKey);
+  const jwt = await create(header, payload, keyRS256.privateKey);
   const receivedPayload = await verify(
     jwt,
-    publicKey,
-    "RS256",
+    keyRS256.publicKey,
   );
-  assertEquals(jwt, externallyVerifiedJwt);
   assertEquals(receivedPayload, payload);
-
   assertThrowsAsync(
     async () => {
-      const jwtWithInvalidSignature =
-        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.POstGetfAytaZS82wHcjoTyoqhMyxXiWdR7Nn7A29DNSl0EiXLdwJ6xC6AfgZWF1bOsS_TuYI3OG85AmiExREkrS6tDfTQ2B3WXlrr-wp5AokiRbz3_oB4OxG-W9KcEEbDRcZc0nH3L7LzYptiy1PtlQGxHTWZXtGz4ht0bAecBgmpdgXMguEIcoqPJ1n3pIWk_dUZegpqx0Lka21H6XxUTxiy8OcaarA8zdnPUnV6AmNP3ecFawIFYdvJB_cm-GvpCSbr8G8y_Mllj8f4x9nBH8pQux89_6gUY618iYv7tuPWBFfEbLxtF2pZS6YC1aSfLQxeNe8djT9YjpvRZA";
-      const receivedPayload2 = await verify(
-        jwtWithInvalidSignature,
-        publicKey,
-        "RS256",
+      await verify(
+        jwt,
+        keyRS384.publicKey,
       );
     },
     Error,
-    `Decryption error`,
+    `The key algorithm does not match with alg 'RS256'.`,
+  );
+  assertThrowsAsync(
+    async () => {
+      await verify(
+        jwt,
+        keyPS256.publicKey,
+      );
+    },
+    Error,
+    `The key algorithm does not match with alg 'RS256'.`,
   );
 });
 
+Deno.test("[jwt] RS384 algorithm", async function (): Promise<void> {
+  const header = { alg: "RS384" as const, typ: "JWT" };
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    admin: true,
+    iat: 1516239022,
+  };
+  const jwt = await create(header, payload, keyRS384.privateKey);
+  const receivedPayload = await verify(
+    jwt,
+    keyRS384.publicKey,
+  );
+  assertEquals(receivedPayload, payload);
+});
 Deno.test("[jwt] RS512 algorithm", async function (): Promise<void> {
   const header = { alg: "RS512" as const, typ: "JWT" };
   const payload = {
@@ -556,18 +718,11 @@ Deno.test("[jwt] RS512 algorithm", async function (): Promise<void> {
     admin: true,
     iat: 1516239022,
   };
-  const moduleDir = dirname(fromFileUrl(import.meta.url));
-  const publicKey = await Deno.readTextFile(moduleDir + "/certs/public.pem");
-  const privateKey = await Deno.readTextFile(moduleDir + "/certs/private.pem");
-  const externallyVerifiedJwt =
-    "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.JlX3gXGyClTBFciHhknWrjo7SKqyJ5iBO0n-3S2_I7cIgfaZAeRDJ3SQEbaPxVC7X8aqGCOM-pQOjZPKUJN8DMFrlHTOdqMs0TwQ2PRBmVAxXTSOZOoEhD4ZNCHohYoyfoDhJDP4Qye_FCqu6POJzg0Jcun4d3KW04QTiGxv2PkYqmB7nHxYuJdnqE3704hIS56pc_8q6AW0WIT0W-nIvwzaSbtBU9RgaC7ZpBD2LiNE265UBIFraMDF8IAFw9itZSUCTKg1Q-q27NwwBZNGYStMdIBDor2Bsq5ge51EkWajzZ7ALisVp-bskzUsqUf77ejqX_CBAqkNdH1Zebn93A";
-  const jwt = await create(header, payload, privateKey);
+  const jwt = await create(header, payload, keyRS512.privateKey);
   const receivedPayload = await verify(
     jwt,
-    publicKey,
-    "RS512",
+    keyRS512.publicKey,
   );
-  assertEquals(jwt, externallyVerifiedJwt);
   assertEquals(receivedPayload, payload);
 });
 
@@ -579,38 +734,28 @@ Deno.test("[jwt] PS256 algorithm", async function (): Promise<void> {
     admin: true,
     iat: 1516239022,
   };
-  const moduleDir = dirname(fromFileUrl(import.meta.url));
-  const publicKey = await Deno.readTextFile(moduleDir + "/certs/public.pem");
-  const privateKey = await Deno.readTextFile(moduleDir + "/certs/private.pem");
-  const externallyVerifiedJwt =
-    "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.hZnl5amPk_I3tb4O-Otci_5XZdVWhPlFyVRvcqSwnDo_srcysDvhhKOD01DigPK1lJvTSTolyUgKGtpLqMfRDXQlekRsF4XhAjYZTmcynf-C-6wO5EI4wYewLNKFGGJzHAknMgotJFjDi_NCVSjHsW3a10nTao1lB82FRS305T226Q0VqNVJVWhE4G0JQvi2TssRtCxYTqzXVt22iDKkXeZJARZ1paXHGV5Kd1CljcZtkNZYIGcwnj65gvuCwohbkIxAnhZMJXCLaVvHqv9l-AAUV7esZvkQR1IpwBAiDQJh4qxPjFGylyXrHMqh5NlT_pWL2ZoULWTg_TJjMO9TuQ";
-  const jwt = await create(header, payload, privateKey);
+  const jwt = await create(header, payload, keyPS256.privateKey);
   const receivedPayload = await verify(
     jwt,
-    publicKey,
-    "PS256",
-  );
-  const receivedPayloadFromExternalJwt = await verify(
-    externallyVerifiedJwt,
-    publicKey,
-    "PS256",
+    keyPS256.publicKey,
   );
   assertEquals(receivedPayload, payload);
-  assertEquals(receivedPayloadFromExternalJwt, payload);
+});
 
-  assertThrowsAsync(
-    async () => {
-      const jwtWithInvalidSignature =
-        "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.hZnl5amPk_I3tb4O-Otci_5XZdVWhPlFyVRvcqSwnDo_srcysDvhhKOD01DigPK1lJvTSTolyUgKGtpLqMfRDXQlekRsF4XhAjYZTmcynf-C-6wO5EI4wYewLNKFGGJzHAknMgotJFjDi_NCVSjHsW3a10nTao1lB82FRS305T226Q0VqNVJVWhE4G0JQvi2TssRtCzXVt22iDKkXeZJARZ1paXHGV5Kd1CljcZtkNZYIGcwnj65gvuCwohbkIxAnhZMJXCLaVvHqv9l-AAUV7esZvkQR1IpwBAiDQJh4qxPjFGylyXrHMqh5NlT_pWL2ZoULWTg_TJjMO9TuQ";
-      const receivedPayload2 = await verify(
-        jwtWithInvalidSignature,
-        publicKey,
-        "PS256",
-      );
-    },
-    Error,
-    `The jwt's signature does not match the verification signature.`,
+Deno.test("[jwt] PS384 algorithm", async function (): Promise<void> {
+  const header = { alg: "PS384" as const, typ: "JWT" };
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    admin: true,
+    iat: 1516239022,
+  };
+  const jwt = await create(header, payload, keyPS384.privateKey);
+  const receivedPayload = await verify(
+    jwt,
+    keyPS384.publicKey,
   );
+  assertEquals(receivedPayload, payload);
 });
 
 Deno.test("[jwt] PS512 algorithm", async function (): Promise<void> {
@@ -621,17 +766,29 @@ Deno.test("[jwt] PS512 algorithm", async function (): Promise<void> {
     admin: true,
     iat: 1516239022,
   };
-  const moduleDir = dirname(fromFileUrl(import.meta.url));
-  const publicKey = await Deno.readTextFile(moduleDir + "/certs/public.pem");
-  const privateKey = await Deno.readTextFile(moduleDir + "/certs/private.pem");
-  const jwt = await create(header, payload, privateKey);
+  const jwt = await create(header, payload, keyPS512.privateKey);
   const receivedPayload = await verify(
     jwt,
-    publicKey,
-    "PS512",
+    keyPS512.publicKey,
   );
   assertEquals(receivedPayload, payload);
 });
+
+// Deno.test("[jwt] ES256 algorithm", async function (): Promise<void> {
+// const header = { alg: "ES256" as const, typ: "JWT" };
+// const payload = {
+// sub: "1234567890",
+// name: "John Doe",
+// admin: true,
+// iat: 1516239022,
+// };
+// const jwt = await create(header, payload, keyES256.privateKey);
+// const receivedPayload = await verify(
+// jwt,
+// keyES256.publicKey,
+// );
+// assertEquals(receivedPayload, payload);
+// });
 
 Deno.test("[jwt] getNumericDate", function (): void {
   // A specific date:
