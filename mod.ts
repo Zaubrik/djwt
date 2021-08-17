@@ -1,11 +1,11 @@
-import { base64url, convertUint8ArrayToHex } from "./deps.ts";
+import { base64url } from "./deps.ts";
 import {
   create as createSignature,
   verify as verifySignature,
 } from "./signature.ts";
 import { verify as verifyAlgorithm } from "./algorithm.ts";
 
-import type { Algorithm, AlgorithmInput } from "./algorithm.ts";
+import type { Algorithm } from "./algorithm.ts";
 
 /*
  * JWT §4.1: The following Claim Names are registered in the IANA
@@ -37,8 +37,8 @@ export interface Header {
   [key: string]: unknown;
 }
 
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
+export const encoder = new TextEncoder();
+export const decoder = new TextDecoder();
 
 /*
  * JWT §4.1.4: Implementers MAY provide for some small leeway to account for
@@ -58,7 +58,7 @@ function isObject(obj: unknown): obj is Record<string, unknown> {
   );
 }
 
-function is3Tuple(arr: any[]): arr is [unknown, unknown, unknown] {
+function is3Tuple(arr: any[]): arr is [unknown, unknown, Uint8Array] {
   return arr.length === 3;
 }
 
@@ -70,7 +70,7 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
 
 export function decode(
   jwt: string,
-): [header: unknown, payload: unknown, signature: unknown] {
+): [header: unknown, payload: unknown, signature: Uint8Array] {
   try {
     const arr = jwt
       .split(".")
@@ -81,7 +81,7 @@ export function decode(
           case 1:
             return JSON.parse(decoder.decode(uint8Array));
           case 2:
-            return convertUint8ArrayToHex(uint8Array);
+            return uint8Array;
         }
       });
     if (is3Tuple(arr)) return arr;
@@ -91,15 +91,13 @@ export function decode(
   }
 }
 
-export function validate([header, payload, signature]: [any, any, any]): {
+export function validate(
+  [header, payload, signature]: [any, any, Uint8Array],
+): {
   header: Header;
   payload: Payload;
-  signature: string;
+  signature: Uint8Array;
 } {
-  if (typeof signature !== "string") {
-    throw new Error(`The signature of the jwt must be a string.`);
-  }
-
   if (typeof header?.alg !== "string") {
     throw new Error(`The header 'alg' parameter of the jwt must be a string.`);
   }
@@ -134,31 +132,29 @@ export function validate([header, payload, signature]: [any, any, any]): {
 
 export async function verify(
   jwt: string,
-  key: string,
-  algorithm: AlgorithmInput,
+  key: CryptoKey | null,
 ): Promise<Payload> {
   const { header, payload, signature } = validate(decode(jwt));
+  if (verifyAlgorithm(header.alg, key)) {
+    if (
+      !(await verifySignature(
+        signature,
+        key,
+        header.alg,
+        jwt.slice(0, jwt.lastIndexOf(".")),
+      ))
+    ) {
+      throw new Error(
+        "The jwt's signature does not match the verification signature.",
+      );
+    }
 
-  if (!verifyAlgorithm(algorithm, header.alg)) {
+    return payload;
+  } else {
     throw new Error(
-      `The jwt's algorithm does not match the specified algorithm '${algorithm}'.`,
+      `The jwt's alg '${header.alg}' does not match the key's algorithm.`,
     );
   }
-
-  if (
-    !(await verifySignature({
-      signature,
-      key,
-      algorithm: header.alg,
-      signingInput: jwt.slice(0, jwt.lastIndexOf(".")),
-    }))
-  ) {
-    throw new Error(
-      "The jwt's signature does not match the verification signature.",
-    );
-  }
-
-  return payload;
 }
 
 /*
@@ -179,12 +175,18 @@ function createSigningInput(header: Header, payload: Payload): string {
 export async function create(
   header: Header,
   payload: Payload,
-  key: string,
+  key: CryptoKey | null,
 ): Promise<string> {
-  const signingInput = createSigningInput(header, payload);
-  const signature = await createSignature(header.alg, key, signingInput);
+  if (verifyAlgorithm(header.alg, key)) {
+    const signingInput = createSigningInput(header, payload);
+    const signature = await createSignature(header.alg, key, signingInput);
 
-  return `${signingInput}.${signature}`;
+    return `${signingInput}.${signature}`;
+  } else {
+    throw new Error(
+      `The jwt's alg '${header.alg}' does not match the key's algorithm.`,
+    );
+  }
 }
 
 /*
