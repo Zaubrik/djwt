@@ -13,8 +13,6 @@ import {
   assertThrows,
   assertThrowsAsync,
   decodeHex,
-  dirname,
-  fromFileUrl,
 } from "./test_deps.ts";
 
 const header: Header = {

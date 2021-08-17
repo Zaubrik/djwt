@@ -7,8 +7,3 @@ export {
 export {
   decode as decodeHex,
 } from "https://deno.land/std@0.105.0/encoding/hex.ts";
-
-export {
-  dirname,
-  fromFileUrl,
-} from "https://deno.land/std@0.105.0/path/mod.ts";
