@@ -4,9 +4,9 @@ Create and verify JSON Web Tokens with deno.
 
 ## API
 
-Please use the `generateKey` method of the
-[Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
-to generate secure keys.
+Please use the
+[Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey)'s
+method `generateKey` to generate a **secure** `CryptoKey`.
 
 ```typescript
 const key = await crypto.subtle.generateKey(
@@ -18,7 +18,8 @@ const key = await crypto.subtle.generateKey(
 
 ### create
 
-Takes `header`, `payload` and `key` and returns the url-safe encoded `jwt`.
+Takes `Header`, `Payload` and `CryptoKey` and returns the url-safe encoded
+`jwt`.
 
 ```typescript
 import { create } from "https://deno.land/x/djwt@$VERSION/mod.ts";
@@ -28,8 +29,8 @@ const jwt = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, key);
 
 ### verify
 
-Takes `jwt` and `key` and returns the `payload` of the `jwt` if the `jwt` is
-valid. Otherwise it throws an `Error`.
+Takes `jwt` and `CryptoKey` and returns the `Payload` of the `jwt` if the `jwt`
+is valid. Otherwise it throws an `Error`.
 
 ```typescript
 import { verify } from "https://deno.land/x/djwt@$VERSION/mod.ts";
