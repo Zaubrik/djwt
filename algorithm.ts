@@ -13,6 +13,7 @@ export type Algorithm =
   | "RS256"
   | "RS384"
   | "RS512"
+  // The algorithm ECDSA will be implemented by Deno in version 1.14.0
   // | "ES256"
   // | "ES384"
   // | "ES512"
@@ -30,6 +31,7 @@ export function verify(
     const algorithm = getAlgorithm(alg);
     if (key.algorithm.name === algorithm.name) {
       if (
+        // Deno's type CryptoKey is still buggy, therefore type assertions. Will be fixed soon!
         (key.algorithm as { hash?: { name: string } }).hash?.name &&
         (key.algorithm as { hash?: { name: string } }).hash?.name ===
           algorithm.hash.name
