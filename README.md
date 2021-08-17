@@ -42,7 +42,8 @@ const payload = await verify(jwt, key); // { foo: "bar" }
 
 Takes a `jwt` and returns a 3-tuple
 `[header: unknown, payload: unknown, signature: Uint8Array]` if the `jwt` has a
-valid _serialization_. Otherwise it throws an `Error`.
+valid _serialization_. Otherwise it throws an `Error`. This function does
+**not** verify the digital signature.
 
 ```typescript
 import { decode } from "https://deno.land/x/djwt@$VERSION/mod.ts";
