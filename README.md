@@ -60,9 +60,9 @@ This helper function simplifies setting a
 
 ```typescript
 // A specific date:
-getNumericDate(new Date("2025-07-01"));
+const exp = getNumericDate(new Date("2025-07-01"));
 // One hour from now:
-getNumericDate(60 * 60);
+const nbf = getNumericDate(60 * 60);
 ```
 
 ## Claims
@@ -75,7 +75,7 @@ number containing a **NumericDate** value. This module checks if the current
 date/time is before the expiration date/time listed in the **exp** claim.
 
 ```typescript
-const jwt = await create(header, { exp: getNumericDate(60 * 60) }, "secret");
+const jwt = await create(header, { exp: getNumericDate(60 * 60) }, key);
 ```
 
 ### Not Before (nbf)
