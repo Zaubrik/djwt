@@ -91,7 +91,9 @@ export function decode(
   }
 }
 
-export function validate([header, payload, signature]: [any, any, any]): {
+export function validate(
+  [header, payload, signature]: [any, any, Uint8Array],
+): {
   header: Header;
   payload: Payload;
   signature: Uint8Array;

@@ -394,26 +394,18 @@ Deno.test({
         [
           { alg: "HS256", typ: "JWT" },
           { exp: 1111111111111111111111111111 },
-          "",
+          new Uint8Array(),
         ],
       ),
       {
         header: { alg: "HS256", typ: "JWT" },
         payload: { exp: 1111111111111111111111111111 },
-        signature: "",
+        signature: new Uint8Array(),
       },
     );
     assertThrows(
       () => {
-        validate([, , null]);
-      },
-      Error,
-      "The header 'alg' parameter of the jwt must be a string.",
-    );
-
-    assertThrows(
-      () => {
-        validate([null, {}, ""]);
+        validate([, , new Uint8Array()]);
       },
       Error,
       "The header 'alg' parameter of the jwt must be a string.",
@@ -421,7 +413,15 @@ Deno.test({
 
     assertThrows(
       () => {
-        validate([{ alg: "HS256", typ: "JWT" }, [], ""]);
+        validate([null, {}, new Uint8Array()]);
+      },
+      Error,
+      "The header 'alg' parameter of the jwt must be a string.",
+    );
+
+    assertThrows(
+      () => {
+        validate([{ alg: "HS256", typ: "JWT" }, [], new Uint8Array()]);
       },
       Error,
       "The jwt claims set is not a JSON object.",
@@ -429,7 +429,7 @@ Deno.test({
 
     assertThrows(
       () => {
-        validate([{ alg: "HS256" }, { exp: "" }, ""]);
+        validate([{ alg: "HS256" }, { exp: "" }, new Uint8Array()]);
       },
       Error,
       "The jwt has an invalid 'exp' or 'nbf' claim.",
@@ -437,7 +437,7 @@ Deno.test({
 
     assertThrows(
       () => {
-        validate([{ alg: "HS256" }, { exp: 1 }, ""]);
+        validate([{ alg: "HS256" }, { exp: 1 }, new Uint8Array()]);
       },
       Error,
       "The jwt is expired.",
@@ -445,7 +445,11 @@ Deno.test({
 
     assertThrows(
       () => {
-        validate([{ alg: "HS256" }, { nbf: 1111111111111111111111111111 }, ""]);
+        validate([
+          { alg: "HS256" },
+          { nbf: 1111111111111111111111111111 },
+          new Uint8Array(),
+        ]);
       },
       Error,
       "The jwt is used too early.",
