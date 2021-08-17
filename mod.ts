@@ -177,10 +177,16 @@ export async function create(
   payload: Payload,
   key: CryptoKey | null,
 ): Promise<string> {
-  const signingInput = createSigningInput(header, payload);
-  const signature = await createSignature(header.alg, key, signingInput);
+  if (verifyAlgorithm(header.alg, key)) {
+    const signingInput = createSigningInput(header, payload);
+    const signature = await createSignature(header.alg, key, signingInput);
 
-  return `${signingInput}.${signature}`;
+    return `${signingInput}.${signature}`;
+  } else {
+    throw new Error(
+      `The jwt's alg '${header.alg}' does not match the key's algorithm.`,
+    );
+  }
 }
 
 /*

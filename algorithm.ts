@@ -31,7 +31,8 @@ export function verify(
     const algorithm = getAlgorithm(alg);
     if (key.algorithm.name === algorithm.name) {
       if (
-        // Deno's type CryptoKey is still buggy, therefore type assertions. Will be fixed soon!
+        // Deno's type CryptoKey is still buggy, therefore type assertions.
+        // They will fix CryptoKey with the next release!
         (key.algorithm as { hash?: { name: string } }).hash?.name &&
         (key.algorithm as { hash?: { name: string } }).hash?.name ===
           algorithm.hash.name
@@ -46,7 +47,7 @@ export function verify(
       }
     }
   }
-  throw Error(`The key algorithm does not match with alg '${alg}'.`);
+  return false;
 }
 
 export function getAlgorithm(alg: Algorithm) {

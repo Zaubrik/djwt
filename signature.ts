@@ -1,7 +1,8 @@
-import type { Algorithm } from "./algorithm.ts";
 import { getAlgorithm } from "./algorithm.ts";
 import { base64url } from "./deps.ts";
 import { encoder } from "./mod.ts";
+
+import type { Algorithm } from "./algorithm.ts";
 
 export async function verify(
   signature: Uint8Array,

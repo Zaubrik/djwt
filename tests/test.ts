@@ -168,6 +168,13 @@ Deno.test({
       await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, keyHS512),
       "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ",
     );
+    await assertThrowsAsync(
+      async () => {
+        await create(header, payload, keyHS512);
+      },
+      Error,
+      "The jwt's alg 'HS256' does not match the key's algorithm.",
+    );
   },
 });
 
@@ -235,8 +242,8 @@ Deno.test({
             // @ts-ignore */
             nbf: "invalid",
             exp: 100000000000000000000,
-          }, keyHS512),
-          keyHS512,
+          }, keyHS256),
+          keyHS256,
         );
       },
       Error,
@@ -511,9 +518,9 @@ Deno.test({
           await create(
             header,
             { exp: 0 },
-            keyHS512,
+            keyHS256,
           ),
-          keyHS512,
+          keyHS256,
         );
       },
       Error,
@@ -585,6 +592,34 @@ Deno.test({
       null,
     );
     assertEquals(validatedPayload, payload);
+    await assertThrowsAsync(
+      async () => {
+        await create(header, payload, keyHS256);
+      },
+      Error,
+      "The alg 'none' does not allow a key.",
+    );
+    await assertThrowsAsync(
+      async () => {
+        await create({ alg: "HS256" }, payload, null);
+      },
+      Error,
+      "The alg 'HS256' demands a key.",
+    );
+    await assertThrowsAsync(
+      async () => {
+        await verify(await create(header, payload, null), keyHS256);
+      },
+      Error,
+      "The alg 'none' does not allow a key.",
+    );
+    await assertThrowsAsync(
+      async () => {
+        await verify(await create({ alg: "HS256" }, payload, keyHS256), null);
+      },
+      Error,
+      "The alg 'HS256' demands a key.",
+    );
   },
 });
 
@@ -607,7 +642,7 @@ Deno.test({
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.XbPfbIHMI6arZ3Y922BhjWgQzWXcXNrz0ogtVhfEd2o",
     );
     assertEquals(validatedPayload, payload);
-    assertThrowsAsync(
+    await assertThrowsAsync(
       async () => {
         const invalidJwt = // jwt with not supported crypto algorithm in alg header:
           "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.bQTnz6AuMJvmXXQsVPrxeQNvzDkimo7VNXxHeSBfClLufmCVZRUuyTwJF311JHuh";
@@ -617,9 +652,9 @@ Deno.test({
         );
       },
       Error,
-      `The key algorithm does not match with alg 'HS384'.`,
+      `The jwt's alg 'HS384' does not match the key's algorithm.`,
     );
-    assertThrowsAsync(
+    await assertThrowsAsync(
       async () => {
         const jwtWithInvalidSignature =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.XbPfbIHMI6arZ3Y922BhjWgQzcXNrz0ogthfEd2o";
@@ -677,7 +712,7 @@ Deno.test("[jwt] RS256 algorithm", async function (): Promise<void> {
     keyRS256.publicKey,
   );
   assertEquals(receivedPayload, payload);
-  assertThrowsAsync(
+  await assertThrowsAsync(
     async () => {
       await verify(
         jwt,
@@ -685,9 +720,9 @@ Deno.test("[jwt] RS256 algorithm", async function (): Promise<void> {
       );
     },
     Error,
-    `The key algorithm does not match with alg 'RS256'.`,
+    `The jwt's alg 'RS256' does not match the key's algorithm.`,
   );
-  assertThrowsAsync(
+  await assertThrowsAsync(
     async () => {
       await verify(
         jwt,
@@ -695,7 +730,7 @@ Deno.test("[jwt] RS256 algorithm", async function (): Promise<void> {
       );
     },
     Error,
-    `The key algorithm does not match with alg 'RS256'.`,
+    `The jwt's alg 'RS256' does not match the key's algorithm.`,
   );
 });
 
