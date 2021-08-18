@@ -46,8 +46,8 @@ export function verify(
         // return true;
       }
     }
+    return false;
   }
-  return false;
 }
 
 export function getAlgorithm(alg: Algorithm) {

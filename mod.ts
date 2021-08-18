@@ -75,19 +75,15 @@ export function decode(
     const arr = jwt
       .split(".")
       .map(base64url.decode)
-      .map((uint8Array, index) => {
-        switch (index) {
-          case 0:
-          case 1:
-            return JSON.parse(decoder.decode(uint8Array));
-          case 2:
-            return uint8Array;
-        }
-      });
+      .map((uint8Array, index) =>
+        index === 0 || index === 1
+          ? JSON.parse(decoder.decode(uint8Array))
+          : uint8Array
+      );
     if (is3Tuple(arr)) return arr;
     else throw new Error();
   } catch {
-    throw TypeError("The serialization of the jwt is invalid.");
+    throw Error("The serialization of the jwt is invalid.");
   }
 }
 
@@ -99,7 +95,7 @@ export function validate(
   signature: Uint8Array;
 } {
   if (typeof header?.alg !== "string") {
-    throw new Error(`The header 'alg' parameter of the jwt must be a string.`);
+    throw new Error(`The jwt's alg header parameter value must be a string.`);
   }
 
   /*

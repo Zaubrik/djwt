@@ -333,7 +333,7 @@ Deno.test({
       () => {
         decode("aaa");
       },
-      TypeError,
+      Error,
       "The serialization of the jwt is invalid.",
     );
 
@@ -341,7 +341,7 @@ Deno.test({
       () => {
         decode("a");
       },
-      TypeError,
+      Error,
       "The serialization of the jwt is invalid.",
     );
 
@@ -350,7 +350,7 @@ Deno.test({
         // "ImEi" === base64url("a")
         decode("ImEi.ImEi.ImEi.ImEi");
       },
-      TypeError,
+      Error,
       "The serialization of the jwt is invalid.",
     );
 
@@ -413,7 +413,7 @@ Deno.test({
         validate([, , new Uint8Array()]);
       },
       Error,
-      "The header 'alg' parameter of the jwt must be a string.",
+      "The jwt's alg header parameter value must be a string.",
     );
 
     assertThrows(
@@ -421,7 +421,7 @@ Deno.test({
         validate([null, {}, new Uint8Array()]);
       },
       Error,
-      "The header 'alg' parameter of the jwt must be a string.",
+      "The jwt's alg header parameter value must be a string.",
     );
 
     assertThrows(
