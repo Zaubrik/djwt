@@ -97,6 +97,9 @@ The following signature and MAC algorithms have been implemented:
 - PS256 (RSASSA-PSS SHA-256)
 - PS384 (RSASSA-PSS SHA-384)
 - PS512 (RSASSA-PSS SHA-512)
+- ES256 (ECDSA using P-256 and SHA-256)
+- ES384 (ECDSA using P-384 and SHA-384)
+- ES512 (ECDSA using P-521 and SHA-512)
 - none ([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).
 
 ## Serialization
