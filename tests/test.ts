@@ -131,10 +131,11 @@ const keyES384 = await window.crypto.subtle.generateKey(
   ["sign", "verify"],
 );
 
+// Not supported yet:
 // const keyES512 = await window.crypto.subtle.generateKey(
 // {
 // name: "ECDSA",
-// namedCurve: "P-512",
+// namedCurve: "P-521",
 // },
 // true,
 // ["sign", "verify"],
@@ -811,21 +812,37 @@ Deno.test("[jwt] PS512 algorithm", async function (): Promise<void> {
   assertEquals(receivedPayload, payload);
 });
 
-// Deno.test("[jwt] ES256 algorithm", async function (): Promise<void> {
-// const header = { alg: "ES256" as const, typ: "JWT" };
-// const payload = {
-// sub: "1234567890",
-// name: "John Doe",
-// admin: true,
-// iat: 1516239022,
-// };
-// const jwt = await create(header, payload, keyES256.privateKey);
-// const receivedPayload = await verify(
-// jwt,
-// keyES256.publicKey,
-// );
-// assertEquals(receivedPayload, payload);
-// });
+Deno.test("[jwt] ES256 algorithm", async function (): Promise<void> {
+  const header = { alg: "ES256" as const, typ: "JWT" };
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    admin: true,
+    iat: 1516239022,
+  };
+  const jwt = await create(header, payload, keyES256.privateKey);
+  const receivedPayload = await verify(
+    jwt,
+    keyES256.publicKey,
+  );
+  assertEquals(receivedPayload, payload);
+});
+
+Deno.test("[jwt] ES384 algorithm", async function (): Promise<void> {
+  const header = { alg: "ES384" as const, typ: "JWT" };
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    admin: true,
+    iat: 1516239022,
+  };
+  const jwt = await create(header, payload, keyES384.privateKey);
+  const receivedPayload = await verify(
+    jwt,
+    keyES384.publicKey,
+  );
+  assertEquals(receivedPayload, payload);
+});
 
 Deno.test("[jwt] getNumericDate", function (): void {
   // A specific date:

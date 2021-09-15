@@ -13,44 +13,49 @@ export type Algorithm =
   | "RS256"
   | "RS384"
   | "RS512"
-  // The algorithm ECDSA will be implemented by Deno in version 1.14.0
-  // | "ES256"
-  // | "ES384"
+  | "ES256"
+  | "ES384"
+  // Not supported yet:
   // | "ES512"
   | "none";
+
+function isHashedKeyAlgorithm(
+  algorithm: any,
+): algorithm is HmacKeyAlgorithm | RsaHashedKeyAlgorithm {
+  return typeof algorithm.hash?.name === "string";
+}
+
+function isEcKeyAlgorithm(
+  algorithm: any,
+): algorithm is EcKeyAlgorithm {
+  return typeof algorithm.namedCurve === "string";
+}
 
 export function verify(
   alg: Algorithm,
   key: CryptoKey | null,
 ): boolean {
   if (alg === "none") {
-    if (key) throw new Error(`The alg '${alg}' does not allow a key.`);
+    if (key !== null) throw new Error(`The alg '${alg}' does not allow a key.`);
     else return true;
   } else {
     if (!key) throw new Error(`The alg '${alg}' demands a key.`);
-    const algorithm = getAlgorithm(alg);
-    if (key.algorithm.name === algorithm.name) {
-      if (
-        // Deno's type CryptoKey is still buggy, therefore type assertions.
-        // They will fix CryptoKey with the next release!
-        (key.algorithm as { hash?: { name: string } }).hash?.name &&
-        (key.algorithm as { hash?: { name: string } }).hash?.name ===
-          algorithm.hash.name
-      ) {
-        return true;
-        // } else if (
-        // (key.algorithm as { namedCurve?: string }).namedCurve &&
-        // (key.algorithm as { namedCurve?: string }).namedCurve ===
-        // algorithm.namedCurve
-        // ) {
-        // return true;
+    const keyAlgorithm = key.algorithm;
+    const algAlgorithm = getAlgorithm(alg);
+    if (keyAlgorithm.name === algAlgorithm.name) {
+      if (isHashedKeyAlgorithm(keyAlgorithm)) {
+        return keyAlgorithm.hash.name === algAlgorithm.hash.name;
+      } else if (isEcKeyAlgorithm(keyAlgorithm)) {
+        return keyAlgorithm.namedCurve === algAlgorithm.namedCurve;
       }
     }
     return false;
   }
 }
 
-export function getAlgorithm(alg: Algorithm) {
+export function getAlgorithm(
+  alg: Algorithm,
+) {
   switch (alg) {
     case "HS256":
       return { hash: { name: "SHA-256" }, name: "HMAC" };
@@ -82,10 +87,10 @@ export function getAlgorithm(alg: Algorithm) {
       return { hash: { name: "SHA-384" }, name: "RSASSA-PKCS1-v1_5" };
     case "RS512":
       return { hash: { name: "SHA-512" }, name: "RSASSA-PKCS1-v1_5" };
-    // case "ES256":
-    // return { hash: { name: "SHA-256" }, name: "ECDSA", namedCurve: "P-256" };
-    // case "ES384":
-    // return { hash: { name: "SHA-384" }, name: "ECDSA", namedCurve: "P-384" };
+    case "ES256":
+      return { hash: { name: "SHA-256" }, name: "ECDSA", namedCurve: "P-256" };
+    case "ES384":
+      return { hash: { name: "SHA-384" }, name: "ECDSA", namedCurve: "P-384" };
     // case "ES512":
     // return { hash: { name: "SHA-512" }, name: "ECDSA", namedCurve: "P-521" };
     default:
