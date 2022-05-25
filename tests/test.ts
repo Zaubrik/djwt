@@ -131,7 +131,7 @@ const keyES384 = await window.crypto.subtle.generateKey(
   ["sign", "verify"],
 );
 
-// Not supported yet:
+// P-521 is not yet supported.
 // const keyES512 = await window.crypto.subtle.generateKey(
 // {
 // name: "ECDSA",
@@ -852,6 +852,22 @@ Deno.test("[jwt] ES384 algorithm", async function (): Promise<void> {
   );
   assertEquals(receivedPayload, payload);
 });
+
+// Deno.test("[jwt] ES512 algorithm", async function (): Promise<void> {
+// const header = { alg: "ES512" as const, typ: "JWT" };
+// const payload = {
+// sub: "1234567890",
+// name: "John Doe",
+// admin: true,
+// iat: 1516239022,
+// };
+// const jwt = await create(header, payload, keyES512.privateKey);
+// const receivedPayload = await verify(
+// jwt,
+// keyES512.publicKey,
+// );
+// assertEquals(receivedPayload, payload);
+// });
 
 Deno.test("[jwt] getNumericDate", function (): void {
   // A specific date:

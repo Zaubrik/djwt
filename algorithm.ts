@@ -15,12 +15,14 @@ export type Algorithm =
   | "RS512"
   | "ES256"
   | "ES384"
-  // Not supported yet:
+  // P-521 is not yet supported.
+  // https://github.com/denoland/deno/blob/main/ext/crypto/00_crypto.js
   // | "ES512"
   | "none";
 
 function isHashedKeyAlgorithm(
-  // Still can't do better than that!
+  // Still can't do better than that! Does anybody have an idea?
+  // https://github.com/denoland/deno/blob/main/ext/crypto/lib.deno_crypto.d.ts
   algorithm: Record<string, any>,
 ): algorithm is HmacKeyAlgorithm | RsaHashedKeyAlgorithm {
   return typeof algorithm.hash?.name === "string";
