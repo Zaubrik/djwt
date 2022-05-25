@@ -1,6 +1,6 @@
 # djwt
 
-Create and verify JSON Web Tokens with deno.
+Create and verify JSON Web Tokens with Deno or the browser.
 
 ## API
 
@@ -29,8 +29,8 @@ const jwt = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, key);
 
 ### verify
 
-Takes `jwt` and `CryptoKey` and returns the `Payload` of the `jwt` if the `jwt`
-is valid. Otherwise it throws an `Error`.
+Takes `jwt`, `CryptoKey` and `VerifyOptions` and returns the `Payload` of the
+`jwt` if the `jwt` is valid. Otherwise it throws an `Error`.
 
 ```typescript
 import { verify } from "https://deno.land/x/djwt@$VERSION/mod.ts";
@@ -41,8 +41,8 @@ const payload = await verify(jwt, key); // { foo: "bar" }
 ### decode
 
 Takes a `jwt` and returns a 3-tuple
-`[header: unknown, payload: unknown, signature: Uint8Array]` if the `jwt` has a
-valid _serialization_. Otherwise it throws an `Error`. This function does
+`[header: JsonValue, payload: JsonValue, signature: Uint8Array]` if the `jwt`
+has a valid _serialization_. Otherwise it throws an `Error`. This function does
 **not** verify the digital signature.
 
 ```typescript
@@ -117,5 +117,5 @@ This application uses the JWS Compact Serialization only.
 Every kind of contribution to this project is highly appreciated. Please run
 `deno fmt` on the changed files before making a pull request.
 
-Big **Thank you** to [timreichen](https://github.com/timreichen) and all the
+A big **Thank You** to [timreichen](https://github.com/timreichen) and all the
 other amazing contributors.
