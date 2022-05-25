@@ -411,7 +411,7 @@ Deno.test({
     );
     assertThrows(
       () => {
-        validate([, , new Uint8Array()]);
+        validate([undefined as any, undefined as any, new Uint8Array()]);
       },
       Error,
       "The jwt's alg header parameter value must be a string.",

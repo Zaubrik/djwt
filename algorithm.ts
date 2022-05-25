@@ -20,21 +20,19 @@ export type Algorithm =
   | "none";
 
 function isHashedKeyAlgorithm(
-  algorithm: any,
+  // Still can't do better than that!
+  algorithm: Record<string, any>,
 ): algorithm is HmacKeyAlgorithm | RsaHashedKeyAlgorithm {
   return typeof algorithm.hash?.name === "string";
 }
 
 function isEcKeyAlgorithm(
-  algorithm: any,
+  algorithm: Record<string, any>,
 ): algorithm is EcKeyAlgorithm {
   return typeof algorithm.namedCurve === "string";
 }
 
-export function verify(
-  alg: Algorithm,
-  key: CryptoKey | null,
-): boolean {
+export function verify(alg: Algorithm, key: CryptoKey | null): boolean {
   if (alg === "none") {
     if (key !== null) throw new Error(`The alg '${alg}' does not allow a key.`);
     else return true;
@@ -53,9 +51,7 @@ export function verify(
   }
 }
 
-export function getAlgorithm(
-  alg: Algorithm,
-) {
+export function getAlgorithm(alg: Algorithm) {
   switch (alg) {
     case "HS256":
       return { hash: { name: "SHA-256" }, name: "HMAC" };
