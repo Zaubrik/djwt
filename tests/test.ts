@@ -195,6 +195,15 @@ Deno.test({
       {},
     );
 
+    await assertEquals(
+      await verify(
+        await create({ alg: "HS512", typ: "JWT" }, {}, keyHS512),
+        keyHS512,
+        { expLeeway: 10 },
+      ),
+      {},
+    );
+
     await assertThrowsAsync(
       async () => {
         await verify(
@@ -414,7 +423,7 @@ Deno.test({
         validate([undefined as any, undefined as any, new Uint8Array()]);
       },
       Error,
-      "The jwt's alg header parameter value must be a string.",
+      "The jwt's 'alg' header parameter value must be a string.",
     );
 
     assertThrows(
@@ -422,7 +431,7 @@ Deno.test({
         validate([null, {}, new Uint8Array()]);
       },
       Error,
-      "The jwt's alg header parameter value must be a string.",
+      "The jwt's 'alg' header parameter value must be a string.",
     );
 
     assertThrows(

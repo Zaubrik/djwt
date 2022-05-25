@@ -14,6 +14,7 @@ type JsonArray = JsonValue[];
 type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 
 type Decoded = [header: JsonValue, payload: JsonValue, signature: Uint8Array];
+type VerifyOptions = { expLeeway?: number; nbfLeeway?: number };
 
 /** JWT §1: JWTs encode claims to be transmitted as a JSON [RFC7159] object [...]. */
 export interface Payload {
@@ -37,11 +38,11 @@ export const decoder = new TextDecoder();
  * JWT §4.1.4: Implementers MAY provide for some small leeway to account for
  * clock skew.
  */
-function isExpired(exp: number, leeway = 0): boolean {
+function isExpired(exp: number, leeway: number): boolean {
   return exp + leeway < Date.now() / 1000;
 }
 
-function isTooEarly(nbf: number, leeway = 0): boolean {
+function isTooEarly(nbf: number, leeway: number): boolean {
   return nbf - leeway > Date.now() / 1000;
 }
 
@@ -82,7 +83,10 @@ export function decode(jwt: string): Decoded {
   }
 }
 
-export function validate([header, payload, signature]: Decoded): {
+export function validate(
+  [header, payload, signature]: Decoded,
+  { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
+): {
   header: Header;
   payload: Payload;
   signature: Uint8Array;
@@ -98,11 +102,17 @@ export function validate([header, payload, signature]: Decoded): {
         throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
       }
 
-      if (typeof payload.exp === "number" && isExpired(payload.exp, 1)) {
+      if (
+        typeof payload.exp === "number" &&
+        isExpired(payload.exp, expLeeway)
+      ) {
         throw RangeError("The jwt is expired.");
       }
 
-      if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, 1)) {
+      if (
+        typeof payload.nbf === "number" &&
+        isTooEarly(payload.nbf, nbfLeeway)
+      ) {
         throw RangeError("The jwt is used too early.");
       }
 
@@ -122,8 +132,9 @@ export function validate([header, payload, signature]: Decoded): {
 export async function verify(
   jwt: string,
   key: CryptoKey | null,
+  options?: VerifyOptions,
 ): Promise<Payload> {
-  const { header, payload, signature } = validate(decode(jwt));
+  const { header, payload, signature } = validate(decode(jwt), options);
   if (verifyAlgorithm(header.alg, key)) {
     if (
       !(await verifySignature(
