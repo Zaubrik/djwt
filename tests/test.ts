@@ -10,8 +10,8 @@ import {
 
 import {
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
   decodeHex,
 } from "./test_deps.ts";
 
@@ -167,7 +167,7 @@ Deno.test({
       await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, keyHS512),
       "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.WePl7achkd0oGNB8XRF_LJwxlyiPZqpdNgdKpDboAjSTsWq-aOGNynTp8TOv8KjonFym8vwFwppXOLoLXbkIaQ",
     );
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await create(header, payload, keyHS512);
       },
@@ -204,7 +204,7 @@ Deno.test({
       {},
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiSm9obiBEb2UifQ.xuEv8qrfXu424LZk8bVgr9MQJUIrp1rHcPyZw_KSsd",
@@ -215,7 +215,7 @@ Deno.test({
       "The jwt's signature does not match the verification signature.",
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         // payload = { "exp": false }
         await verify(
@@ -227,7 +227,7 @@ Deno.test({
       "The jwt has an invalid 'exp' or 'nbf' claim.",
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify("", keyHS512);
       },
@@ -235,7 +235,7 @@ Deno.test({
       "The serialization of the jwt is invalid.",
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify("invalid", keyHS512);
       },
@@ -243,7 +243,7 @@ Deno.test({
       "The serialization of the jwt is invalid.",
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           await create(header, {
@@ -258,7 +258,7 @@ Deno.test({
       "The jwt has an invalid 'exp' or 'nbf' claim",
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..F6X5eXaBMszYO1kMrujBGGw4-FTJp2Uld6Daz9v3cu4",
@@ -268,7 +268,7 @@ Deno.test({
       Error,
       "The serialization of the jwt is invalid.",
     );
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.YWJj.uE63kRv-19VnJUBL4OUKaxULtqZ27cJwl8V9IXjJaHg",
@@ -279,7 +279,7 @@ Deno.test({
       "The serialization of the jwt is invalid.",
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.bnVsbA.tv7DbhvALc5Eq2sC61Y9IZlG2G15hvJoug9UO6iwmE_UZOLva8EC-9PURg7IIj6f-F9jFWix8vCn9WaAMHR1AA",
@@ -290,7 +290,7 @@ Deno.test({
       "The jwt claims set is not a JSON object",
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.dHJ1ZQ.Wmj2Jb9m6FQaZ0rd4AHNR2u9THED_m-aPfGx1w5mtKalrx7NWFS98ZblUNm_Szeugg9CUzhzBfPDyPUA2LTTkA",
@@ -300,7 +300,7 @@ Deno.test({
       Error,
       "The jwt claims set is not a JSON object",
     );
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.W10.BqmZ-tVI9a-HDx6PpMiBdMq6lzcaqO9sW6pImw-NRajCCmRrVi6IgMhEw7lvOG6sxhteceVMl8_xFRGverJJWw",
@@ -310,7 +310,7 @@ Deno.test({
       Error,
       "The jwt claims set is not a JSON object",
     );
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.WyJhIiwxLHRydWVd.eVsshnlupuoVv9S5Q7VOj2BkLyZmOSC27fCoXwyq_MG8B95P2GkLDkL8Fo0Su7qoh1G0BxYjVRHgVppTgpuZRw",
@@ -520,7 +520,7 @@ Deno.test({
       dummy: 100,
     };
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           await create(
@@ -535,7 +535,7 @@ Deno.test({
       "The jwt is expired.",
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           await create(header, payload, keyHS256),
@@ -567,7 +567,7 @@ Deno.test({
       ),
       { ...payload, nbf: lateNbf },
     );
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(
           await create(header, { ...payload, nbf: earlyNbf }, keyHS256),
@@ -600,28 +600,28 @@ Deno.test({
       null,
     );
     assertEquals(validatedPayload, payload);
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await create(header, payload, keyHS256);
       },
       Error,
       "The alg 'none' does not allow a key.",
     );
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await create({ alg: "HS256" }, payload, null);
       },
       Error,
       "The alg 'HS256' demands a key.",
     );
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(await create(header, payload, null), keyHS256);
       },
       Error,
       "The alg 'none' does not allow a key.",
     );
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await verify(await create({ alg: "HS256" }, payload, keyHS256), null);
       },
@@ -650,7 +650,7 @@ Deno.test({
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.XbPfbIHMI6arZ3Y922BhjWgQzWXcXNrz0ogtVhfEd2o",
     );
     assertEquals(validatedPayload, payload);
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         const invalidJwt = // jwt with not supported crypto algorithm in alg header:
           "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.bQTnz6AuMJvmXXQsVPrxeQNvzDkimo7VNXxHeSBfClLufmCVZRUuyTwJF311JHuh";
@@ -662,7 +662,7 @@ Deno.test({
       Error,
       `The jwt's alg 'HS384' does not match the key's algorithm.`,
     );
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         const jwtWithInvalidSignature =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.XbPfbIHMI6arZ3Y922BhjWgQzcXNrz0ogthfEd2o";
@@ -720,7 +720,7 @@ Deno.test("[jwt] RS256 algorithm", async function (): Promise<void> {
     keyRS256.publicKey,
   );
   assertEquals(receivedPayload, payload);
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await verify(
         jwt,
@@ -730,7 +730,7 @@ Deno.test("[jwt] RS256 algorithm", async function (): Promise<void> {
     Error,
     `The jwt's alg 'RS256' does not match the key's algorithm.`,
   );
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await verify(
         jwt,

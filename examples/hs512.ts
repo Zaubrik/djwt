@@ -17,13 +17,18 @@ const header: Header = {
   typ: "JWT",
 };
 
-console.log("server is listening at 0.0.0.0:8000");
-for await (const req of serve("0.0.0.0:8000")) {
-  if (req.method === "GET") {
-    req.respond({ body: (await create(header, payload, key)) + "\n" });
+async function handleRequest(request: Request) {
+  if (request.method === "GET") {
+    return new Response(await create(header, payload, key) + "\n");
   } else {
-    const jwt = new TextDecoder().decode(await Deno.readAll(req.body));
-    await verify(jwt, key).then(() => req.respond({ body: "Valid JWT\n" }))
-      .catch(() => req.respond({ body: "Invalid JWT\n", status: 401 }));
+    try {
+      const jwt = await request.text();
+      const payload = await verify(jwt, key);
+      return Response.json(payload);
+    } catch {
+      return new Response("Invalid JWT\n", { status: 401 });
+    }
   }
 }
+
+await serve(handleRequest);
