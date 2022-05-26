@@ -13,7 +13,11 @@ type JsonObject = { [key: string]: JsonValue };
 type JsonArray = JsonValue[];
 type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 
-type Decoded = [header: JsonValue, payload: JsonValue, signature: Uint8Array];
+type DecodeReturnType = [
+  header: JsonValue,
+  payload: JsonValue,
+  signature: Uint8Array,
+];
 type VerifyOptions = { expLeeway?: number; nbfLeeway?: number };
 
 /** JWT §1: JWTs encode claims to be transmitted as a JSON [RFC7159] object [...]. */
@@ -52,7 +56,7 @@ function isObject(obj: unknown): obj is Record<string, unknown> {
   );
 }
 
-function is3Tuple(arr: unknown[]): arr is [unknown, unknown, Uint8Array] {
+function is3Tuple(arr: unknown[]): arr is DecodeReturnType {
   return arr.length === 3;
 }
 
@@ -66,7 +70,7 @@ function isHeader(headerMaybe: unknown): headerMaybe is Header {
   return isObject(headerMaybe) && typeof headerMaybe.alg === "string";
 }
 
-export function decode(jwt: string): Decoded {
+export function decode(jwt: string): DecodeReturnType {
   try {
     const arr = jwt
       .split(".")
@@ -76,7 +80,7 @@ export function decode(jwt: string): Decoded {
           ? JSON.parse(decoder.decode(uint8Array))
           : uint8Array
       );
-    if (is3Tuple(arr)) return arr as Decoded;
+    if (is3Tuple(arr)) return arr;
     else throw new Error();
   } catch {
     throw Error("The serialization of the jwt is invalid.");
@@ -84,7 +88,7 @@ export function decode(jwt: string): Decoded {
 }
 
 export function validate(
-  [header, payload, signature]: Decoded,
+  [header, payload, signature]: DecodeReturnType,
   { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
 ): {
   header: Header;

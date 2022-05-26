@@ -21,7 +21,7 @@ export type Algorithm =
   | "none";
 
 function isHashedKeyAlgorithm(
-  // Still can't do better than that! Does anybody have an idea?
+  // Still can't do better than that! Does anyone have an idea?
   // https://github.com/denoland/deno/blob/main/ext/crypto/lib.deno_crypto.d.ts
   algorithm: Record<string, any>,
 ): algorithm is HmacKeyAlgorithm | RsaHashedKeyAlgorithm {
