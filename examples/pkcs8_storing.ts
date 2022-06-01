@@ -1,4 +1,4 @@
-import { base64 } from "./example_deps.ts";
+import { base64 } from "./deps.ts";
 
 /*
   Import a PEM encoded RSA private key, to use for RSA-PSS signing.

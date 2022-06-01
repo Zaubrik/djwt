@@ -1,9 +1,10 @@
 export {
   assertEquals,
+  // assertThrowsAsync,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
-} from "https://deno.land/std@0.105.0/testing/asserts.ts";
+} from "https://deno.land/std@0.140.0/testing/asserts.ts";
 
 export {
   decode as decodeHex,
-} from "https://deno.land/std@0.105.0/encoding/hex.ts";
+} from "https://deno.land/std@0.140.0/encoding/hex.ts";

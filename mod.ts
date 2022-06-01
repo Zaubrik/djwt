@@ -7,24 +7,22 @@ import { verify as verifyAlgorithm } from "./algorithm.ts";
 
 import type { Algorithm } from "./algorithm.ts";
 
-/*
- * JWT §4.1: The following Claim Names are registered in the IANA
- * "JSON Web Token Claims" registry established by Section 10.1. None of the
- * claims defined below are intended to be mandatory to use or implement in all
- * cases, but rather they provide a starting point for a set of useful,
- * interoperable claims.
- * Applications using JWTs should define which specific claims they use and when
- * they are required or optional.
- */
+// https://github.com/microsoft/TypeScript/issues/1897
+type JsonPrimitive = string | number | boolean | null;
+type JsonObject = { [key: string]: JsonValue };
+type JsonArray = JsonValue[];
+type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+
+type DecodeReturnType = [
+  header: JsonValue,
+  payload: JsonValue,
+  signature: Uint8Array,
+];
+type VerifyOptions = { expLeeway?: number; nbfLeeway?: number };
+
+/** JWT §1: JWTs encode claims to be transmitted as a JSON [RFC7159] object [...]. */
 export interface Payload {
-  iss?: string;
-  sub?: string;
-  aud?: string[] | string;
-  exp?: number;
-  nbf?: number;
-  iat?: number;
-  jti?: string;
-  [key: string]: unknown;
+  [key: string]: JsonValue;
 }
 
 /*
@@ -34,7 +32,7 @@ export interface Payload {
  */
 export interface Header {
   alg: Algorithm;
-  [key: string]: unknown;
+  [key: string]: JsonValue;
 }
 
 export const encoder = new TextEncoder();
@@ -44,11 +42,11 @@ export const decoder = new TextDecoder();
  * JWT §4.1.4: Implementers MAY provide for some small leeway to account for
  * clock skew.
  */
-function isExpired(exp: number, leeway = 0): boolean {
+function isExpired(exp: number, leeway: number): boolean {
   return exp + leeway < Date.now() / 1000;
 }
 
-function isTooEarly(nbf: number, leeway = 0): boolean {
+function isTooEarly(nbf: number, leeway: number): boolean {
   return nbf - leeway > Date.now() / 1000;
 }
 
@@ -58,7 +56,7 @@ function isObject(obj: unknown): obj is Record<string, unknown> {
   );
 }
 
-function is3Tuple(arr: any[]): arr is [unknown, unknown, Uint8Array] {
+function is3Tuple(arr: unknown[]): arr is DecodeReturnType {
   return arr.length === 3;
 }
 
@@ -68,9 +66,11 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
   );
 }
 
-export function decode(
-  jwt: string,
-): [header: unknown, payload: unknown, signature: Uint8Array] {
+function isHeader(headerMaybe: unknown): headerMaybe is Header {
+  return isObject(headerMaybe) && typeof headerMaybe.alg === "string";
+}
+
+export function decode(jwt: string): DecodeReturnType {
   try {
     const arr = jwt
       .split(".")
@@ -88,49 +88,57 @@ export function decode(
 }
 
 export function validate(
-  [header, payload, signature]: [any, any, Uint8Array],
+  [header, payload, signature]: DecodeReturnType,
+  { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
 ): {
   header: Header;
   payload: Payload;
   signature: Uint8Array;
 } {
-  if (typeof header?.alg !== "string") {
-    throw new Error(`The jwt's alg header parameter value must be a string.`);
-  }
-
-  /*
+  if (isHeader(header)) {
+    /*
    * JWT §7.2: Verify that the resulting octet sequence is a UTF-8-encoded
    * representation of a completely valid JSON object conforming to RFC 7159;
    * let the JWT Claims Set be this JSON object.
    */
-  if (isObject(payload)) {
-    if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
-      throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
-    }
+    if (isObject(payload)) {
+      if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
+        throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
+      }
 
-    if (typeof payload.exp === "number" && isExpired(payload.exp, 1)) {
-      throw RangeError("The jwt is expired.");
-    }
+      if (
+        typeof payload.exp === "number" &&
+        isExpired(payload.exp, expLeeway)
+      ) {
+        throw RangeError("The jwt is expired.");
+      }
 
-    if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, 1)) {
-      throw RangeError("The jwt is used too early.");
-    }
+      if (
+        typeof payload.nbf === "number" &&
+        isTooEarly(payload.nbf, nbfLeeway)
+      ) {
+        throw RangeError("The jwt is used too early.");
+      }
 
-    return {
-      header,
-      payload,
-      signature,
-    };
+      return {
+        header,
+        payload,
+        signature,
+      };
+    } else {
+      throw new Error(`The jwt claims set is not a JSON object.`);
+    }
   } else {
-    throw new Error(`The jwt claims set is not a JSON object.`);
+    throw new Error(`The jwt's 'alg' header parameter value must be a string.`);
   }
 }
 
 export async function verify(
   jwt: string,
   key: CryptoKey | null,
+  options?: VerifyOptions,
 ): Promise<Payload> {
-  const { header, payload, signature } = validate(decode(jwt));
+  const { header, payload, signature } = validate(decode(jwt), options);
   if (verifyAlgorithm(header.alg, key)) {
     if (
       !(await verifySignature(
