@@ -114,7 +114,7 @@ This application uses the JWS Compact Serialization only.
 
 ## Contribution
 
-We welcome and appreciate all contributions to `djwt`.
+We welcome and appreciate all contributions to djwt.
 
 A big **Thank You** to [timreichen](https://github.com/timreichen) and all the
 other amazing contributors.
