@@ -4,9 +4,9 @@ Create and verify JSON Web Tokens with Deno or the browser.
 
 ## API
 
-Please use the
-[Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey)'s
-method `generateKey` to generate a **secure** `CryptoKey`.
+Please use the native
+[Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/generateKey)to
+generate a **secure** `CryptoKey`.
 
 ```typescript
 const key = await crypto.subtle.generateKey(
