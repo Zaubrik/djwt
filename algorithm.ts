@@ -23,12 +23,14 @@ export type Algorithm =
 function isHashedKeyAlgorithm(
   // Still can't do better than that! Does anyone have an idea?
   // https://github.com/denoland/deno/blob/main/ext/crypto/lib.deno_crypto.d.ts
+  // deno-lint-ignore no-explicit-any
   algorithm: Record<string, any>,
 ): algorithm is HmacKeyAlgorithm | RsaHashedKeyAlgorithm {
   return typeof algorithm.hash?.name === "string";
 }
 
 function isEcKeyAlgorithm(
+  // deno-lint-ignore no-explicit-any
   algorithm: Record<string, any>,
 ): algorithm is EcKeyAlgorithm {
   return typeof algorithm.namedCurve === "string";

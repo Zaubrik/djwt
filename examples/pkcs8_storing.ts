@@ -43,7 +43,7 @@ const keyRS384CryptoKeyPair = await window.crypto.subtle.generateKey(
   ["verify", "sign"],
 );
 
-const { privateKey, publicKey } = keyRS384CryptoKeyPair;
+const { privateKey } = keyRS384CryptoKeyPair;
 
 const pemExported = await generatePemFromPrivateCryptoKey(privateKey);
 

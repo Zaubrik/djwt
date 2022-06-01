@@ -1,13 +1,40 @@
-name: test
+name: ci
+
 on:
   push:
-    branches: [master]
+    branches: [main]
+  pull_request:
+    branches: [main]
+
 jobs:
-  build:
-    runs-on: ubuntu-16.04
+  test:
+    name: test-${{ matrix.deno }}-${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        deno: [old, stable, canary]
+        os: [macOS-latest, windows-latest, ubuntu-latest]
+
     steps:
-      - uses: actions/checkout@master
-      - uses: denolib/setup-deno@master
-        with:
-          deno-version: x
-      - run: deno test -A
+      - name: Setup repo
+        uses: actions/checkout@v2
+
+      - name: Setup Deno
+        run: |
+          curl -fsSL https://deno.land/x/install/install.sh | sh ${{ matrix.deno == 'old' && '-s v1.21.1' || '' }}
+          echo "$HOME/.deno/bin" >> $${{ runner.os == 'Windows' && 'env:' || '' }}GITHUB_PATH
+      - name: Upgrade to Deno canary
+        if: matrix.deno == 'canary'
+        run: deno upgrade --canary
+
+      - name: Format
+        if: runner.os == 'Linux'
+        run: deno fmt --check
+
+      - name: Lint
+        if: runner.os == 'Linux'
+        run: deno lint --unstable
+
+      - name: Run Tests
+        run: deno test -A

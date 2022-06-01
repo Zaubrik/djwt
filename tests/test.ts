@@ -420,6 +420,7 @@ Deno.test({
     );
     assertThrows(
       () => {
+        // deno-lint-ignore no-explicit-any
         validate([undefined as any, undefined as any, new Uint8Array()]);
       },
       Error,
