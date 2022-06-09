@@ -87,7 +87,7 @@ export function decode(jwt: string): DecodeReturnType {
   }
 }
 
-function validate<P extends Payload>(
+export function validate<P extends Payload>(
   [header, payload, signature]: DecodeReturnType,
   { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
 ): {
