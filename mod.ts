@@ -50,7 +50,7 @@ function isTooEarly(nbf: number, leeway: number): boolean {
   return nbf - leeway > Date.now() / 1000;
 }
 
-function isObject(obj: unknown): obj is Record<string, unknown> {
+function isObject<O extends JsonObject>(obj: JsonValue): obj is O {
   return (
     obj !== null && typeof obj === "object" && Array.isArray(obj) === false
   );
@@ -66,7 +66,7 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
   );
 }
 
-function isHeader(headerMaybe: unknown): headerMaybe is Header {
+function isHeader(headerMaybe: JsonValue): headerMaybe is Header {
   return isObject(headerMaybe) && typeof headerMaybe.alg === "string";
 }
 
@@ -87,12 +87,12 @@ export function decode(jwt: string): DecodeReturnType {
   }
 }
 
-export function validate(
+export function validate<P extends Payload>(
   [header, payload, signature]: DecodeReturnType,
   { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
 ): {
   header: Header;
-  payload: Payload;
+  payload: P;
   signature: Uint8Array;
 } {
   if (isHeader(header)) {
@@ -101,7 +101,7 @@ export function validate(
    * representation of a completely valid JSON object conforming to RFC 7159;
    * let the JWT Claims Set be this JSON object.
    */
-    if (isObject(payload)) {
+    if (isObject<P>(payload)) {
       if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
         throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
       }
@@ -133,12 +133,12 @@ export function validate(
   }
 }
 
-export async function verify(
+export async function verify<P extends Payload>(
   jwt: string,
   key: CryptoKey | null,
   options?: VerifyOptions,
-): Promise<Payload> {
-  const { header, payload, signature } = validate(decode(jwt), options);
+): Promise<P> {
+  const { header, payload, signature } = validate<P>(decode(jwt), options);
   if (verifyAlgorithm(header.alg, key)) {
     if (
       !(await verifySignature(

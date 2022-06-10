@@ -141,6 +141,10 @@ const keyES384 = await window.crypto.subtle.generateKey(
 // ["sign", "verify"],
 // );
 
+function acceptString(s: string) {
+  return s;
+}
+
 Deno.test({
   name: "[jwt] create",
   fn: async function () {
@@ -202,6 +206,17 @@ Deno.test({
         { expLeeway: 10 },
       ),
       {},
+    );
+
+    await assertEquals(
+      acceptString(
+        (await verify<{ name: string }>(
+          await create({ alg: "HS512", typ: "JWT" }, payload, keyHS512),
+          keyHS512,
+          { expLeeway: 10 },
+        )).name,
+      ),
+      payload.name,
     );
 
     await assertRejects(
