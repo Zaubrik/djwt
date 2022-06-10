@@ -36,6 +36,8 @@ Takes `jwt`, `CryptoKey` and `VerifyOptions` and returns the `Payload` of the
 import { verify } from "https://deno.land/x/djwt@$VERSION/mod.ts";
 
 const payload = await verify(jwt, key); // { foo: "bar" }
+// Accepts an generic type argument optionally:
+const payload = await verify<{ foo: string }>(jwt, key); // { foo: "bar" }
 ```
 
 ### decode
