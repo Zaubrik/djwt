@@ -17,12 +17,11 @@ export type Algorithm =
   | "ES384"
   // P-521 is not yet supported.
   // https://github.com/denoland/deno/blob/main/ext/crypto/00_crypto.js
-  // | "ES512"
   | "none";
 
+// Still needs an 'any' type! Does anyone have an idea?
+// https://github.com/denoland/deno/blob/main/ext/crypto/lib.deno_crypto.d.ts
 function isHashedKeyAlgorithm(
-  // Still needs an 'any' type! Does anyone have an idea?
-  // https://github.com/denoland/deno/blob/main/ext/crypto/lib.deno_crypto.d.ts
   // deno-lint-ignore no-explicit-any
   algorithm: Record<string, any>,
 ): algorithm is HmacKeyAlgorithm | RsaHashedKeyAlgorithm {

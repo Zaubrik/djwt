@@ -141,10 +141,6 @@ const keyES384 = await window.crypto.subtle.generateKey(
 // ["sign", "verify"],
 // );
 
-function acceptString(s: string) {
-  return s;
-}
-
 Deno.test({
   name: "[jwt] create",
   fn: async function () {
@@ -209,14 +205,12 @@ Deno.test({
     );
 
     await assertEquals(
-      acceptString(
-        (await verify<{ name: string }>(
-          await create({ alg: "HS512", typ: "JWT" }, payload, keyHS512),
-          keyHS512,
-          { expLeeway: 10 },
-        )).name,
+      await verify(
+        await create({ alg: "HS512", typ: "JWT" }, {}, keyHS512),
+        keyHS512,
+        { nbfLeeway: 10 },
       ),
-      payload.name,
+      {},
     );
 
     await assertRejects(
@@ -435,8 +429,7 @@ Deno.test({
     );
     assertThrows(
       () => {
-        // deno-lint-ignore no-explicit-any
-        validate([undefined as any, undefined as any, new Uint8Array()]);
+        validate([, , new Uint8Array()]);
       },
       Error,
       "The jwt's 'alg' header parameter value must be a string.",
