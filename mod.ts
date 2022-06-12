@@ -7,38 +7,43 @@ import { verify as verifyAlgorithm } from "./algorithm.ts";
 
 import type { Algorithm } from "./algorithm.ts";
 
-// https://github.com/microsoft/TypeScript/issues/1897
-type JsonPrimitive = string | number | boolean | null;
-type JsonObject = { [key: string]: JsonValue };
-type JsonArray = JsonValue[];
-type JsonValue = JsonPrimitive | JsonObject | JsonArray;
-
-type DecodeReturnType = [
-  header: JsonValue,
-  payload: JsonValue,
-  signature: Uint8Array,
-];
-type VerifyOptions = { expLeeway?: number; nbfLeeway?: number };
-
-/** JWT §1: JWTs encode claims to be transmitted as a JSON [RFC7159] object [...]. */
+/**
+ * JWT §1: JWTs encode claims to be transmitted as a JSON [RFC7159] object [...].
+ * JWT §4.1: The following Claim Names are registered in the IANA
+ * "JSON Web Token Claims" registry established by Section 10.1. None of the
+ * claims defined below are intended to be mandatory to use or implement in all
+ * cases, but rather they provide a starting point for a set of useful,
+ * interoperable claims.
+ * Applications using JWTs should define which specific claims they use and when
+ * they are required or optional.
+ */
 export interface Payload {
-  [key: string]: JsonValue;
+  iss?: string;
+  sub?: string;
+  aud?: string[] | string;
+  exp?: number;
+  nbf?: number;
+  iat?: number;
+  jti?: string;
+  [key: string]: unknown;
 }
 
-/*
+/**
  * JWS §4.1.1: The "alg" value is a case-sensitive ASCII string containing a
  * StringOrURI value. This Header Parameter MUST be present and MUST be
  * understood and processed by implementations.
  */
 export interface Header {
   alg: Algorithm;
-  [key: string]: JsonValue;
+  [key: string]: unknown;
 }
+
+type VerifyOptions = { expLeeway?: number; nbfLeeway?: number };
 
 export const encoder = new TextEncoder();
 export const decoder = new TextDecoder();
 
-/*
+/**
  * JWT §4.1.4: Implementers MAY provide for some small leeway to account for
  * clock skew.
  */
@@ -50,13 +55,14 @@ function isTooEarly(nbf: number, leeway: number): boolean {
   return nbf - leeway > Date.now() / 1000;
 }
 
-function isObject<O extends JsonObject>(obj: JsonValue): obj is O {
+function isObject(obj: unknown): obj is Record<string, unknown> {
   return (
     obj !== null && typeof obj === "object" && Array.isArray(obj) === false
   );
 }
 
-function is3Tuple(arr: unknown[]): arr is DecodeReturnType {
+// deno-lint-ignore no-explicit-any
+function is3Tuple(arr: any[]): arr is [unknown, unknown, Uint8Array] {
   return arr.length === 3;
 }
 
@@ -66,11 +72,14 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
   );
 }
 
-function isHeader(headerMaybe: JsonValue): headerMaybe is Header {
-  return isObject(headerMaybe) && typeof headerMaybe.alg === "string";
-}
-
-export function decode(jwt: string): DecodeReturnType {
+/**
+ * Takes a `jwt` and returns a 3-tuple `[unknown, unknown, Uint8Array]` if the
+ * jwt has a valid _serialization_. Otherwise it throws an `Error`. This function
+ * does **not** verify the digital signature.
+ */
+export function decode(
+  jwt: string,
+): [header: unknown, payload: unknown, signature: Uint8Array] {
   try {
     const arr = jwt
       .split(".")
@@ -87,58 +96,58 @@ export function decode(jwt: string): DecodeReturnType {
   }
 }
 
-export function validate<P extends Payload>(
-  [header, payload, signature]: DecodeReturnType,
+/** It does **not** verify the digital signature. */
+export function validate(
+  // deno-lint-ignore no-explicit-any
+  [header, payload, signature]: [any, any, Uint8Array],
   { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
 ): {
   header: Header;
-  payload: P;
+  payload: Payload;
   signature: Uint8Array;
 } {
-  if (isHeader(header)) {
-    /*
+  if (typeof header?.alg !== "string") {
+    throw new Error(`The jwt's 'alg' header parameter value must be a string.`);
+  }
+
+  /*
    * JWT §7.2: Verify that the resulting octet sequence is a UTF-8-encoded
    * representation of a completely valid JSON object conforming to RFC 7159;
    * let the JWT Claims Set be this JSON object.
    */
-    if (isObject<P>(payload)) {
-      if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
-        throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
-      }
-
-      if (
-        typeof payload.exp === "number" &&
-        isExpired(payload.exp, expLeeway)
-      ) {
-        throw RangeError("The jwt is expired.");
-      }
-
-      if (
-        typeof payload.nbf === "number" &&
-        isTooEarly(payload.nbf, nbfLeeway)
-      ) {
-        throw RangeError("The jwt is used too early.");
-      }
-
-      return {
-        header,
-        payload,
-        signature,
-      };
-    } else {
-      throw new Error(`The jwt claims set is not a JSON object.`);
+  if (isObject(payload)) {
+    if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
+      throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
     }
+
+    if (typeof payload.exp === "number" && isExpired(payload.exp, expLeeway)) {
+      throw RangeError("The jwt is expired.");
+    }
+
+    if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, nbfLeeway)) {
+      throw RangeError("The jwt is used too early.");
+    }
+
+    return {
+      header,
+      payload,
+      signature,
+    };
   } else {
-    throw new Error(`The jwt's 'alg' header parameter value must be a string.`);
+    throw new Error(`The jwt claims set is not a JSON object.`);
   }
 }
 
-export async function verify<P extends Payload>(
+/**
+ * Takes jwt, `CryptoKey` and `VerifyOptions` and returns the `Payload` of the
+ * jwt if the jwt is valid. Otherwise it throws an `Error`.
+ */
+export async function verify(
   jwt: string,
   key: CryptoKey | null,
   options?: VerifyOptions,
-): Promise<P> {
-  const { header, payload, signature } = validate<P>(decode(jwt), options);
+): Promise<Payload> {
+  const { header, payload, signature } = validate(decode(jwt), options);
   if (verifyAlgorithm(header.alg, key)) {
     if (
       !(await verifySignature(
@@ -161,7 +170,7 @@ export async function verify<P extends Payload>(
   }
 }
 
-/*
+/**
  * JWT §3: JWTs represent a set of claims as a JSON object that is encoded in
  * a JWS and/or JWE structure. This JSON object is the JWT Claims Set.
  * JSW §7.1: The JWS Compact Serialization represents digitally signed or MACed
@@ -176,6 +185,10 @@ function createSigningInput(header: Header, payload: Payload): string {
   }`;
 }
 
+/**
+ * Takes `Header`, `Payload` and `CryptoKey` and returns the url-safe encoded
+ * jwt.
+ */
 export async function create(
   header: Header,
   payload: Payload,
@@ -193,9 +206,10 @@ export async function create(
   }
 }
 
-/*
- * Helper function: getNumericDate()
- * returns the number of seconds since January 1, 1970, 00:00:00 UTC
+/**
+ * This helper function simplifies setting a `NumericDate`. It takes either a
+ * `Date` object or a `number` (in seconds) and returns the `number` of seconds
+ * from 1970-01-01T00:00:00Z UTC until the specified UTC date/time.
  */
 export function getNumericDate(exp: number | Date): number {
   return Math.round(

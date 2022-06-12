@@ -36,15 +36,13 @@ Takes `jwt`, `CryptoKey` and `VerifyOptions` and returns the `Payload` of the
 import { verify } from "https://deno.land/x/djwt@$VERSION/mod.ts";
 
 const payload = await verify(jwt, key); // { foo: "bar" }
-// Accepts an optional type argument:
-const payload = await verify<{ foo: string }>(jwt, key); // { foo: "bar" }
 ```
 
 ### decode
 
 Takes a `jwt` and returns a 3-tuple
-`[header: JsonValue, payload: JsonValue, signature: Uint8Array]` if the `jwt`
-has a valid _serialization_. Otherwise it throws an `Error`. This function does
+`[header: unknown, payload: unknown, signature: Uint8Array]` if the `jwt` has a
+valid _serialization_. Otherwise it throws an `Error`. This function does
 **not** verify the digital signature.
 
 ```typescript
@@ -113,6 +111,15 @@ This application uses the JWS Compact Serialization only.
 - [JSON Web Token](https://tools.ietf.org/html/rfc7519)
 - [JSON Web Signature](https://www.rfc-editor.org/rfc/rfc7515.html)
 - [JSON Web Algorithms](https://www.rfc-editor.org/rfc/rfc7518.html)
+
+## Applications
+
+The following projects use djwt:
+
+- [AuthCompanion](https://github.com/authcompanion/authcompanion): An
+  effortless, token-based user management server - well suited for modern web
+  projects.
+- [Oak Middleware JWT](https://github.com/halvardssm/oak-middleware-jwt)
 
 ## Contribution
 
