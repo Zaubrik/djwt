@@ -78,7 +78,7 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
 function validateTimingClaims(
   payload: Payload,
   { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
-) {
+): void {
   if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
     throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
   }
@@ -101,7 +101,7 @@ function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
   return false;
 }
 
-function validateAudClaim(aud: unknown, audience: string[]) {
+function validateAudClaim(aud: unknown, audience: string[]): void {
   if (hasValidAudClaim(aud)) {
     if (aud === undefined) {
       return;
