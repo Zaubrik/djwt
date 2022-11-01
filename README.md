@@ -69,10 +69,10 @@ const nbf = getNumericDate(60 * 60);
 
 ### Expiration Time (exp)
 
-The optional **exp** claim in the payload identifies the expiration time on or
+The optional `exp` claim in the payload identifies the expiration time on or
 after which the JWT must not be accepted for processing. Its value must be a
 number containing a **NumericDate** value. This module checks if the current
-date/time is before the expiration date/time listed in the **exp** claim.
+date/time is before the expiration date/time listed in the `exp` claim.
 
 ```typescript
 const jwt = await create(header, { exp: getNumericDate(60 * 60) }, key);
@@ -80,9 +80,17 @@ const jwt = await create(header, { exp: getNumericDate(60 * 60) }, key);
 
 ### Not Before (nbf)
 
-The optional **nbf** (_not before_) claim identifies the time before which the
-jwt must not be accepted for processing. Its value must be a number containing a
+The optional `nbf` (_not before_) claim identifies the time before which the jwt
+must not be accepted for processing. Its value must be a number containing a
 **NumericDate** value.
+
+### Audience (aud)
+
+The optional **aud** (_audience_) claim identifies the recipients that the JWT
+is intended for. By passing the the option `audience` with the type
+`string | string[]` to `verify`, this application tries to identify the
+recipient with a value in the `aud` claim when this claim is present. If the
+values don't match, an `Error` is thrown.
 
 ## Algorithms
 
@@ -99,7 +107,7 @@ The following signature and MAC algorithms have been implemented:
 - PS512 (RSASSA-PSS SHA-512)
 - ES256 (ECDSA using P-256 and SHA-256)
 - ES384 (ECDSA using P-384 and SHA-384)
-- ES512 (ECDSA using P-521 and SHA-512)
+- ES512 (ECDSA using P-521 and SHA-512) (Not supported yet!)
 - none ([_Unsecured JWTs_](https://tools.ietf.org/html/rfc7519#section-6)).
 
 ## Serialization

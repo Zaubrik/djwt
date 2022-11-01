@@ -679,6 +679,21 @@ Deno.test({
     await assertRejects(
       async () => {
         await verify(
+          await create(
+            header,
+            { ...payload, aud: "smtp" },
+            keyHS256,
+          ),
+          keyHS256,
+          { audience: [] },
+        );
+      },
+      Error,
+      "The identification with the value in the 'aud' claim has failed.",
+    );
+    await assertRejects(
+      async () => {
+        await verify(
           await create(header, { ...payload, aud: [] }, keyHS256),
           keyHS256,
           { audience: "smtp" },
