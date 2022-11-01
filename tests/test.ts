@@ -590,6 +590,121 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[jwt] aud claim",
+  fn: async function () {
+    const payload = {
+      iss: "joe",
+    };
+    const aud = "smtp";
+    const header: Header = {
+      alg: "HS256",
+    };
+    assertEquals(
+      await verify(
+        await create(header, { ...payload, aud }, keyHS256),
+        keyHS256,
+      ),
+      { ...payload, aud },
+    );
+    assertEquals(
+      await verify(
+        await create(header, { ...payload }, keyHS256),
+        keyHS256,
+        { audIdentification: "smtp" },
+      ),
+      { ...payload },
+    );
+    assertEquals(
+      await verify(
+        await create(header, { ...payload, aud: ["smtp", "sol"] }, keyHS256),
+        keyHS256,
+        { audIdentification: "smtp" },
+      ),
+      { ...payload, aud: ["smtp", "sol"] },
+    );
+    assertEquals(
+      await verify(
+        await create(header, { ...payload, aud: ["smtp", "sol"] }, keyHS256),
+        keyHS256,
+        { audIdentification: ["wrong", "smtp"] },
+      ),
+      { ...payload, aud: ["smtp", "sol"] },
+    );
+    assertEquals(
+      await verify(
+        await create(header, { ...payload, aud }, keyHS256),
+        keyHS256,
+        { audIdentification: "smtp" },
+      ),
+      { ...payload, aud },
+    );
+    assertEquals(
+      await verify(
+        await create(header, { ...payload, aud }, keyHS256),
+        keyHS256,
+        { audIdentification: ["smtp", "sol"] },
+      ),
+      { ...payload, aud },
+    );
+    await assertRejects(
+      async () => {
+        await verify(
+          await create(header, { ...payload, aud: 10 as any }, keyHS256),
+          keyHS256,
+          { audIdentification: "smtp" },
+        );
+      },
+      Error,
+      "The jwt has an invalid 'aud' claim.",
+    );
+    await assertRejects(
+      async () => {
+        await verify(
+          await create(header, { ...payload, aud: [] }, keyHS256),
+          keyHS256,
+          { audIdentification: "smtp" },
+        );
+      },
+      Error,
+      "The identification with the value in the 'aud' claim has failed.",
+    );
+    await assertRejects(
+      async () => {
+        await verify(
+          await create(header, { ...payload, aud }, keyHS256),
+          keyHS256,
+          { audIdentification: "wrong" },
+        );
+      },
+      Error,
+      "The identification with the value in the 'aud' claim has failed.",
+    );
+    await assertRejects(
+      async () => {
+        await verify(
+          await create(header, { ...payload, aud }, keyHS256),
+          keyHS256,
+          { audIdentification: [] },
+        );
+      },
+      Error,
+      "The identification with the value in the 'aud' claim has failed.",
+    );
+    await assertRejects(
+      async () => {
+        await verify(
+          await create(header, { ...payload, aud }, keyHS256),
+          keyHS256,
+          { audIdentification: ["wrong", "wrong2"] },
+        );
+      },
+      Error,
+      "The identification with the value in the 'aud' claim has failed.",
+    );
+  },
+});
+
+Deno.test({
   name: "[jwt] none algorithm",
   fn: async function () {
     const payload = {

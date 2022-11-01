@@ -38,7 +38,11 @@ export interface Header {
   [key: string]: unknown;
 }
 
-type VerifyOptions = { expLeeway?: number; nbfLeeway?: number };
+type VerifyOptions = {
+  expLeeway?: number;
+  nbfLeeway?: number;
+  audIdentification?: string | string[];
+};
 
 export const encoder = new TextEncoder();
 export const decoder = new TextDecoder();
@@ -72,6 +76,36 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
   );
 }
 
+function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
+  if (claimValue === undefined || typeof claimValue === "string") return true;
+  if (
+    Array.isArray(claimValue) &&
+    claimValue.every((value) => typeof value === "string")
+  ) return true;
+  return false;
+}
+
+function validateAudClaim(aud: unknown, audIdentification: string[]) {
+  if (hasValidAudClaim(aud)) {
+    if (aud === undefined) {
+      return;
+    }
+    if (Array.isArray(aud)) {
+      if (!aud.some((str: string) => audIdentification.includes(str))) {
+        throw new Error(
+          "The identification with the value in the 'aud' claim has failed.",
+        );
+      }
+    } else if (!audIdentification.includes(aud)) {
+      throw new Error(
+        "The identification with the value in the 'aud' claim has failed.",
+      );
+    }
+  } else {
+    throw new Error(`The jwt has an invalid 'aud' claim.`);
+  }
+}
+
 /**
  * Takes a `jwt` and returns a 3-tuple `[unknown, unknown, Uint8Array]` if the
  * jwt has a valid _serialization_. Otherwise it throws an `Error`. This function
@@ -100,7 +134,7 @@ export function decode(
 export function validate(
   // deno-lint-ignore no-explicit-any
   [header, payload, signature]: [any, any, Uint8Array],
-  { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
+  { expLeeway = 1, nbfLeeway = 1, audIdentification }: VerifyOptions = {},
 ): {
   header: Header;
   payload: Payload;
@@ -126,6 +160,10 @@ export function validate(
 
     if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, nbfLeeway)) {
       throw RangeError("The jwt is used too early.");
+    }
+
+    if (audIdentification !== undefined) {
+      validateAudClaim(payload.aud, [audIdentification].flat(1));
     }
 
     return {
