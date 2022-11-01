@@ -86,8 +86,8 @@ must not be accepted for processing. Its value must be a number containing a
 
 ### Audience (aud)
 
-The optional **aud** (_audience_) claim identifies the recipients that the JWT
-is intended for. By passing the the option `audience` with the type
+The optional `aud` (_audience_) claim identifies the recipients that the JWT is
+intended for. By passing the the option `audience` with the type
 `string | string[]` to `verify`, this application tries to identify the
 recipient with a value in the `aud` claim when this claim is present. If the
 values don't match, an `Error` is thrown.
