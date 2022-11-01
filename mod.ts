@@ -41,7 +41,7 @@ export interface Header {
 type VerifyOptions = {
   expLeeway?: number;
   nbfLeeway?: number;
-  audIdentification?: string | string[];
+  audience?: string | string[];
 };
 
 export const encoder = new TextEncoder();
@@ -101,18 +101,13 @@ function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
   return false;
 }
 
-function validateAudClaim(aud: unknown, audIdentification: string[]) {
+function validateAudClaim(aud: unknown, audience: string[]) {
   if (hasValidAudClaim(aud)) {
     if (aud === undefined) {
       return;
     }
-    if (Array.isArray(aud)) {
-      if (!aud.some((str: string) => audIdentification.includes(str))) {
-        throw new Error(
-          "The identification with the value in the 'aud' claim has failed.",
-        );
-      }
-    } else if (!audIdentification.includes(aud)) {
+    const audArray = Array.isArray(aud) ? aud : [aud];
+    if (!audArray.some((str: string) => audience.includes(str))) {
       throw new Error(
         "The identification with the value in the 'aud' claim has failed.",
       );
@@ -167,8 +162,8 @@ export function validate(
    */
   if (isObject(payload)) {
     validateTimingClaims(payload, options);
-    if (options?.audIdentification !== undefined) {
-      validateAudClaim(payload.aud, [options.audIdentification].flat(1));
+    if (options?.audience !== undefined) {
+      validateAudClaim(payload.aud, [options.audience].flat(1));
     }
 
     return {

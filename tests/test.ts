@@ -610,7 +610,7 @@ Deno.test({
       await verify(
         await create(header, { ...payload }, keyHS256),
         keyHS256,
-        { audIdentification: "smtp" },
+        { audience: "smtp" },
       ),
       { ...payload },
     );
@@ -618,7 +618,7 @@ Deno.test({
       await verify(
         await create(header, { ...payload, aud: ["smtp", "sol"] }, keyHS256),
         keyHS256,
-        { audIdentification: "smtp" },
+        { audience: "smtp" },
       ),
       { ...payload, aud: ["smtp", "sol"] },
     );
@@ -626,7 +626,7 @@ Deno.test({
       await verify(
         await create(header, { ...payload, aud: ["smtp", "sol"] }, keyHS256),
         keyHS256,
-        { audIdentification: ["wrong", "smtp"] },
+        { audience: ["wrong", "smtp"] },
       ),
       { ...payload, aud: ["smtp", "sol"] },
     );
@@ -634,7 +634,7 @@ Deno.test({
       await verify(
         await create(header, { ...payload, aud }, keyHS256),
         keyHS256,
-        { audIdentification: "smtp" },
+        { audience: "smtp" },
       ),
       { ...payload, aud },
     );
@@ -642,16 +642,35 @@ Deno.test({
       await verify(
         await create(header, { ...payload, aud }, keyHS256),
         keyHS256,
-        { audIdentification: ["smtp", "sol"] },
+        { audience: ["smtp", "sol"] },
       ),
       { ...payload, aud },
     );
     await assertRejects(
       async () => {
         await verify(
-          await create(header, { ...payload, aud: 10 as any }, keyHS256),
+          await create(
+            header,
+            { ...payload, aud: 10 as unknown as string },
+            keyHS256,
+          ),
           keyHS256,
-          { audIdentification: "smtp" },
+          { audience: "smtp" },
+        );
+      },
+      Error,
+      "The jwt has an invalid 'aud' claim.",
+    );
+    await assertRejects(
+      async () => {
+        await verify(
+          await create(
+            header,
+            { ...payload, aud: [undefined] as unknown as string[] },
+            keyHS256,
+          ),
+          keyHS256,
+          { audience: "smtp" },
         );
       },
       Error,
@@ -662,7 +681,7 @@ Deno.test({
         await verify(
           await create(header, { ...payload, aud: [] }, keyHS256),
           keyHS256,
-          { audIdentification: "smtp" },
+          { audience: "smtp" },
         );
       },
       Error,
@@ -673,7 +692,7 @@ Deno.test({
         await verify(
           await create(header, { ...payload, aud }, keyHS256),
           keyHS256,
-          { audIdentification: "wrong" },
+          { audience: "wrong" },
         );
       },
       Error,
@@ -684,7 +703,7 @@ Deno.test({
         await verify(
           await create(header, { ...payload, aud }, keyHS256),
           keyHS256,
-          { audIdentification: [] },
+          { audience: [] },
         );
       },
       Error,
@@ -695,7 +714,7 @@ Deno.test({
         await verify(
           await create(header, { ...payload, aud }, keyHS256),
           keyHS256,
-          { audIdentification: ["wrong", "wrong2"] },
+          { audience: ["wrong", "wrong2"] },
         );
       },
       Error,
