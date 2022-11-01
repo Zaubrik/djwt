@@ -65,8 +65,7 @@ function isObject(obj: unknown): obj is Record<string, unknown> {
   );
 }
 
-// deno-lint-ignore no-explicit-any
-function is3Tuple(arr: any[]): arr is [unknown, unknown, Uint8Array] {
+function is3Tuple(arr: unknown[]): arr is [unknown, unknown, Uint8Array] {
   return arr.length === 3;
 }
 
@@ -74,6 +73,23 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
   return claimValues.some((claimValue) =>
     claimValue !== undefined ? typeof claimValue !== "number" : false
   );
+}
+
+function validateTimingClaims(
+  payload: Payload,
+  { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
+) {
+  if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
+    throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
+  }
+
+  if (typeof payload.exp === "number" && isExpired(payload.exp, expLeeway)) {
+    throw RangeError("The jwt is expired.");
+  }
+
+  if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, nbfLeeway)) {
+    throw RangeError("The jwt is used too early.");
+  }
 }
 
 function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
@@ -134,7 +150,7 @@ export function decode(
 export function validate(
   // deno-lint-ignore no-explicit-any
   [header, payload, signature]: [any, any, Uint8Array],
-  { expLeeway = 1, nbfLeeway = 1, audIdentification }: VerifyOptions = {},
+  options?: VerifyOptions,
 ): {
   header: Header;
   payload: Payload;
@@ -150,20 +166,9 @@ export function validate(
    * let the JWT Claims Set be this JSON object.
    */
   if (isObject(payload)) {
-    if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
-      throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
-    }
-
-    if (typeof payload.exp === "number" && isExpired(payload.exp, expLeeway)) {
-      throw RangeError("The jwt is expired.");
-    }
-
-    if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, nbfLeeway)) {
-      throw RangeError("The jwt is used too early.");
-    }
-
-    if (audIdentification !== undefined) {
-      validateAudClaim(payload.aud, [audIdentification].flat(1));
+    validateTimingClaims(payload, options);
+    if (options?.audIdentification !== undefined) {
+      validateAudClaim(payload.aud, [options.audIdentification].flat(1));
     }
 
     return {
