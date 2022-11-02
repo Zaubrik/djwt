@@ -595,56 +595,56 @@ Deno.test({
     const payload = {
       iss: "joe",
     };
-    const aud = "smtp";
+    const audValue = "smtp";
     const header: Header = {
       alg: "HS256",
     };
     assertEquals(
       await verify(
-        await create(header, { ...payload, aud }, keyHS256),
+        await create(header, { ...payload, aud: audValue }, keyHS256),
         keyHS256,
       ),
-      { ...payload, aud },
+      { ...payload, aud: audValue },
     );
     assertEquals(
       await verify(
         await create(header, { ...payload }, keyHS256),
         keyHS256,
-        { audience: "smtp" },
+        { audience: audValue },
       ),
       { ...payload },
     );
     assertEquals(
       await verify(
-        await create(header, { ...payload, aud: ["smtp", "sol"] }, keyHS256),
+        await create(header, { ...payload, aud: [audValue, "sol"] }, keyHS256),
         keyHS256,
-        { audience: "smtp" },
+        { audience: audValue },
       ),
-      { ...payload, aud: ["smtp", "sol"] },
+      { ...payload, aud: [audValue, "sol"] },
     );
     assertEquals(
       await verify(
-        await create(header, { ...payload, aud: ["smtp", "sol"] }, keyHS256),
+        await create(header, { ...payload, aud: [audValue, "sol"] }, keyHS256),
         keyHS256,
-        { audience: ["wrong", "smtp"] },
+        { audience: ["wrong", audValue] },
       ),
-      { ...payload, aud: ["smtp", "sol"] },
+      { ...payload, aud: [audValue, "sol"] },
     );
     assertEquals(
       await verify(
-        await create(header, { ...payload, aud }, keyHS256),
+        await create(header, { ...payload, aud: audValue }, keyHS256),
         keyHS256,
-        { audience: "smtp" },
+        { audience: audValue },
       ),
-      { ...payload, aud },
+      { ...payload, aud: audValue },
     );
     assertEquals(
       await verify(
-        await create(header, { ...payload, aud }, keyHS256),
+        await create(header, { ...payload, aud: audValue }, keyHS256),
         keyHS256,
-        { audience: ["smtp", "sol"] },
+        { audience: [audValue, "sol"] },
       ),
-      { ...payload, aud },
+      { ...payload, aud: audValue },
     );
     await assertRejects(
       async () => {
@@ -655,7 +655,7 @@ Deno.test({
             keyHS256,
           ),
           keyHS256,
-          { audience: "smtp" },
+          { audience: audValue },
         );
       },
       Error,
@@ -670,7 +670,7 @@ Deno.test({
             keyHS256,
           ),
           keyHS256,
-          { audience: "smtp" },
+          { audience: audValue },
         );
       },
       Error,
@@ -679,9 +679,20 @@ Deno.test({
     await assertRejects(
       async () => {
         await verify(
+          await create(header, { ...payload, aud: audValue }, keyHS256),
+          keyHS256,
+          { audience: audValue + "a" },
+        ), { ...payload, aud: audValue };
+      },
+      Error,
+      "The identification with the value in the 'aud' claim has failed.",
+    );
+    await assertRejects(
+      async () => {
+        await verify(
           await create(
             header,
-            { ...payload, aud: "smtp" },
+            { ...payload, aud: audValue },
             keyHS256,
           ),
           keyHS256,
@@ -696,7 +707,7 @@ Deno.test({
         await verify(
           await create(header, { ...payload, aud: [] }, keyHS256),
           keyHS256,
-          { audience: "smtp" },
+          { audience: audValue },
         );
       },
       Error,
@@ -705,7 +716,7 @@ Deno.test({
     await assertRejects(
       async () => {
         await verify(
-          await create(header, { ...payload, aud }, keyHS256),
+          await create(header, { ...payload, aud: audValue }, keyHS256),
           keyHS256,
           { audience: "wrong" },
         );
@@ -716,7 +727,7 @@ Deno.test({
     await assertRejects(
       async () => {
         await verify(
-          await create(header, { ...payload, aud }, keyHS256),
+          await create(header, { ...payload, aud: audValue }, keyHS256),
           keyHS256,
           { audience: [] },
         );
@@ -727,7 +738,7 @@ Deno.test({
     await assertRejects(
       async () => {
         await verify(
-          await create(header, { ...payload, aud }, keyHS256),
+          await create(header, { ...payload, aud: audValue }, keyHS256),
           keyHS256,
           { audience: ["wrong", "wrong2"] },
         );

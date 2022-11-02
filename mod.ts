@@ -101,7 +101,7 @@ function validateAudClaim(
     }
     const audArray = Array.isArray(aud) ? aud : [aud];
     const audienceArray = Array.isArray(audience) ? audience : [audience];
-    if (!audArray.some((str: string) => audience.includes(str))) {
+    if (!audArray.some((str: string) => audienceArray.includes(str))) {
       throw new Error(
         "The identification with the value in the 'aud' claim has failed.",
       );
