@@ -69,10 +69,11 @@ const nbf = getNumericDate(60 * 60);
 
 ### Expiration Time (exp)
 
-The optional `exp` claim in the payload identifies the expiration time on or
-after which the JWT must not be accepted for processing. Its value must be a
-number containing a **NumericDate** value. This module checks if the current
-date/time is before the expiration date/time listed in the `exp` claim.
+The optional `exp` (_expiration time_) claim in the payload identifies the
+expiration time on or after which the JWT must not be accepted for processing.
+Its value must be a number containing a **NumericDate** value. This module
+checks if the current date/time is before the expiration date/time listed in the
+`exp` claim.
 
 ```typescript
 const jwt = await create(header, { exp: getNumericDate(60 * 60) }, key);
