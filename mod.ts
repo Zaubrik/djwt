@@ -38,7 +38,7 @@ export interface Header {
   [key: string]: unknown;
 }
 
-type VerifyOptions = {
+export type VerifyOptions = {
   expLeeway?: number;
   nbfLeeway?: number;
   audience?: string | string[];
