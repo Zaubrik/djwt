@@ -101,12 +101,16 @@ function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
   return false;
 }
 
-function validateAudClaim(aud: unknown, audience: string[]): void {
+function validateAudClaim(
+  aud: unknown,
+  audience: Required<VerifyOptions>["audience"],
+): void {
   if (hasValidAudClaim(aud)) {
     if (aud === undefined) {
       return;
     }
     const audArray = Array.isArray(aud) ? aud : [aud];
+    const audienceArray = Array.isArray(audience) ? audience : [audience];
     if (!audArray.some((str: string) => audience.includes(str))) {
       throw new Error(
         "The identification with the value in the 'aud' claim has failed.",
@@ -163,7 +167,7 @@ export function validate(
   if (isObject(payload)) {
     validateTimingClaims(payload, options);
     if (options?.audience !== undefined) {
-      validateAudClaim(payload.aud, [options.audience].flat(1));
+      validateAudClaim(payload.aud, options.audience);
     }
 
     return {
