@@ -3,9 +3,8 @@ import {
   create as createSignature,
   verify as verifySignature,
 } from "./signature.ts";
-import { verify as verifyAlgorithm } from "./algorithm.ts";
-
-import type { Algorithm } from "./algorithm.ts";
+import { Algorithm, verify as verifyAlgorithm } from "./algorithm.ts";
+import { decoder, encoder, isObject } from "./util.ts";
 
 /**
  * JWT §1: JWTs encode claims to be transmitted as a JSON [RFC7159] object [...].
@@ -38,10 +37,11 @@ export interface Header {
   [key: string]: unknown;
 }
 
-type VerifyOptions = { expLeeway?: number; nbfLeeway?: number };
-
-export const encoder = new TextEncoder();
-export const decoder = new TextDecoder();
+export type VerifyOptions = {
+  expLeeway?: number;
+  nbfLeeway?: number;
+  audience?: string | string[];
+};
 
 /**
  * JWT §4.1.4: Implementers MAY provide for some small leeway to account for
@@ -55,14 +55,7 @@ function isTooEarly(nbf: number, leeway: number): boolean {
   return nbf - leeway > Date.now() / 1000;
 }
 
-function isObject(obj: unknown): obj is Record<string, unknown> {
-  return (
-    obj !== null && typeof obj === "object" && Array.isArray(obj) === false
-  );
-}
-
-// deno-lint-ignore no-explicit-any
-function is3Tuple(arr: any[]): arr is [unknown, unknown, Uint8Array] {
+function is3Tuple(arr: unknown[]): arr is [unknown, unknown, Uint8Array] {
   return arr.length === 3;
 }
 
@@ -70,6 +63,52 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
   return claimValues.some((claimValue) =>
     claimValue !== undefined ? typeof claimValue !== "number" : false
   );
+}
+
+function validateTimingClaims(
+  payload: Payload,
+  { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
+): void {
+  if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
+    throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
+  }
+
+  if (typeof payload.exp === "number" && isExpired(payload.exp, expLeeway)) {
+    throw RangeError("The jwt is expired.");
+  }
+
+  if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, nbfLeeway)) {
+    throw RangeError("The jwt is used too early.");
+  }
+}
+
+function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
+  if (claimValue === undefined || typeof claimValue === "string") return true;
+  if (
+    Array.isArray(claimValue) &&
+    claimValue.every((value) => typeof value === "string")
+  ) return true;
+  return false;
+}
+
+function validateAudClaim(
+  aud: unknown,
+  audience: Required<VerifyOptions>["audience"],
+): void {
+  if (hasValidAudClaim(aud)) {
+    if (aud === undefined) {
+      return;
+    }
+    const audArray = Array.isArray(aud) ? aud : [aud];
+    const audienceArray = Array.isArray(audience) ? audience : [audience];
+    if (!audArray.some((str: string) => audienceArray.includes(str))) {
+      throw new Error(
+        "The identification with the value in the 'aud' claim has failed.",
+      );
+    }
+  } else {
+    throw new Error(`The jwt has an invalid 'aud' claim.`);
+  }
 }
 
 /**
@@ -100,7 +139,7 @@ export function decode(
 export function validate(
   // deno-lint-ignore no-explicit-any
   [header, payload, signature]: [any, any, Uint8Array],
-  { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
+  options?: VerifyOptions,
 ): {
   header: Header;
   payload: Payload;
@@ -116,16 +155,9 @@ export function validate(
    * let the JWT Claims Set be this JSON object.
    */
   if (isObject(payload)) {
-    if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
-      throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
-    }
-
-    if (typeof payload.exp === "number" && isExpired(payload.exp, expLeeway)) {
-      throw RangeError("The jwt is expired.");
-    }
-
-    if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, nbfLeeway)) {
-      throw RangeError("The jwt is used too early.");
+    validateTimingClaims(payload, options);
+    if (options?.audience !== undefined) {
+      validateAudClaim(payload.aud, options.audience);
     }
 
     return {
