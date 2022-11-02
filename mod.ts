@@ -3,9 +3,8 @@ import {
   create as createSignature,
   verify as verifySignature,
 } from "./signature.ts";
-import { verify as verifyAlgorithm } from "./algorithm.ts";
-
-import type { Algorithm } from "./algorithm.ts";
+import { Algorithm, verify as verifyAlgorithm } from "./algorithm.ts";
+import { decoder, encoder, isObject } from "./util.ts";
 
 /**
  * JWT §1: JWTs encode claims to be transmitted as a JSON [RFC7159] object [...].
@@ -44,9 +43,6 @@ export type VerifyOptions = {
   audience?: string | string[];
 };
 
-export const encoder = new TextEncoder();
-export const decoder = new TextDecoder();
-
 /**
  * JWT §4.1.4: Implementers MAY provide for some small leeway to account for
  * clock skew.
@@ -57,12 +53,6 @@ function isExpired(exp: number, leeway: number): boolean {
 
 function isTooEarly(nbf: number, leeway: number): boolean {
   return nbf - leeway > Date.now() / 1000;
-}
-
-function isObject(obj: unknown): obj is Record<string, unknown> {
-  return (
-    obj !== null && typeof obj === "object" && Array.isArray(obj) === false
-  );
 }
 
 function is3Tuple(arr: unknown[]): arr is [unknown, unknown, Uint8Array] {

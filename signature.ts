@@ -1,6 +1,6 @@
 import { getAlgorithm } from "./algorithm.ts";
 import { base64url } from "./deps.ts";
-import { encoder } from "./mod.ts";
+import { encoder } from "./util.ts";
 
 import type { Algorithm } from "./algorithm.ts";
 
