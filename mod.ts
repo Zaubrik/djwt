@@ -37,16 +37,19 @@ export interface Header {
   [key: string]: unknown;
 }
 
+/**
+ * With `expLeeway` and `nbfLeeway` implementers may provide for some small
+ * leeway to account for clock skew (JWT §4.1.4). The default is 1 second.
+ * By passing the option `audience`, this application tries to identify the
+ * recipient with a value in the `aud` claim. If the values don't match, an
+ * `Error` is thrown.
+ */
 export type VerifyOptions = {
   expLeeway?: number;
   nbfLeeway?: number;
-  audience?: string | string[];
+  audience?: string | string[] | RegExp;
 };
 
-/**
- * JWT §4.1.4: Implementers MAY provide for some small leeway to account for
- * clock skew.
- */
 function isExpired(exp: number, leeway: number): boolean {
   return exp + leeway < Date.now() / 1000;
 }
@@ -84,11 +87,8 @@ function validateTimingClaims(
 
 function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
   if (claimValue === undefined || typeof claimValue === "string") return true;
-  if (
-    Array.isArray(claimValue) &&
-    claimValue.every((value) => typeof value === "string")
-  ) return true;
-  return false;
+  return Array.isArray(claimValue) &&
+    claimValue.every((value) => typeof value === "string");
 }
 
 function validateAudClaim(
@@ -97,11 +97,19 @@ function validateAudClaim(
 ): void {
   if (hasValidAudClaim(aud)) {
     if (aud === undefined) {
-      return;
+      throw new Error("The jwt has no 'aud' claim.");
     }
     const audArray = Array.isArray(aud) ? aud : [aud];
-    const audienceArray = Array.isArray(audience) ? audience : [audience];
-    if (!audArray.some((str: string) => audienceArray.includes(str))) {
+    const audienceArrayOrRegex = typeof audience === "string"
+      ? [audience]
+      : audience;
+    if (
+      !audArray.some((audString: string) =>
+        audienceArrayOrRegex instanceof RegExp
+          ? audienceArrayOrRegex.test(audString)
+          : audienceArrayOrRegex.includes(audString)
+      )
+    ) {
       throw new Error(
         "The identification with the value in the 'aud' claim has failed.",
       );
