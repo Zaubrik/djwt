@@ -4,7 +4,18 @@ import {
   verify as verifySignature,
 } from "./signature.ts";
 import { Algorithm, verify as verifyAlgorithm } from "./algorithm.ts";
-import { decoder, encoder, isObject } from "./util.ts";
+import {
+  decoder,
+  encoder,
+  isArray,
+  isDefined,
+  isNotNumber,
+  isNotString,
+  isNumber,
+  isObject,
+  isString,
+  isUndefined,
+} from "./util.ts";
 
 /**
  * JWT §1: JWTs encode claims to be transmitted as a JSON [RFC7159] object [...].
@@ -64,7 +75,7 @@ function is3Tuple(arr: unknown[]): arr is [unknown, unknown, Uint8Array] {
 
 function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
   return claimValues.some((claimValue) =>
-    claimValue !== undefined ? typeof claimValue !== "number" : false
+    isDefined(claimValue) && isNotNumber(claimValue)
   );
 }
 
@@ -76,19 +87,18 @@ function validateTimingClaims(
     throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
   }
 
-  if (typeof payload.exp === "number" && isExpired(payload.exp, expLeeway)) {
+  if (isNumber(payload.exp) && isExpired(payload.exp, expLeeway)) {
     throw RangeError("The jwt is expired.");
   }
 
-  if (typeof payload.nbf === "number" && isTooEarly(payload.nbf, nbfLeeway)) {
+  if (isNumber(payload.nbf) && isTooEarly(payload.nbf, nbfLeeway)) {
     throw RangeError("The jwt is used too early.");
   }
 }
 
 function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
-  if (claimValue === undefined || typeof claimValue === "string") return true;
-  return Array.isArray(claimValue) &&
-    claimValue.every((value) => typeof value === "string");
+  if (isUndefined(claimValue) || isString(claimValue)) return true;
+  return isArray(claimValue) && claimValue.every(isString);
 }
 
 function validateAudClaim(
@@ -96,15 +106,13 @@ function validateAudClaim(
   audience: Required<VerifyOptions>["audience"],
 ): void {
   if (hasValidAudClaim(aud)) {
-    if (aud === undefined) {
+    if (isUndefined(aud)) {
       throw new Error("The jwt has no 'aud' claim.");
     }
-    const audArray = Array.isArray(aud) ? aud : [aud];
-    const audienceArrayOrRegex = typeof audience === "string"
-      ? [audience]
-      : audience;
+    const audArray = isArray(aud) ? aud : [aud];
+    const audienceArrayOrRegex = isString(audience) ? [audience] : audience;
     if (
-      !audArray.some((audString: string) =>
+      !audArray.some((audString) =>
         audienceArrayOrRegex instanceof RegExp
           ? audienceArrayOrRegex.test(audString)
           : audienceArrayOrRegex.includes(audString)
@@ -153,7 +161,7 @@ export function validate(
   payload: Payload;
   signature: Uint8Array;
 } {
-  if (typeof header?.alg !== "string") {
+  if (isNotString(header?.alg)) {
     throw new Error(`The jwt's 'alg' header parameter value must be a string.`);
   }
 
@@ -164,8 +172,8 @@ export function validate(
    */
   if (isObject(payload)) {
     validateTimingClaims(payload, options);
-    if (options?.audience !== undefined) {
-      validateAudClaim(payload.aud, options.audience);
+    if (isDefined(options?.audience)) {
+      validateAudClaim(payload.aud, options!.audience);
     }
 
     return {
