@@ -608,14 +608,6 @@ Deno.test({
     );
     assertEquals(
       await verify(
-        await create(header, { ...payload }, keyHS256),
-        keyHS256,
-        { audience: audValue },
-      ),
-      { ...payload },
-    );
-    assertEquals(
-      await verify(
         await create(header, { ...payload, aud: [audValue, "sol"] }, keyHS256),
         keyHS256,
         { audience: audValue },
@@ -645,6 +637,33 @@ Deno.test({
         { audience: [audValue, "sol"] },
       ),
       { ...payload, aud: audValue },
+    );
+    assertEquals(
+      await verify(
+        await create(header, { ...payload, aud: [audValue, "sol"] }, keyHS256),
+        keyHS256,
+        { audience: new RegExp("^s.*") },
+      ),
+      { ...payload, aud: [audValue, "sol"] },
+    );
+    assertEquals(
+      await verify(
+        await create(header, { ...payload, aud: audValue }, keyHS256),
+        keyHS256,
+        { audience: new RegExp("^s.*") },
+      ),
+      { ...payload, aud: audValue },
+    );
+    await assertRejects(
+      async () => {
+        await verify(
+          await create(header, { ...payload }, keyHS256),
+          keyHS256,
+          { audience: audValue },
+        );
+      },
+      Error,
+      "The jwt has no 'aud' claim.",
     );
     await assertRejects(
       async () => {
@@ -681,8 +700,34 @@ Deno.test({
         await verify(
           await create(header, { ...payload, aud: audValue }, keyHS256),
           keyHS256,
+          { audience: new RegExp("^a.*") },
+        );
+      },
+      Error,
+      "The identification with the value in the 'aud' claim has failed.",
+    );
+    await assertRejects(
+      async () => {
+        await verify(
+          await create(
+            header,
+            { ...payload, aud: [audValue, "sol"] },
+            keyHS256,
+          ),
+          keyHS256,
+          { audience: new RegExp("^a.*") },
+        );
+      },
+      Error,
+      "The identification with the value in the 'aud' claim has failed.",
+    );
+    await assertRejects(
+      async () => {
+        await verify(
+          await create(header, { ...payload, aud: audValue }, keyHS256),
+          keyHS256,
           { audience: audValue + "a" },
-        ), { ...payload, aud: audValue };
+        );
       },
       Error,
       "The identification with the value in the 'aud' claim has failed.",
