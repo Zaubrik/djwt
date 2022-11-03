@@ -1,3 +1,5 @@
+import { isNotNull, isString } from "./util.ts";
+
 /*
  * JSW §1: Cryptographic algorithms and identifiers for use with this specification
  * are described in the separate JSON Web Algorithms (JWA) specification:
@@ -25,20 +27,21 @@ function isHashedKeyAlgorithm(
   // deno-lint-ignore no-explicit-any
   algorithm: Record<string, any>,
 ): algorithm is HmacKeyAlgorithm | RsaHashedKeyAlgorithm {
-  return typeof algorithm.hash?.name === "string";
+  return isString(algorithm.hash?.name);
 }
 
 function isEcKeyAlgorithm(
   // deno-lint-ignore no-explicit-any
   algorithm: Record<string, any>,
 ): algorithm is EcKeyAlgorithm {
-  return typeof algorithm.namedCurve === "string";
+  return isString(algorithm.namedCurve);
 }
 
 export function verify(alg: Algorithm, key: CryptoKey | null): boolean {
   if (alg === "none") {
-    if (key !== null) throw new Error(`The alg '${alg}' does not allow a key.`);
-    else return true;
+    if (isNotNull(key)) {
+      throw new Error(`The alg '${alg}' does not allow a key.`);
+    } else return true;
   } else {
     if (!key) throw new Error(`The alg '${alg}' demands a key.`);
     const keyAlgorithm = key.algorithm;
