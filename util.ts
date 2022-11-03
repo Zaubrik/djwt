@@ -31,7 +31,8 @@ export function isNumber(input: unknown): input is number {
 
 export function isObject(input: unknown): input is Record<string, unknown> {
   return (
-    isNotNull(input) && typeof input === "object" && isArray(input) === false
+    input !== null && typeof input === "object" &&
+    Array.isArray(input) === false
   );
 }
 
