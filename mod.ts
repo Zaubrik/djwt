@@ -98,7 +98,7 @@ function validateTimingClaims(
 
 function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
   if (isUndefined(claimValue) || isString(claimValue)) return true;
-  return isArray(claimValue) && claimValue.every(isString);
+  else return isArray(claimValue) && claimValue.every(isString);
 }
 
 function validateAudClaim(
@@ -109,13 +109,13 @@ function validateAudClaim(
     if (isUndefined(aud)) {
       throw new Error("The jwt has no 'aud' claim.");
     }
-    const audArray = isArray(aud) ? aud : [aud];
+    const audArray = isString(aud) ? [aud] : aud;
     const audienceArrayOrRegex = isString(audience) ? [audience] : audience;
     if (
       !audArray.some((audString) =>
-        audienceArrayOrRegex instanceof RegExp
-          ? audienceArrayOrRegex.test(audString)
-          : audienceArrayOrRegex.includes(audString)
+        isArray(audienceArrayOrRegex)
+          ? audienceArrayOrRegex.includes(audString)
+          : audienceArrayOrRegex.test(audString)
       )
     ) {
       throw new Error(
