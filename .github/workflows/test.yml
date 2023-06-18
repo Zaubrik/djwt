@@ -22,7 +22,7 @@ jobs:
 
       - name: Setup Deno
         run: |
-          curl -fsSL https://deno.land/x/install/install.sh | sh ${{ matrix.deno == 'old' && '-s v1.27.0' || '' }}
+          curl -fsSL https://deno.land/x/install/install.sh | sh ${{ matrix.deno == 'old' && '-s v1.34.2' || '' }}
           echo "$HOME/.deno/bin" >> $${{ runner.os == 'Windows' && 'env:' || '' }}GITHUB_PATH
       - name: Upgrade to Deno canary
         if: matrix.deno == 'canary'

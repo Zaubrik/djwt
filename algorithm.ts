@@ -17,7 +17,7 @@ export type Algorithm =
   | "RS512"
   | "ES256"
   | "ES384"
-  // P-521 is not yet supported.
+  // | "ES512" //is not yet supported.
   // https://github.com/denoland/deno/blob/main/ext/crypto/00_crypto.js
   | "none";
 

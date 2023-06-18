@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "test": "deno test --check --unstable --allow-all"
+  },
+  "compilerOptions": {
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitOverride": true,
+    "checkJs": true
+  }
+}
