@@ -21,20 +21,16 @@ export type Algorithm =
   // https://github.com/denoland/deno/blob/main/ext/crypto/00_crypto.js
   | "none";
 
-// Still needs an 'any' type! Does anyone have an idea?
-// https://github.com/denoland/deno/blob/main/ext/crypto/lib.deno_crypto.d.ts
 function isHashedKeyAlgorithm(
-  // deno-lint-ignore no-explicit-any
-  algorithm: Record<string, any>,
+  algorithm: KeyAlgorithm
 ): algorithm is HmacKeyAlgorithm | RsaHashedKeyAlgorithm {
-  return isString(algorithm.hash?.name);
+  return "hash" in algorithm;
 }
 
 function isEcKeyAlgorithm(
-  // deno-lint-ignore no-explicit-any
-  algorithm: Record<string, any>,
+  algorithm: KeyAlgorithm
 ): algorithm is EcKeyAlgorithm {
-  return isString(algorithm.namedCurve);
+  return "namedCurve" in algorithm;
 }
 
 export function verify(alg: Algorithm, key: CryptoKey | null): boolean {
