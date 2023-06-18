@@ -2,12 +2,12 @@ import {
   create,
   decode,
   getNumericDate,
-  Header,
-  Payload,
+  type Header,
+  type Payload,
   validate,
   verify,
 } from "../mod.ts";
-
+import { isDefined, isNull, isString } from "../util.ts";
 import {
   assertEquals,
   assertRejects,
@@ -1100,6 +1100,45 @@ Deno.test("[jwt] ES384 algorithm", async function (): Promise<void> {
 // );
 // assertEquals(receivedPayload, payload);
 // });
+
+Deno.test("[jwt] Pass optional predicates", async function (): Promise<void> {
+  const header = { alg: "RS384" as const, typ: "JWT" };
+  const payload = {
+    sub: "1234567890",
+    name: "John Doe",
+    admin: true,
+    iat: 1516239022,
+  };
+  const jwt = await create(header, payload, keyRS384.privateKey);
+  const receivedPayload = await verify(
+    jwt,
+    keyRS384.publicKey,
+    {
+      predicates: [
+        (payload) => isDefined(payload.sub),
+        (payload) => isString(payload.sub),
+      ],
+    },
+  );
+  assertEquals(receivedPayload, payload);
+  await assertRejects(
+    async () => {
+      await verify(
+        jwt,
+        keyRS384.publicKey,
+        {
+          predicates: [
+            (payload) => isDefined(payload.sub),
+            (payload) => isString(payload.sub),
+            (payload) => isNull(payload.sub),
+          ],
+        },
+      );
+    },
+    Error,
+    "The payload does not satisfy all passed predicates.",
+  );
+});
 
 Deno.test("[jwt] getNumericDate", function (): void {
   // A specific date:

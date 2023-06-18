@@ -3,7 +3,7 @@ import {
   create as createSignature,
   verify as verifySignature,
 } from "./signature.ts";
-import { Algorithm, verify as verifyAlgorithm } from "./algorithm.ts";
+import { type Algorithm, verify as verifyAlgorithm } from "./algorithm.ts";
 import {
   decoder,
   encoder,
@@ -59,6 +59,7 @@ export type VerifyOptions = {
   expLeeway?: number;
   nbfLeeway?: number;
   audience?: string | string[] | RegExp;
+  predicates?: ((payload: Payload) => boolean)[];
 };
 
 function isExpired(exp: number, leeway: number): boolean {
@@ -208,6 +209,9 @@ export async function verify(
       throw new Error(
         "The jwt's signature does not match the verification signature.",
       );
+    }
+    if (!(options?.predicates || []).every((predicate) => predicate(payload))) {
+      throw new Error("The payload does not satisfy all passed predicates.");
     }
 
     return payload;
