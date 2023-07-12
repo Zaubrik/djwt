@@ -125,10 +125,14 @@ This application uses the JWS Compact Serialization only.
 
 The following projects use djwt:
 
-- [AuthCompanion](https://github.com/authcompanion/authcompanion): An
-  effortless, token-based user management server - well suited for modern web
-  projects.
 - [Oak Middleware JWT](https://github.com/halvardssm/oak-middleware-jwt)
+- [deno_rest](https://github.com/Prolifode/deno_rest): A Boilerplate for deno
+  RESTful apis
+
+## Discord
+
+Feel free to ask questions and start discussions in our
+[discord server](https://discord.gg/6spYphKXAt).
 
 ## Contribution
 
