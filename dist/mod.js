@@ -2,6 +2,27 @@
 // deno-lint-ignore-file
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
+const encoder = new TextEncoder();
+function getTypeName(value) {
+    const type = typeof value;
+    if (type !== "object") {
+        return type;
+    } else if (value === null) {
+        return "null";
+    } else {
+        return value?.constructor?.name ?? "object";
+    }
+}
+function validateBinaryLike(source) {
+    if (typeof source === "string") {
+        return encoder.encode(source);
+    } else if (source instanceof Uint8Array) {
+        return source;
+    } else if (source instanceof ArrayBuffer) {
+        return new Uint8Array(source);
+    }
+    throw new TypeError(`The input must be a Uint8Array, a string, or an ArrayBuffer. Received a value of the type ${getTypeName(source)}.`);
+}
 const base64abc = [
     "A",
     "B",
@@ -68,8 +89,8 @@ const base64abc = [
     "+",
     "/"
 ];
-function encode(data) {
-    const uint8 = typeof data === "string" ? new TextEncoder().encode(data) : data instanceof Uint8Array ? data : new Uint8Array(data);
+function encodeBase64(data) {
+    const uint8 = validateBinaryLike(data);
     let result = "", i;
     const l = uint8.length;
     for(i = 2; i < l; i += 3){
@@ -91,7 +112,7 @@ function encode(data) {
     }
     return result;
 }
-function decode(b64) {
+function decodeBase64(b64) {
     const binString = atob(b64);
     const size = binString.length;
     const bytes = new Uint8Array(size);
@@ -115,19 +136,23 @@ function convertBase64urlToBase64(b64url) {
     return addPaddingToBase64url(b64url).replace(/\-/g, "+").replace(/_/g, "/");
 }
 function convertBase64ToBase64url(b64) {
-    return b64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+    return b64.endsWith("=") ? b64.endsWith("==") ? b64.replace(/\+/g, "-").replace(/\//g, "_").slice(0, -2) : b64.replace(/\+/g, "-").replace(/\//g, "_").slice(0, -1) : b64.replace(/\+/g, "-").replace(/\//g, "_");
 }
-function encode1(data) {
-    return convertBase64ToBase64url(encode(data));
+const encode = encodeBase64Url;
+const decode = decodeBase64Url;
+function encodeBase64Url(data) {
+    return convertBase64ToBase64url(encodeBase64(data));
 }
-function decode1(b64url) {
-    return decode(convertBase64urlToBase64(b64url));
+function decodeBase64Url(b64url) {
+    return decodeBase64(convertBase64urlToBase64(b64url));
 }
 const mod = {
-    encode: encode1,
-    decode: decode1
+    encode: encode,
+    decode: decode,
+    encodeBase64Url: encodeBase64Url,
+    decodeBase64Url: decodeBase64Url
 };
-const encoder = new TextEncoder();
+const encoder1 = new TextEncoder();
 const decoder = new TextDecoder();
 function isArray(input) {
     return Array.isArray(input);
@@ -149,6 +174,9 @@ function isNull(input) {
 }
 function isNumber(input) {
     return typeof input === "number";
+}
+function isNotTrue(input) {
+    return input !== true;
 }
 function isObject(input) {
     return input !== null && typeof input === "object" && Array.isArray(input) === false;
@@ -273,10 +301,10 @@ function getAlgorithm(alg) {
     }
 }
 async function verify1(signature, key, alg, signingInput) {
-    return isNull(key) ? signature.length === 0 : await crypto.subtle.verify(getAlgorithm(alg), key, signature, encoder.encode(signingInput));
+    return isNull(key) ? signature.length === 0 : await crypto.subtle.verify(getAlgorithm(alg), key, signature, encoder1.encode(signingInput));
 }
 async function create(alg, key, signingInput) {
-    return isNull(key) ? "" : mod.encode(new Uint8Array(await crypto.subtle.sign(getAlgorithm(alg), key, encoder.encode(signingInput))));
+    return isNull(key) ? "" : mod.encode(new Uint8Array(await crypto.subtle.sign(getAlgorithm(alg), key, encoder1.encode(signingInput))));
 }
 function isExpired(exp, leeway) {
     return exp + leeway < Date.now() / 1000;
@@ -290,14 +318,14 @@ function is3Tuple(arr) {
 function hasInvalidTimingClaims(...claimValues) {
     return claimValues.some((claimValue)=>isDefined(claimValue) && isNotNumber(claimValue));
 }
-function validateTimingClaims(payload, { expLeeway =1 , nbfLeeway =1  } = {}) {
+function validateTimingClaims(payload, { expLeeway = 1, nbfLeeway = 1, ignoreExp, ignoreNbf } = {}) {
     if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
         throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
     }
-    if (isNumber(payload.exp) && isExpired(payload.exp, expLeeway)) {
+    if (isNumber(payload.exp) && isNotTrue(ignoreExp) && isExpired(payload.exp, expLeeway)) {
         throw RangeError("The jwt is expired.");
     }
-    if (isNumber(payload.nbf) && isTooEarly(payload.nbf, nbfLeeway)) {
+    if (isNumber(payload.nbf) && isNotTrue(ignoreNbf) && isTooEarly(payload.nbf, nbfLeeway)) {
         throw RangeError("The jwt is used too early.");
     }
 }
@@ -323,7 +351,7 @@ function validateAudClaim(aud, audience) {
         throw new Error(`The jwt has an invalid 'aud' claim.`);
     }
 }
-function decode2(jwt) {
+function decode1(jwt) {
     try {
         const arr = jwt.split(".").map(mod.decode).map((uint8Array, index)=>index === 0 || index === 1 ? JSON.parse(decoder.decode(uint8Array)) : uint8Array);
         if (is3Tuple(arr)) return arr;
@@ -351,7 +379,7 @@ function validate([header, payload, signature], options) {
     }
 }
 async function verify2(jwt, key, options) {
-    const { header , payload , signature  } = validate(decode2(jwt), options);
+    const { header, payload, signature } = validate(decode1(jwt), options);
     if (verify(header.alg, key)) {
         if (!await verify1(signature, key, header.alg, jwt.slice(0, jwt.lastIndexOf(".")))) {
             throw new Error("The jwt's signature does not match the verification signature.");
@@ -365,7 +393,7 @@ async function verify2(jwt, key, options) {
     }
 }
 function createSigningInput(header, payload) {
-    return `${mod.encode(encoder.encode(JSON.stringify(header)))}.${mod.encode(encoder.encode(JSON.stringify(payload)))}`;
+    return `${mod.encode(encoder1.encode(JSON.stringify(header)))}.${mod.encode(encoder1.encode(JSON.stringify(payload)))}`;
 }
 async function create1(header, payload, key) {
     if (verify(header.alg, key)) {
@@ -379,7 +407,7 @@ async function create1(header, payload, key) {
 function getNumericDate(exp) {
     return Math.round((exp instanceof Date ? exp.getTime() : Date.now() + exp * 1000) / 1000);
 }
-export { decode2 as decode };
+export { decode1 as decode };
 export { validate as validate };
 export { verify2 as verify };
 export { create1 as create };
