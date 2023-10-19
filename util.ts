@@ -29,6 +29,10 @@ export function isNumber(input: unknown): input is number {
   return typeof input === "number";
 }
 
+export function isNotTrue<T>(input: T | true): input is T {
+  return input !== true;
+}
+
 export function isObject(input: unknown): input is Record<string, unknown> {
   return (
     input !== null && typeof input === "object" &&

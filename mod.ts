@@ -11,6 +11,7 @@ import {
   isDefined,
   isNotNumber,
   isNotString,
+  isNotTrue,
   isNumber,
   isObject,
   isString,
@@ -58,8 +59,10 @@ export interface Header {
 export type VerifyOptions = {
   expLeeway?: number;
   nbfLeeway?: number;
+  ignoreExp?: boolean;
+  ignoreNbf?: boolean;
   audience?: string | string[] | RegExp;
-  predicates?: ((payload: Payload) => boolean)[];
+  predicates?: (<P extends Payload>(payload: P) => boolean)[];
 };
 
 function isExpired(exp: number, leeway: number): boolean {
@@ -82,17 +85,23 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
 
 function validateTimingClaims(
   payload: Payload,
-  { expLeeway = 1, nbfLeeway = 1 }: VerifyOptions = {},
+  { expLeeway = 1, nbfLeeway = 1, ignoreExp, ignoreNbf }: VerifyOptions = {},
 ): void {
   if (hasInvalidTimingClaims(payload.exp, payload.nbf)) {
     throw new Error(`The jwt has an invalid 'exp' or 'nbf' claim.`);
   }
 
-  if (isNumber(payload.exp) && isExpired(payload.exp, expLeeway)) {
+  if (
+    isNumber(payload.exp) && isNotTrue(ignoreExp) &&
+    isExpired(payload.exp, expLeeway)
+  ) {
     throw RangeError("The jwt is expired.");
   }
 
-  if (isNumber(payload.nbf) && isTooEarly(payload.nbf, nbfLeeway)) {
+  if (
+    isNumber(payload.nbf) && isNotTrue(ignoreNbf) &&
+    isTooEarly(payload.nbf, nbfLeeway)
+  ) {
     throw RangeError("The jwt is used too early.");
   }
 }

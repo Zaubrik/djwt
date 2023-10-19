@@ -213,6 +213,28 @@ Deno.test({
       {},
     );
 
+    await assertEquals(
+      await verify(
+        await create({ alg: "HS512", typ: "JWT" }, { exp: 0 }, keyHS512),
+        keyHS512,
+        { ignoreExp: true },
+      ),
+      { exp: 0 },
+    );
+
+    await assertEquals(
+      await verify(
+        await create(
+          { alg: "HS512", typ: "JWT" },
+          { nbf: 1111111111111111111111111111 },
+          keyHS512,
+        ),
+        keyHS512,
+        { ignoreNbf: true },
+      ),
+      { nbf: 1111111111111111111111111111 },
+    );
+
     await assertRejects(
       async () => {
         await verify(
