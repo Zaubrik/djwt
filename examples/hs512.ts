@@ -1,7 +1,10 @@
-import { create, getNumericDate, verify } from "../mod.ts";
-import { serve } from "./deps.ts";
-
-import type { Header, Payload } from "../mod.ts";
+import {
+  create,
+  getNumericDate,
+  type Header,
+  type Payload,
+  verify,
+} from "../mod.ts";
 
 const key = await crypto.subtle.generateKey(
   { name: "HMAC", hash: "SHA-512" },
@@ -31,4 +34,4 @@ async function handleRequest(request: Request) {
   }
 }
 
-await serve(handleRequest);
+Deno.serve(handleRequest);

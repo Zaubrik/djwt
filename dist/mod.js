@@ -396,12 +396,16 @@ function createSigningInput(header, payload) {
     return `${mod.encode(encoder1.encode(JSON.stringify(header)))}.${mod.encode(encoder1.encode(JSON.stringify(payload)))}`;
 }
 async function create1(header, payload, key) {
-    if (verify(header.alg, key)) {
-        const signingInput = createSigningInput(header, payload);
-        const signature = await create(header.alg, key, signingInput);
-        return `${signingInput}.${signature}`;
+    if (isObject(payload)) {
+        if (verify(header.alg, key)) {
+            const signingInput = createSigningInput(header, payload);
+            const signature = await create(header.alg, key, signingInput);
+            return `${signingInput}.${signature}`;
+        } else {
+            throw new Error(`The jwt's alg '${header.alg}' does not match the key's algorithm.`);
+        }
     } else {
-        throw new Error(`The jwt's alg '${header.alg}' does not match the key's algorithm.`);
+        throw new Error(`The jwt claims set is not a JSON object.`);
     }
 }
 function getNumericDate(exp) {
