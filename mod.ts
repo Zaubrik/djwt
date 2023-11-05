@@ -142,9 +142,9 @@ function validateAudClaim(
  * jwt has a valid _serialization_. Otherwise it throws an `Error`. This function
  * does **not** verify the digital signature.
  */
-export function decode(
+export function decode<PayloadType extends Payload | unknown = unknown>(
   jwt: string,
-): [header: unknown, payload: unknown, signature: Uint8Array] {
+): [unknown, PayloadType, Uint8Array] {
   try {
     const arr = jwt
       .split(".")
@@ -154,7 +154,7 @@ export function decode(
           ? JSON.parse(decoder.decode(uint8Array))
           : uint8Array
       );
-    if (is3Tuple(arr)) return arr;
+    if (is3Tuple(arr)) return arr as [unknown, PayloadType, Uint8Array];
     else throw new Error();
   } catch {
     throw Error("The serialization of the jwt is invalid.");
@@ -200,11 +200,11 @@ export function validate(
  * Takes jwt, `CryptoKey` and `VerifyOptions` and returns the `Payload` of the
  * jwt if the jwt is valid. Otherwise it throws an `Error`.
  */
-export async function verify(
+export async function verify<PayloadType extends Payload>(
   jwt: string,
   key: CryptoKey | null,
   options?: VerifyOptions,
-): Promise<Payload> {
+): Promise<PayloadType> {
   const { header, payload, signature } = validate(decode(jwt), options);
   if (verifyAlgorithm(header.alg, key)) {
     if (
@@ -223,7 +223,7 @@ export async function verify(
       throw new Error("The payload does not satisfy all passed predicates.");
     }
 
-    return payload;
+    return payload as PayloadType;
   } else {
     throw new Error(
       `The jwt's alg '${header.alg}' does not match the key's algorithm.`,
@@ -255,15 +255,19 @@ export async function create(
   payload: Payload,
   key: CryptoKey | null,
 ): Promise<string> {
-  if (verifyAlgorithm(header.alg, key)) {
-    const signingInput = createSigningInput(header, payload);
-    const signature = await createSignature(header.alg, key, signingInput);
+  if (isObject(payload)) {
+    if (verifyAlgorithm(header.alg, key)) {
+      const signingInput = createSigningInput(header, payload);
+      const signature = await createSignature(header.alg, key, signingInput);
 
-    return `${signingInput}.${signature}`;
+      return `${signingInput}.${signature}`;
+    } else {
+      throw new Error(
+        `The jwt's alg '${header.alg}' does not match the key's algorithm.`,
+      );
+    }
   } else {
-    throw new Error(
-      `The jwt's alg '${header.alg}' does not match the key's algorithm.`,
-    );
+    throw new Error(`The jwt claims set is not a JSON object.`);
   }
 }
 

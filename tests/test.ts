@@ -174,6 +174,13 @@ Deno.test({
       Error,
       "The jwt's alg 'HS256' does not match the key's algorithm.",
     );
+    await assertRejects(
+      async () => {
+        await create(header, "invalid payload" as unknown as Payload, keyHS512);
+      },
+      Error,
+      "The jwt claims set is not a JSON object.",
+    );
   },
 });
 
@@ -220,6 +227,19 @@ Deno.test({
         { ignoreExp: true },
       ),
       { exp: 0 },
+    );
+
+    await assertEquals(
+      (await verify<{ email: string }>(
+        await create(
+          { alg: "HS512", typ: "JWT" },
+          { email: "joe@example.com" },
+          keyHS512,
+        ),
+        keyHS512,
+        { ignoreExp: true },
+      )).email,
+      "joe@example.com",
     );
 
     await assertEquals(

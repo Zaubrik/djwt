@@ -1,7 +1,4 @@
-import { create, verify } from "../mod.ts";
-import { serve } from "./deps.ts";
-
-import type { Header, Payload } from "../mod.ts";
+import { create, type Header, type Payload, verify } from "../mod.ts";
 
 const { privateKey, publicKey } = await window.crypto.subtle.generateKey(
   {
@@ -39,4 +36,4 @@ async function handleRequest(request: Request) {
   }
 }
 
-await serve(handleRequest);
+Deno.serve(handleRequest);
