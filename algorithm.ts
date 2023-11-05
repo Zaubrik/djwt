@@ -17,8 +17,8 @@ export type Algorithm =
   | "RS512"
   | "ES256"
   | "ES384"
-  // | "ES512" //is not yet supported.
   // https://github.com/denoland/deno/blob/main/ext/crypto/00_crypto.js
+  // | "ES512" //is not yet supported.
   | "none";
 
 // Still needs an 'any' type! Does anyone have an idea?
