@@ -1,4 +1,4 @@
-import { base64url } from "./deps.ts";
+import { decodeBase64Url, encodeBase64Url } from "./deps.ts";
 import {
   create as createSignature,
   verify as verifySignature,
@@ -83,7 +83,7 @@ function hasInvalidTimingClaims(...claimValues: unknown[]): boolean {
   );
 }
 
-function validateTimingClaims(
+export function validateTimingClaims(
   payload: Payload,
   { expLeeway = 1, nbfLeeway = 1, ignoreExp, ignoreNbf }: VerifyOptions = {},
 ): void {
@@ -111,7 +111,7 @@ function hasValidAudClaim(claimValue: unknown): claimValue is Payload["aud"] {
   else return isArray(claimValue) && claimValue.every(isString);
 }
 
-function validateAudClaim(
+export function validateAudClaim(
   aud: unknown,
   audience: Required<VerifyOptions>["audience"],
 ): void {
@@ -148,7 +148,7 @@ export function decode<PayloadType extends Payload | unknown = unknown>(
   try {
     const arr = jwt
       .split(".")
-      .map(base64url.decode)
+      .map(decodeBase64Url)
       .map((uint8Array, index) =>
         index === 0 || index === 1
           ? JSON.parse(decoder.decode(uint8Array))
@@ -241,8 +241,8 @@ export async function verify<PayloadType extends Payload>(
  *       BASE64URL(JWS Signature)
  */
 function createSigningInput(header: Header, payload: Payload): string {
-  return `${base64url.encode(encoder.encode(JSON.stringify(header)))}.${
-    base64url.encode(encoder.encode(JSON.stringify(payload)))
+  return `${encodeBase64Url(encoder.encode(JSON.stringify(header)))}.${
+    encodeBase64Url(encoder.encode(JSON.stringify(payload)))
   }`;
 }
 

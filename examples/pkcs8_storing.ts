@@ -1,4 +1,4 @@
-import { base64 } from "./deps.ts";
+import { encodeBase64Url } from "./deps.ts";
 
 /*
   Import a PEM encoded RSA private key, to use for RSA-PSS signing.
@@ -28,7 +28,7 @@ function importPrivateKey(pem: string) {
 
 async function generatePemFromPrivateCryptoKey(privateKey: CryptoKey) {
   const exportedKey = await crypto.subtle.exportKey("pkcs8", privateKey);
-  const exportedAsBase64 = base64.encode(exportedKey);
+  const exportedAsBase64 = encodeBase64Url(exportedKey);
   return `-----BEGIN PRIVATE KEY-----\n${exportedAsBase64}\n-----END PRIVATE KEY-----`;
 }
 

@@ -91,7 +91,8 @@ const base64abc = [
 ];
 function encodeBase64(data) {
     const uint8 = validateBinaryLike(data);
-    let result = "", i;
+    let result = "";
+    let i;
     const l = uint8.length;
     for(i = 2; i < l; i += 3){
         result += base64abc[uint8[i - 2] >> 2];
@@ -138,20 +139,12 @@ function convertBase64urlToBase64(b64url) {
 function convertBase64ToBase64url(b64) {
     return b64.endsWith("=") ? b64.endsWith("==") ? b64.replace(/\+/g, "-").replace(/\//g, "_").slice(0, -2) : b64.replace(/\+/g, "-").replace(/\//g, "_").slice(0, -1) : b64.replace(/\+/g, "-").replace(/\//g, "_");
 }
-const encode = encodeBase64Url;
-const decode = decodeBase64Url;
 function encodeBase64Url(data) {
     return convertBase64ToBase64url(encodeBase64(data));
 }
 function decodeBase64Url(b64url) {
     return decodeBase64(convertBase64urlToBase64(b64url));
 }
-const mod = {
-    encode: encode,
-    decode: decode,
-    encodeBase64Url: encodeBase64Url,
-    decodeBase64Url: decodeBase64Url
-};
 const encoder1 = new TextEncoder();
 const decoder = new TextDecoder();
 function isArray(input) {
@@ -304,7 +297,7 @@ async function verify1(signature, key, alg, signingInput) {
     return isNull(key) ? signature.length === 0 : await crypto.subtle.verify(getAlgorithm(alg), key, signature, encoder1.encode(signingInput));
 }
 async function create(alg, key, signingInput) {
-    return isNull(key) ? "" : mod.encode(new Uint8Array(await crypto.subtle.sign(getAlgorithm(alg), key, encoder1.encode(signingInput))));
+    return isNull(key) ? "" : encodeBase64Url(new Uint8Array(await crypto.subtle.sign(getAlgorithm(alg), key, encoder1.encode(signingInput))));
 }
 function isExpired(exp, leeway) {
     return exp + leeway < Date.now() / 1000;
@@ -351,9 +344,9 @@ function validateAudClaim(aud, audience) {
         throw new Error(`The jwt has an invalid 'aud' claim.`);
     }
 }
-function decode1(jwt) {
+function decode(jwt) {
     try {
-        const arr = jwt.split(".").map(mod.decode).map((uint8Array, index)=>index === 0 || index === 1 ? JSON.parse(decoder.decode(uint8Array)) : uint8Array);
+        const arr = jwt.split(".").map(decodeBase64Url).map((uint8Array, index)=>index === 0 || index === 1 ? JSON.parse(decoder.decode(uint8Array)) : uint8Array);
         if (is3Tuple(arr)) return arr;
         else throw new Error();
     } catch  {
@@ -379,7 +372,7 @@ function validate([header, payload, signature], options) {
     }
 }
 async function verify2(jwt, key, options) {
-    const { header, payload, signature } = validate(decode1(jwt), options);
+    const { header, payload, signature } = validate(decode(jwt), options);
     if (verify(header.alg, key)) {
         if (!await verify1(signature, key, header.alg, jwt.slice(0, jwt.lastIndexOf(".")))) {
             throw new Error("The jwt's signature does not match the verification signature.");
@@ -393,7 +386,7 @@ async function verify2(jwt, key, options) {
     }
 }
 function createSigningInput(header, payload) {
-    return `${mod.encode(encoder1.encode(JSON.stringify(header)))}.${mod.encode(encoder1.encode(JSON.stringify(payload)))}`;
+    return `${encodeBase64Url(encoder1.encode(JSON.stringify(header)))}.${encodeBase64Url(encoder1.encode(JSON.stringify(payload)))}`;
 }
 async function create1(header, payload, key) {
     if (isObject(payload)) {
@@ -411,7 +404,9 @@ async function create1(header, payload, key) {
 function getNumericDate(exp) {
     return Math.round((exp instanceof Date ? exp.getTime() : Date.now() + exp * 1000) / 1000);
 }
-export { decode1 as decode };
+export { validateTimingClaims as validateTimingClaims };
+export { validateAudClaim as validateAudClaim };
+export { decode as decode };
 export { validate as validate };
 export { verify2 as verify };
 export { create1 as create };

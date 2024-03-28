@@ -1,5 +1,5 @@
 import { getAlgorithm } from "./algorithm.ts";
-import { base64url } from "./deps.ts";
+import { encodeBase64Url } from "./deps.ts";
 import { encoder, isNull } from "./util.ts";
 
 import type { Algorithm } from "./algorithm.ts";
@@ -23,7 +23,7 @@ export async function create(
   key: CryptoKey | null,
   signingInput: string,
 ): Promise<string> {
-  return isNull(key) ? "" : base64url.encode(
+  return isNull(key) ? "" : encodeBase64Url(
     new Uint8Array(
       await crypto.subtle.sign(
         getAlgorithm(alg),

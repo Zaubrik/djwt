@@ -385,9 +385,9 @@ Deno.test({
         { alg: "HS256", typ: "JWT" },
         {},
 
-        decodeHex(new TextEncoder().encode(
+        decodeHex(
           "4d509e165d679d959431090040ab92a3f23ded87886404bc4f580e904ad3ec5f",
-        )),
+        ),
       ],
     );
     assertThrows(
@@ -430,9 +430,7 @@ Deno.test({
       header,
       payload,
       decodeHex(
-        new TextEncoder().encode(
-          "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
-        ),
+        "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
       ),
     ]);
     assertEquals(
@@ -536,9 +534,7 @@ Deno.test({
       header,
       payload,
       decodeHex(
-        new TextEncoder().encode(
-          "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
-        ),
+        "49f94ac7044948c78a285d904f87f0a4c7897f7e8f3a4eb2255fda750b2cc397",
       ),
     ]);
     assertEquals(
