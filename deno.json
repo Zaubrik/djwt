@@ -1,4 +1,7 @@
 {
+  "name": "@zaubrik/djwt",
+  "version": "3.0.0",
+  "exports": "./mod.ts",
   "tasks": {
     "test": "deno test --check --unstable --allow-all"
   },

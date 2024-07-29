@@ -1,3 +1,10 @@
 .*
 !/.gitignore
+
+!/.github
+/.github/*
+!/.github/workflows
+/.github/workflows/*
+!/.github/workflows/publish.yml
+
 deno.lock
