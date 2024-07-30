@@ -1,4 +1,4 @@
-import { encodeBase64Url } from "./deps.ts";
+import { decodeBase64Url, encodeBase64Url } from "@std/encoding/base64url";
 
 /*
   Import a PEM encoded RSA private key, to use for RSA-PSS signing.
@@ -13,7 +13,7 @@ function importPrivateKey(pem: string) {
     pemHeader.length,
     pem.length - pemFooter.length,
   );
-  const binaryDer = base64.decode(pemContents).buffer;
+  const binaryDer = decodeBase64Url(pemContents);
   return window.crypto.subtle.importKey(
     "pkcs8",
     binaryDer,

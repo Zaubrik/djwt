@@ -1,4 +1,4 @@
-import { decodeBase64Url, encodeBase64Url } from "./deps.ts";
+import { decodeBase64Url, encodeBase64Url } from "@std/encoding/base64url";
 import {
   create as createSignature,
   verify as verifySignature,

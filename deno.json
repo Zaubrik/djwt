@@ -11,5 +11,9 @@
     "useUnknownInCatchVariables": true,
     "noImplicitOverride": true,
     "checkJs": true
+  },
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.1",
+    "@std/encoding": "jsr:@std/encoding@^1.0.1"
   }
 }

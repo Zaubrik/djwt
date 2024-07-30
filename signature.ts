@@ -1,5 +1,5 @@
 import { getAlgorithm } from "./algorithm.ts";
-import { encodeBase64Url } from "./deps.ts";
+import { encodeBase64Url } from "@std/encoding/base64url";
 import { encoder, isNull } from "./util.ts";
 
 import type { Algorithm } from "./algorithm.ts";

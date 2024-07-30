@@ -8,12 +8,8 @@ import {
   verify,
 } from "../mod.ts";
 import { isDefined, isNull, isString } from "../util.ts";
-import {
-  assertEquals,
-  assertRejects,
-  assertThrows,
-  decodeHex,
-} from "./test_deps.ts";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
+import { decodeHex } from "@std/encoding/hex";
 
 const header: Header = {
   alg: "HS256",
