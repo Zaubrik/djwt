@@ -3,7 +3,8 @@
   "version": "3.0.2",
   "exports": "./mod.ts",
   "tasks": {
-    "test": "deno test --check --unstable --allow-all"
+    "check": "deno fmt && deno lint && deno publish --dry-run --allow-dirty && deno test --parallel",
+    "check-ci": "deno fmt --check && deno lint && deno publish --dry-run && deno test --parallel"
   },
   "compilerOptions": {
     "noImplicitOverride": true

@@ -1,4 +1,4 @@
-name: ci
+name: CI-Tests
 
 on:
   push:
@@ -8,33 +8,21 @@ on:
 
 jobs:
   test:
-    name: test-${{ matrix.deno }}-${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: CI-Tests deno@${{ matrix.deno }}
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        deno: [old, stable, canary]
-        os: [macOS-latest, windows-latest, ubuntu-latest]
+        deno: [stable, canary]
 
     steps:
-      - name: Setup repo
-        uses: actions/checkout@v2
+      - name: Clone repository
+        uses: actions/checkout@v3
 
-      - name: Setup Deno
-        run: |
-          curl -fsSL https://deno.land/x/install/install.sh | sh ${{ matrix.deno == 'old' && '-s v1.45.4' || '' }}
-          echo "$HOME/.deno/bin" >> $${{ runner.os == 'Windows' && 'env:' || '' }}GITHUB_PATH
-      - name: Upgrade to Deno canary
-        if: matrix.deno == 'canary'
-        run: deno upgrade --canary
+      - name: Install Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: ${{matrix.deno == 'stable' && 'v1.x' || 'canary'}}
 
-      - name: Format
-        if: runner.os == 'Linux'
-        run: deno fmt --check
-
-      - name: Lint
-        if: runner.os == 'Linux'
-        run: deno lint --unstable
-
-      - name: Run Tests
-        run: deno test -A
+      - name: Check
+        run: deno task check-ci
