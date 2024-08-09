@@ -24,7 +24,7 @@ Takes `Header`, `Payload` and `CryptoKey` and returns the url-safe encoded
 ```typescript
 import { create } from "https://deno.land/x/djwt@$VERSION/mod.ts";
 
-const jwt = await create({ alg: "HS512", type: "JWT" }, { foo: "bar" }, key);
+const jwt = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, key);
 ```
 
 ### verify
