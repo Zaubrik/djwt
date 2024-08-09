@@ -2,6 +2,6 @@ export {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "https://deno.land/std@0.221.0/testing/asserts.ts";
+} from "jsr:@std/testing@0.221.0/asserts";
 
-export { decodeHex } from "https://deno.land/std@0.221.0/encoding/hex.ts";
+export { decodeHex } from "jsr:@std/encoding@1.0.1/hex";
