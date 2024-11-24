@@ -1,6 +1,11 @@
 {
+  "name": "@zaubrik/djwt",
+  "version": "4.0.0",
+  "exports": "./mod.ts",
   "tasks": {
-    "test": "deno test --check --unstable --allow-all"
+    "test": "deno test --check --unstable --allow-all ./tests/test.ts",
+    "dist": "deno run -A ./dist.js",
+    "testdist": "deno test --no-check ./dist/test.js"
   },
   "compilerOptions": {
     "verbatimModuleSyntax": true,
