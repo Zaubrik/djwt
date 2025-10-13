@@ -22,7 +22,7 @@ Takes `Header`, `Payload` and `CryptoKey` and returns the url-safe encoded
 `jwt`.
 
 ```typescript
-import { create } from "https://deno.land/x/djwt@$VERSION/mod.ts";
+import { create } from "@zaubrik/djwt";
 
 const jwt = await create({ alg: "HS512", typ: "JWT" }, { foo: "bar" }, key);
 ```
@@ -33,7 +33,7 @@ Takes `jwt`, `CryptoKey` and `VerifyOptions` and returns the `Payload` of the
 `jwt` if the `jwt` is valid. Otherwise it throws an `Error`.
 
 ```typescript
-import { verify } from "https://deno.land/x/djwt@$VERSION/mod.ts";
+import { verify } from "@zaubrik/djwt";
 
 const payload = await verify(jwt, key); // { foo: "bar" }
 ```
@@ -46,7 +46,7 @@ valid _serialization_. Otherwise it throws an `Error`. This function does
 **not** verify the digital signature.
 
 ```typescript
-import { decode } from "https://deno.land/x/djwt@$VERSION/mod.ts";
+import { decode } from "@zaubrik/djwt";
 
 const [header, payload, signature] = decode(jwt);
 ```
